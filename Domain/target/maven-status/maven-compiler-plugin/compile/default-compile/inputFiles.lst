@@ -1,0 +1,11 @@
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/util/SpaceUtils.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/enums/OrderStatus.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/entry/OrderEntry.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/entry/ReleaseEntry.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/enums/OrderType.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/configuration/CommonRabbitConfiguration.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/entry/ShareEntry.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/configuration/CommonSpaceConfiguration.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/entry/InvestorDepotEntry.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/TestVO.java
+/Users/dietl_ma/Studium/_WIEN/VPS/lab1/Domain/src/main/java/ac/at/tuwien/sbc/domain/entry/TransactionEntry.java

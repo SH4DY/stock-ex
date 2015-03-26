@@ -1,0 +1,3 @@
+ac/at/tuwien/sbc/broker/configuration/RabbitConfiguration.class
+ac/at/tuwien/sbc/broker/BrokerApp.class
+ac/at/tuwien/sbc/broker/MyRabbitListener.class

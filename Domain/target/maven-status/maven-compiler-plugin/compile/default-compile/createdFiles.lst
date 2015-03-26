@@ -1,0 +1,11 @@
+ac/at/tuwien/sbc/domain/enums/OrderType.class
+ac/at/tuwien/sbc/domain/enums/OrderStatus.class
+ac/at/tuwien/sbc/domain/entry/ReleaseEntry.class
+ac/at/tuwien/sbc/domain/configuration/CommonRabbitConfiguration.class
+ac/at/tuwien/sbc/domain/entry/OrderEntry.class
+ac/at/tuwien/sbc/domain/util/SpaceUtils.class
+ac/at/tuwien/sbc/domain/entry/TransactionEntry.class
+ac/at/tuwien/sbc/domain/configuration/CommonSpaceConfiguration.class
+ac/at/tuwien/sbc/domain/TestVO.class
+ac/at/tuwien/sbc/domain/entry/ShareEntry.class
+ac/at/tuwien/sbc/domain/entry/InvestorDepotEntry.class
