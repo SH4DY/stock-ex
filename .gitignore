@@ -1,33 +1,3 @@
-Last login: Thu Mar 26 07:44:35 on ttys006
-Martin-Dietls-MacBook-Pro:~ dietl_ma$ cd ~/S
-Sites/   Studium/ 
-Martin-Dietls-MacBook-Pro:~ dietl_ma$ cd ~/Studium/_WIEN/DSE/_code/
-Martin-Dietls-MacBook-Pro:_code dietl_ma$ ls
-DseDomain		DseNewsBeeper		dse12.iml
-DseGeoResolver		RemoteSystemsTempFiles	pom.xml
-DseMmi			Servers			readme.txt
-Martin-Dietls-MacBook-Pro:_code dietl_ma$ vi .git
-.git/       .gitignore  
-Martin-Dietls-MacBook-Pro:_code dietl_ma$ vi .gitignore 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #Eclipse
 .classpath
 .project
@@ -50,13 +20,5 @@ target/
 #Spring
 .springbeans
 
-~                                                                                                   
-~                                                                                                   
-~                                                                                                   
-~                                                                                                   
-~                                                                                                   
-~                                                                                                   
-~                                                                                                   
-".gitignore" 22L, 154C
 
 
