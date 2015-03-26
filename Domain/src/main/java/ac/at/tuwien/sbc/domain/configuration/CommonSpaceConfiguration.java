@@ -45,4 +45,10 @@ public class CommonSpaceConfiguration {
         return SpaceUtils.getOrCreateNamedContainer(uri, "defaultContainer", capi, new KeyCoordinator());
     }
 
+    @Bean(name = "orderContainer")
+    public ContainerReference orderContainer(Capi capi) throws URISyntaxException, MzsCoreException {
+        URI uri = new URI(SPACE_URI);
+        return SpaceUtils.getOrCreateNamedContainer(uri, "orderContainer", capi, new LindaCoordinator(false));
+    }
+
 }

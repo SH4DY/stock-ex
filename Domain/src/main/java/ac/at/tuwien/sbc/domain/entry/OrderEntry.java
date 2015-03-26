@@ -4,6 +4,7 @@ import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Created by dietl_ma on 25/03/15.
@@ -11,7 +12,7 @@ import java.io.Serializable;
 //RANDOM OR ANY COORDINATOR
 public class OrderEntry implements Serializable {
 
-    private Integer orderID;
+    private UUID orderID;
 
     //is null if reseller it is IPO
     private Integer investorID;
