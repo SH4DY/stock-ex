@@ -20,5 +20,12 @@ target/
 #Spring
 .springbeans
 
+#specific
+Broker/target/
+Company/target/
+Domain/target/
+Market/target/
+Investor/target/
+MarketAgent/target/
 
 
