@@ -7,5 +7,5 @@ import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
  */
 public interface ICoordinationServiceListener {
 
-    public void onInitInvestor(InvestorDepotEntry ide);
+
 }

@@ -32,7 +32,7 @@ public abstract class SpaceUtils {
      * @throws MzsCoreException
      */
     public static ContainerReference getOrCreateNamedContainer(final URI space, final String containerName,
-                                                               final Capi capi, final ImplicitCoordinator coordinator) throws MzsCoreException {
+                                                               final Capi capi, final Coordinator coordinator) throws MzsCoreException {
 
         ContainerReference cref;
         try {
