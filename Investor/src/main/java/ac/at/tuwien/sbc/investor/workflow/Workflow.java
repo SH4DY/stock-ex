@@ -2,6 +2,7 @@ package ac.at.tuwien.sbc.investor.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
+import ac.at.tuwien.sbc.investor.gui.MainGUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -19,13 +21,17 @@ import java.util.HashMap;
 public class Workflow implements ICoordinationServiceListener {
 
     @Value("${id}")
-    private Integer id;
+    private Integer investorId;
 
     @Value("${budget}")
     private Double budget;
 
     @Autowired
     private ICoordinationService coordinationService;
+
+    @Autowired
+    private IWorkFlowObserver observer;
+
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
@@ -35,21 +41,37 @@ public class Workflow implements ICoordinationServiceListener {
 
         //add listener to coordination service
         coordinationService.setListener(this);
+        //init notifications
+        initInvestorNotification();
         //init investor
         initInvestor();
     }
 
+
+    private void initInvestorNotification() {
+        coordinationService.registerInvestorNotification(investorId, new CoordinationListener<InvestorDepotEntry>() {
+            @Override
+            public void onResult(InvestorDepotEntry ide) {
+                logger.info("Got InvestorDepotEntry notification: " + ide.getInvestorID() + "/" + ide.getBudget());
+
+                if (observer != null) {
+                    logger.info("Observer not null");
+                    observer.onInvestorDepotEntryNotification(ide);
+                }
+            }
+        });
+    }
     /**
      * Get investor if exists and increase budget by new args
      */
     private void initInvestor() {
 
-        coordinationService.getInvestor(id, new CoordinationListener<InvestorDepotEntry>() {
+        coordinationService.getInvestor(investorId, new CoordinationListener<InvestorDepotEntry>() {
             @Override
             public void onResult(InvestorDepotEntry ide) {
                 if (ide == null) {
                     //new entry
-                    ide = new InvestorDepotEntry(id, budget, new HashMap<String, Integer>());
+                    ide = new InvestorDepotEntry(investorId, budget, new HashMap<String, Integer>());
                 }
                 else {
                     logger.info("Got InvestorDepotEntry: " + ide.getInvestorID() + "/" + ide.getBudget());
@@ -60,5 +82,4 @@ public class Workflow implements ICoordinationServiceListener {
             }
         });
     }
-
 }
