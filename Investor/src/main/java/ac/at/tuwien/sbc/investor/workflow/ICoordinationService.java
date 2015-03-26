@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.investor.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.mozartspaces.core.MzsCoreException;
 
@@ -16,4 +17,6 @@ public interface ICoordinationService {
     public void registerInvestorNotification(Integer id, CoordinationListener clistener);
 
     public void setInvestor(InvestorDepotEntry ide);
+
+    public void addOrder(OrderEntry oe);
 }

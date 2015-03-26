@@ -26,8 +26,6 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     private static double c = 10.0;
 
     private JPanel rootPanel;
-    private JLabel titleLabel;
-    private JButton button1;
     private JLabel investorLabel;
 
     /** The Constant logger. */
@@ -39,6 +37,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
         setVisible(true);
+        setTitle("Investor App");
     }
 
     @PostConstruct
@@ -50,5 +49,6 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     @Override
     public void onInvestorDepotEntryNotification(InvestorDepotEntry ide) {
         investorLabel.setText("Investor: " + ide.getInvestorID().toString() + " Budget: " + ide.getBudget().toString());
+        setTitle("Investor App - " + ide.getInvestorID().toString());
     }
 }

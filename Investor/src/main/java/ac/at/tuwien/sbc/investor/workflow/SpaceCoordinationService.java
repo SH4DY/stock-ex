@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.investor.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.core.*;
@@ -36,6 +37,10 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Autowired
     @Qualifier("investorDepotContainer")
     ContainerReference investorDepotContainer;
+
+    @Autowired
+    @Qualifier("orderContainer")
+    ContainerReference orderContainer;
 
     private ICoordinationServiceListener listener;
 
@@ -86,8 +91,6 @@ public class SpaceCoordinationService implements ICoordinationService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-
     }
 
     @Override
@@ -116,6 +119,15 @@ public class SpaceCoordinationService implements ICoordinationService {
             }
             e.printStackTrace();
             logger.info("Something went wrong writing a InvestorDepotEntry");
+        }
+    }
+
+    @Override
+    public void addOrder(OrderEntry oe) {
+        try {
+            capi.write(orderContainer, new Entry(oe));
+        } catch (MzsCoreException e) {
+            logger.info("Something went wrong writing an order");
         }
     }
 
