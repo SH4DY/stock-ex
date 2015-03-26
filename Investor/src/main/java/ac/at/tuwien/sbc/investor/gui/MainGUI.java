@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 import javax.swing.*;
@@ -21,12 +22,6 @@ public class MainGUI extends JFrame {
     private JLabel titleLabel;
     private JButton button1;
 
-    @Autowired
-    @Qualifier("defaultContainer")
-    ContainerReference cRef;
-
-    @Autowired
-    Capi capi;
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(MainGUI.class);
@@ -37,23 +32,12 @@ public class MainGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
         setVisible(true);
+    }
 
-        button1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ShareEntry s = new ShareEntry("GOOOOOO", 23, 23.0);
+    @PostConstruct
+    private void postConstruct() {
 
 
-                try {
-                    Entry entry = new Entry(s);
-                    capi.write(cRef, MzsConstants.RequestTimeout.TRY_ONCE, null, entry);
-                } catch (MzsCoreException ex) {
-                    ex.printStackTrace();
-                }
-
-                System.out.println("WRITTEN");
-            }
-        });
     }
 
 

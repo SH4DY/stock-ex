@@ -7,6 +7,7 @@ import org.mozartspaces.core.ContainerReference;
 import org.mozartspaces.core.MzsConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -22,13 +23,16 @@ public class TestService {
     @Qualifier("defaultContainer")
     ContainerReference cRef;
 
+    @Value("${company_id}")
+    private String companyId;
+
     @Autowired
     Capi capi;
     @PostConstruct
 
     private void postConstruct() {
 
-        System.out.println("TESTSERVICE");
+        System.out.println("TESTSERVICE:" + companyId);
 
         ArrayList<ShareEntry> entries = null;
         try {
