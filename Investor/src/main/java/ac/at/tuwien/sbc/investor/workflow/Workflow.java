@@ -1,6 +1,8 @@
 package ac.at.tuwien.sbc.investor.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.investor.gui.MainGUI;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import javax.annotation.PostConstruct;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * Created by dietl_ma on 26/03/15.
@@ -43,8 +46,11 @@ public class Workflow implements ICoordinationServiceListener {
         coordinationService.setListener(this);
         //init notifications
         initInvestorNotification();
+        initOrderNotification();
         //init investor
         initInvestor();
+        //init orders
+        initOrders();
     }
 
 
@@ -57,6 +63,19 @@ public class Workflow implements ICoordinationServiceListener {
                 if (observer != null) {
                     logger.info("Observer not null");
                     observer.onInvestorDepotEntryNotification(ide);
+                }
+            }
+        });
+    }
+
+    private void initOrderNotification() {
+        coordinationService.registerOrderNotification(investorId, new CoordinationListener<OrderEntry>() {
+            @Override
+            public void onResult(OrderEntry oe) {
+                logger.info("Got Order notification: " + oe.getInvestorID() + "/" + oe.getShareID());
+
+                if (observer != null) {
+                    observer.onOrderEntryNotification(oe);
                 }
             }
         });
@@ -81,5 +100,31 @@ public class Workflow implements ICoordinationServiceListener {
                 coordinationService.setInvestor(ide);
             }
         });
+    }
+
+    private void initOrders() {
+        coordinationService.getOrders(investorId, new CoordinationListener<ArrayList<OrderEntry>>() {
+            @Override
+            public void onResult(ArrayList<OrderEntry> entries) {
+
+                if (entries != null) {
+                    for (OrderEntry oe : entries) {
+                        if (observer != null) {
+                            observer.onOrderEntryNotification(oe);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public void addOrder(OrderEntry oe) {
+
+        oe.setOrderID(UUID.randomUUID());
+        oe.setInvestorID(investorId);
+        oe.setStatus(OrderStatus.OPEN);
+        oe.setNumCompleted(0);
+
+        coordinationService.addOrder(oe);
     }
 }

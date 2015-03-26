@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="rootPanel" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="5" left="5" bottom="5" right="5"/>
     <constraints>
-      <xy x="20" y="20" width="502" height="490"/>
+      <xy x="20" y="20" width="584" height="492"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -57,12 +57,63 @@
           <component id="d92fb" class="javax.swing.JLabel">
             <constraints/>
             <properties>
-              <text value="Label"/>
+              <text value="Share"/>
             </properties>
           </component>
-          <component id="851b8" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
+          <component id="ea2d1" class="javax.swing.JTextField" binding="shareTextField">
+            <constraints/>
+            <properties>
+              <preferredSize width="80" height="28"/>
+            </properties>
+          </component>
+          <hspacer id="ee5e3">
+            <constraints/>
+          </hspacer>
+          <component id="b4c79" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Action"/>
+            </properties>
+          </component>
+          <component id="47723" class="javax.swing.JComboBox" binding="typeComboBox">
             <constraints/>
             <properties/>
+          </component>
+          <hspacer id="b517c">
+            <constraints/>
+          </hspacer>
+          <component id="65799" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="#Shares"/>
+            </properties>
+          </component>
+          <component id="884ef" class="javax.swing.JTextField" binding="numSharesTextField">
+            <constraints/>
+            <properties>
+              <preferredSize width="50" height="28"/>
+            </properties>
+          </component>
+          <hspacer id="4d0c3">
+            <constraints/>
+          </hspacer>
+          <component id="506d6" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Limit"/>
+            </properties>
+          </component>
+          <component id="1fa15" class="javax.swing.JTextField" binding="limitTextField">
+            <constraints/>
+            <properties>
+              <preferredSize width="50" height="28"/>
+            </properties>
+          </component>
+          <component id="ecc18" class="javax.swing.JButton" binding="addButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <text value="Add"/>
+            </properties>
           </component>
         </children>
       </grid>
