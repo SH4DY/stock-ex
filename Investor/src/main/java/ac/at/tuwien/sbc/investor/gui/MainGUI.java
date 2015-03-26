@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -27,12 +29,27 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
 
     private JPanel rootPanel;
     private JLabel investorLabel;
+    private JTable shareTable;
+    private JTable orderTable;
+    private JComboBox comboBox1;
+
+    @Autowired
+    Workflow workflow;
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(MainGUI.class);
 
 
     public MainGUI() {
+        initFrame();
+    }
+
+    @PostConstruct
+    private void postConstruct() {
+        initShareTable();
+    }
+
+    private void initFrame() {
         setSize(600,600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
@@ -40,14 +57,32 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         setTitle("Investor App");
     }
 
-    @PostConstruct
-    private void postConstruct() {
+    private void initShareTable() {
+        String[] header = new String[] {
+            "Share ID", "#Shares", "Price", "Value"
+        };
 
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("Share ID");
+        model.addColumn("#Shares");
+        model.addColumn("Price");
+        model.addColumn("Value");
+
+        shareTable.setModel(model);
     }
 
+    private Integer getTableRowIndexByID(JTable table, Integer columnIndex, Object id) {
+
+        for (int i = 0; i < table.getRowCount();i++) {
+            if (table.getValueAt(0, columnIndex).toString().equals(id.toString()))
+                return i;
+        }
+        return null;
+    }
 
     @Override
     public void onInvestorDepotEntryNotification(InvestorDepotEntry ide) {
+
         investorLabel.setText("Investor: " + ide.getInvestorID().toString() + " Budget: " + ide.getBudget().toString());
         setTitle("Investor App - " + ide.getInvestorID().toString());
     }
