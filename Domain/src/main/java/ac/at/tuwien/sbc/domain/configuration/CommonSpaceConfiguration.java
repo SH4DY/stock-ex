@@ -3,6 +3,8 @@ package ac.at.tuwien.sbc.domain.configuration;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.util.SpaceUtils;
 import org.mozartspaces.capi3.FifoCoordinator;
+import org.mozartspaces.capi3.KeyCoordinator;
+import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,8 +34,13 @@ public class CommonSpaceConfiguration {
     @Bean(name = "defaultContainer")
     public ContainerReference defaultContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
-
         return SpaceUtils.getOrCreateNamedContainer(uri, "defaultContainer", capi, new FifoCoordinator());
+    }
+
+    @Bean(name = "investorDepotContainer")
+    public ContainerReference investorDepotContainer(Capi capi) throws URISyntaxException, MzsCoreException {
+        URI uri = new URI(SPACE_URI);
+        return SpaceUtils.getOrCreateNamedContainer(uri, "defaultContainer", capi, new KeyCoordinator());
     }
 
 }
