@@ -162,7 +162,12 @@ public class SpaceCoordinationService implements ICoordinationService {
             e.printStackTrace();
         }
 
-        cListener.onResult(entries);
+        if (entries != null && !entries.isEmpty())
+            //listener.onGetInvestor(entries.get(0));
+            cListener.onResult(entries);
+        else {
+            cListener.onResult(null);
+        }
     }
 
     @PreDestroy
