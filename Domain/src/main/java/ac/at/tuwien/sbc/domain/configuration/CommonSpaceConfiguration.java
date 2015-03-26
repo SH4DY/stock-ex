@@ -24,10 +24,12 @@ public class CommonSpaceConfiguration {
 
     public static final String SPACE_URI =  "xvsm://localhost:9876";
 
+    @Bean MzsCore core() {
+        return DefaultMzsCore.newInstance(0);
+    }
+
     @Bean
-    public Capi capi() {
-        System.out.println("SPACE CONF");
-        MzsCore core = DefaultMzsCore.newInstance(0);
+    public Capi capi(MzsCore core) {
         return new Capi(core);
     }
 

@@ -13,5 +13,7 @@ public interface ICoordinationService {
 
     public void getInvestor(Integer id, CoordinationListener clistener);
 
+    public void registerInvestorNotification(Integer id, CoordinationListener clistener);
+
     public void setInvestor(InvestorDepotEntry ide);
 }

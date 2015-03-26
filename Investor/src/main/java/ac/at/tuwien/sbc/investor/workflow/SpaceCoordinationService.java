@@ -1,10 +1,13 @@
 package ac.at.tuwien.sbc.investor.workflow;
 
-import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.core.*;
+import org.mozartspaces.notifications.Notification;
+import org.mozartspaces.notifications.NotificationListener;
+import org.mozartspaces.notifications.NotificationManager;
+import org.mozartspaces.notifications.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +15,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by dietl_ma on 26/03/15.
@@ -23,6 +28,9 @@ import java.util.ArrayList;
 public class SpaceCoordinationService implements ICoordinationService {
 
     @Autowired
+    MzsCore core;
+
+    @Autowired
     Capi capi;
 
     @Autowired
@@ -30,6 +38,8 @@ public class SpaceCoordinationService implements ICoordinationService {
     ContainerReference investorDepotContainer;
 
     private ICoordinationServiceListener listener;
+
+    private ArrayList<Notification> notifications = new ArrayList<Notification>();
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
@@ -56,6 +66,27 @@ public class SpaceCoordinationService implements ICoordinationService {
         else {
             cListener.onResult(null);
         }
+
+    }
+
+    @Override
+    public void registerInvestorNotification(Integer id, CoordinationListener clistener) {
+
+        try {
+            NotificationManager notificationManager = new NotificationManager(core);
+
+            Notification notification = notificationManager.createNotification(investorDepotContainer,
+                    new InvestorDepotNotificationListener(clistener, id),
+                    Operation.WRITE);
+
+            notifications.add(notification);
+
+        } catch (MzsCoreException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -88,8 +119,43 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
-    @PostConstruct
-    public void onPostConstruct() {
+    @PreDestroy
+    public void onPreDestroy() {
 
+        //destroy notifications
+        for (Notification n : notifications) {
+            try {
+                n.destroy();
+            } catch (MzsCoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * InvestorDepotNotificationListener
+     */
+    public class InvestorDepotNotificationListener implements NotificationListener {
+
+        CoordinationListener<InvestorDepotEntry> callbackListener;
+        Integer investerID;
+
+        public InvestorDepotNotificationListener(CoordinationListener<InvestorDepotEntry> callbackListener, Integer investerID) {
+            this.callbackListener = callbackListener;
+            this.investerID = investerID;
+        }
+
+        @Override
+        public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
+
+            for (Serializable entry : entries) {
+                InvestorDepotEntry ide = ((InvestorDepotEntry)((Entry)entry).getValue());
+                if (ide.getInvestorID().equals(investerID)) {
+                    callbackListener.onResult(ide);
+                    break;
+                }
+            }
+
+        }
     }
 }

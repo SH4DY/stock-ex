@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.investor.configuration;
 
 import ac.at.tuwien.sbc.investor.gui.MainGUI;
+import ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,8 +10,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class GUIConfiguration {
-    @Bean
-    public MainGUI mainGUI() {
+    @Bean(name = "mainGUI")
+    public IWorkFlowObserver mainGUI() {
         return new MainGUI();
     }
 }
