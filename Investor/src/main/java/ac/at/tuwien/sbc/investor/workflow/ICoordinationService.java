@@ -5,6 +5,8 @@ import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.mozartspaces.core.MzsCoreException;
 
+import java.util.ArrayList;
+
 /**
  * Created by dietl_ma on 26/03/15.
  */
@@ -16,7 +18,11 @@ public interface ICoordinationService {
 
     public void registerInvestorNotification(Integer id, CoordinationListener clistener);
 
+    public void registerOrderNotification(Integer id, CoordinationListener clistener);
+
     public void setInvestor(InvestorDepotEntry ide);
 
     public void addOrder(OrderEntry oe);
+
+    public void getOrders(Integer id, CoordinationListener cListener);
 }

@@ -4,6 +4,7 @@ import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.mozartspaces.capi3.KeyCoordinator;
+import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.*;
 import org.mozartspaces.notifications.Notification;
 import org.mozartspaces.notifications.NotificationListener;
@@ -94,6 +95,24 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     @Override
+    public void registerOrderNotification(Integer id, CoordinationListener clistener) {
+        try {
+            NotificationManager notificationManager = new NotificationManager(core);
+
+            Notification notification = notificationManager.createNotification(orderContainer,
+                    new OrderNotificationListener(clistener, id),
+                    Operation.WRITE);
+
+            notifications.add(notification);
+
+        } catch (MzsCoreException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void setInvestor(InvestorDepotEntry ide) {
 
         logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
@@ -131,6 +150,26 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    @Override
+    public void getOrders(Integer id, CoordinationListener cListener) {
+
+        logger.info("Try to read orders by template");
+        OrderEntry template = new OrderEntry(null, id, null, null, null, null, null, null);
+        ArrayList<OrderEntry> entries = null;
+        try {
+            entries = capi.read(orderContainer, LindaCoordinator.newSelector(template, MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.DEFAULT, null);
+        } catch (MzsCoreException e) {
+            e.printStackTrace();
+        }
+
+        if (entries != null && !entries.isEmpty())
+            //listener.onGetInvestor(entries.get(0));
+            cListener.onResult(entries);
+        else {
+            cListener.onResult(null);
+        }
+    }
+
     @PreDestroy
     public void onPreDestroy() {
 
@@ -150,11 +189,11 @@ public class SpaceCoordinationService implements ICoordinationService {
     public class InvestorDepotNotificationListener implements NotificationListener {
 
         CoordinationListener<InvestorDepotEntry> callbackListener;
-        Integer investerID;
+        Integer investorID;
 
-        public InvestorDepotNotificationListener(CoordinationListener<InvestorDepotEntry> callbackListener, Integer investerID) {
+        public InvestorDepotNotificationListener(CoordinationListener<InvestorDepotEntry> callbackListener, Integer investorID) {
             this.callbackListener = callbackListener;
-            this.investerID = investerID;
+            this.investorID = investorID;
         }
 
         @Override
@@ -162,9 +201,35 @@ public class SpaceCoordinationService implements ICoordinationService {
 
             for (Serializable entry : entries) {
                 InvestorDepotEntry ide = ((InvestorDepotEntry)((Entry)entry).getValue());
-                if (ide.getInvestorID().equals(investerID)) {
+                if (ide.getInvestorID().equals(investorID)) {
                     callbackListener.onResult(ide);
                     break;
+                }
+            }
+
+        }
+    }
+
+    /**
+     * InvestorDepotNotificationListener
+     */
+    public class OrderNotificationListener implements NotificationListener {
+
+        CoordinationListener<OrderEntry> callbackListener;
+        Integer investorID;
+
+        public OrderNotificationListener(CoordinationListener<OrderEntry> callbackListener, Integer investorID) {
+            this.callbackListener = callbackListener;
+            this.investorID = investorID;
+        }
+
+        @Override
+        public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
+
+            for (Serializable entry : entries) {
+                OrderEntry oe = ((OrderEntry)((Entry)entry).getValue());
+                if (oe.getInvestorID().equals(investorID)) {
+                    callbackListener.onResult(oe);
                 }
             }
 
