@@ -1,4 +1,4 @@
-package workflow;
+package ac.at.tuwien.sbc.company.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 

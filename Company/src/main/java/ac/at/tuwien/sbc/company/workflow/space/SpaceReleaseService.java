@@ -1,7 +1,6 @@
-package workflow.space;
+package ac.at.tuwien.sbc.company.workflow.space;
 
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
-import org.mozartspaces.capi3.RandomCoordinator;
 import org.mozartspaces.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import workflow.IReleaseService;
 
 /**
  * Created by shady on 27/03/15.
@@ -17,7 +15,7 @@ import workflow.IReleaseService;
 
 @Service
 @Profile("space")
-public class SpaceReleaseService implements IReleaseService {
+public class SpaceReleaseService implements ac.at.tuwien.sbc.company.workflow.IReleaseService {
     @Autowired
     MzsCore core;
 

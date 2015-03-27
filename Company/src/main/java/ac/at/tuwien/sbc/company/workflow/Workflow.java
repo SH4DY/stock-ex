@@ -1,13 +1,12 @@
-package workflow;
+package ac.at.tuwien.sbc.company.workflow;
 
+import ac.at.tuwien.sbc.company.workflow.space.SpaceReleaseService;
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -15,11 +14,8 @@ import javax.annotation.PostConstruct;
 /**
  * Created by shady on 27/03/15.
  */
-@Component
+@Service
 public class Workflow {
-
-    @Autowired
-    IReleaseService rlsService;
 
     @Value("${id}")
     private String companyID;
@@ -30,13 +26,16 @@ public class Workflow {
     @Value("${initPrice}")
     private Double initPrice;
 
+    @Autowired
+    SpaceReleaseService rlsService;
 
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
     @PostConstruct
-    private void onPostConstruct() {
+    public void onPostConstruct() {
 
-        logger.info("Company" + companyID + " entered , wants to release "
+
+        logger.info("Company " + companyID + " entered , wants to release "
                 + numShares + " with initial price of " +
                 initPrice + " per share");
 
