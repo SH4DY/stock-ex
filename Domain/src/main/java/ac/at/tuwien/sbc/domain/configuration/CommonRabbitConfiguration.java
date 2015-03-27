@@ -1,15 +1,22 @@
 package ac.at.tuwien.sbc.domain.configuration;
 
+
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+
 
 /**
  * Created by dietl_ma on 25/03/15.
@@ -25,7 +32,6 @@ public class CommonRabbitConfiguration {
 
     @Bean
     public RabbitTransactionManager rabbitTransactionManager(ConnectionFactory connectionFactory) {
-        System.out.println("RABBIT CONF");
         return new RabbitTransactionManager(connectionFactory);
     }
 
@@ -40,6 +46,7 @@ public class CommonRabbitConfiguration {
     public RabbitTemplate amqpTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
+        template.setReplyTimeout(10000);
         return template;
 
     }
@@ -49,4 +56,38 @@ public class CommonRabbitConfiguration {
         Jackson2JsonMessageConverter jsonMessageConverter = new Jackson2JsonMessageConverter();
         return jsonMessageConverter;
     }
+/*
+    @Bean
+    Queue queue() {
+        Queue queue = new Queue("stockqueue", false);
+        BindingBuilder.bind(queue).to(exchange()).with("stockexchange");
+
+        return queue;
+    }
+*/
+ /*   @Bean
+    public Queue replyQueue() {
+        Queue queue = new Queue("reply.queue", true);
+        BindingBuilder.bind(queue).to(exchange()).with("stockexchange");
+        return queue;
+    }
+*/
+/*
+    @Bean
+    public SimpleMessageListenerContainer replyListenerContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setQueues(replyQueue());
+        container.setMessageListener(amqpTemplate);
+        container.setMessageConverter(messageConverter);
+        return container;
+    }
+*/
+
+
+    @Bean
+    RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+        return new RabbitAdmin(connectionFactory);
+    }
+
 }

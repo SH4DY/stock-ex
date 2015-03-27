@@ -151,10 +151,10 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     @Override
-    public void getOrders(Integer id, CoordinationListener cListener) {
+    public void getOrders(Integer investorId, CoordinationListener cListener) {
 
         logger.info("Try to read orders by template");
-        OrderEntry template = new OrderEntry(null, id, null, null, null, null, null, null);
+        OrderEntry template = new OrderEntry(null, investorId, null, null, null, null, null, null);
         ArrayList<OrderEntry> entries = null;
         try {
             entries = capi.read(orderContainer, LindaCoordinator.newSelector(template, MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.DEFAULT, null);
