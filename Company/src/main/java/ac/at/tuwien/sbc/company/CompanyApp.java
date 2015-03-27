@@ -24,7 +24,6 @@ public class CompanyApp {
         ConfigurableApplicationContext ctx = new SpringApplicationBuilder(CompanyApp.class)
                 .headless(true)
                 .web(false)
-
                 .run(args);
 
         logger.info("HI IM A COMPANY");

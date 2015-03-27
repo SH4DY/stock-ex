@@ -1,12 +1,17 @@
+import ac.at.tuwien.sbc.company.workflow.IReleaseService;
+import ac.at.tuwien.sbc.company.workflow.space.SpaceReleaseService;
 import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.FifoCoordinator;
-import org.mozartspaces.capi3.Selector;
-import org.mozartspaces.core.*;
+import org.mozartspaces.core.Capi;
+import org.mozartspaces.core.ContainerReference;
+import org.mozartspaces.core.MzsCore;
+import org.mozartspaces.core.MzsCoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +19,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import ac.at.tuwien.sbc.company.workflow.space.SpaceReleaseService;
 
 import java.util.ArrayList;
+
+import static org.mozartspaces.core.MzsConstants.RequestTimeout;
+import static org.mozartspaces.core.MzsConstants.Selecting;
 
 /**
  * Created by shady on 27/03/15.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = CommonSpaceConfiguration.class)
-@ActiveProfiles("space")
+@SpringApplicationConfiguration(classes = {CommonSpaceConfiguration.class, SpaceReleaseService.class})
+@ActiveProfiles(profiles="space")
 public class CompanyTest {
 
     @Autowired
@@ -37,14 +44,21 @@ public class CompanyTest {
     ContainerReference cref;
 
     @Autowired
-    SpaceReleaseService rlsService;
+    IReleaseService rlsService;
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(CompanyTest.class);
 
     @Before
     public void setUp(){
-        //Generate some released and put them into the space
+        int deletedEntries = 0;
+        //Delete ALL releases from container to start
+        try {
+            deletedEntries = capi.delete(cref, FifoCoordinator.newSelector(Selecting.COUNT_ALL), RequestTimeout.INFINITE, null);
+        } catch (MzsCoreException e) {
+            logger.error("Exception while trying to delete alle entries from releaseContainer");
+        }
+        //Generate 3 releases and store them in container
 
         ReleaseEntry rls1 = new ReleaseEntry();
         rls1.setCompanyID("GOOG");
@@ -57,7 +71,7 @@ public class CompanyTest {
         rls2.setPrice(4.00);
 
         ReleaseEntry rls3 = new ReleaseEntry();
-        rls3.setCompanyID("GOOG");
+        rls3.setCompanyID("YAHO");
         rls3.setNumShares(0);
         rls3.setPrice(99999999999.99);
 
@@ -67,16 +81,18 @@ public class CompanyTest {
     }
 
     @Test
-    public void testReleaseExistence(){
-        ArrayList<Selector> selectors = new ArrayList<Selector>();
-        selectors.add(FifoCoordinator.newSelector(MzsConstants.Selecting.COUNT_ALL));
+    public void testExactReleaseExistence(){
+        ArrayList<ReleaseEntry> resultEntries = null;
         try {
-            ArrayList<String> resultEntries = capi.read(cref, selectors, MzsConstants.RequestTimeout.TRY_ONCE, null);
-            Assert.assertTrue(resultEntries.size() == 3);
+            resultEntries = capi.read(cref, FifoCoordinator.newSelector(Selecting.COUNT_ALL), RequestTimeout.INFINITE, null);
+            for(ReleaseEntry rls : resultEntries){
+                logger.info("Test: Release Entry " + rls.getCompanyID() + " with numShares " + rls.getNumShares() + " and initPrice of " + rls.getPrice());
+            }
 
         } catch (MzsCoreException e) {
-            System.out.println("Exception while FIFO accessing space to test existence of releases");
+            logger.error("Exception while FIFO accessing space to test existence of releases");
         }
+        Assert.assertTrue(resultEntries.size() == 3);
     }
 
 }

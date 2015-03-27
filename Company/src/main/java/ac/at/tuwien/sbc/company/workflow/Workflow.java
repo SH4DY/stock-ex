@@ -27,7 +27,7 @@ public class Workflow {
     private Double initPrice;
 
     @Autowired
-    SpaceReleaseService rlsService;
+    IReleaseService rlsService;
 
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
