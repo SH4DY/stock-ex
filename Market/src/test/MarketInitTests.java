@@ -31,14 +31,6 @@ public class MarketInitTests {
     @Qualifier("defaultContainer")
     ContainerReference defaultContainer;
 
-    @Autowired
-    @Qualifier("investorDepotContainer")
-    ContainerReference investorDepotContainer;
-
-    @Autowired
-    @Qualifier("orderContainer")
-    ContainerReference orderContainer;
-
     @Before
     public void fillSpace(){
         try {
@@ -55,7 +47,7 @@ public class MarketInitTests {
 //        selectors.add(FifoCoordinator.newSelector(MzsConstants.Selecting.COUNT_ALL));
 //        ArrayList<String> resultEntries = capi.read(defaultContainer, FifoCoordinator.newSelector(1), MzsConstants.RequestTimeout.INFINITE, null);
 
-        ArrayList<Entry> resultEntries = capi.read(investorDepotContainer, FifoCoordinator.newSelector(1),10,null);
+        ArrayList<Entry> resultEntries = capi.read(defaultContainer, FifoCoordinator.newSelector(1),10,null);
         Assert.assertTrue(!resultEntries.isEmpty());
         System.out.println("Entry read: " + resultEntries.get(0));
     }
