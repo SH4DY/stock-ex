@@ -57,7 +57,7 @@ public class CommonSpaceConfiguration {
     @Bean(name = "releaseContainer")
     public ContainerReference releaseContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
-        return SpaceUtils.getOrCreateNamedContainer(uri, "releaseContainer", capi, new RandomCoordinator());
+        return SpaceUtils.getOrCreateNamedContainer(uri, "releaseContainer", capi, new FifoCoordinator());
     }
 
 }
