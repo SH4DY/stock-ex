@@ -14,15 +14,15 @@ public interface ICoordinationService {
 
     public void setListener(ICoordinationServiceListener listener);
 
-    public void getInvestor(Integer id, CoordinationListener clistener);
+    public void getInvestor(Integer investorId, CoordinationListener clistener);
 
-    public void registerInvestorNotification(Integer id, CoordinationListener clistener);
+    public void registerInvestorNotification(Integer investorId, CoordinationListener clistener);
 
-    public void registerOrderNotification(Integer id, CoordinationListener clistener);
+    public void registerOrderNotification(Integer investorId, CoordinationListener clistener);
 
     public void setInvestor(InvestorDepotEntry ide);
 
     public void addOrder(OrderEntry oe);
 
-    public void getOrders(Integer id, CoordinationListener cListener);
+    public void getOrders(Integer investorId, CoordinationListener cListener);
 }

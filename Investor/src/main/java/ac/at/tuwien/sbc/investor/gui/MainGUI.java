@@ -45,7 +45,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     @Autowired
     Workflow workflow;
 
-    /** The Constant logger. */
+    /**
+     * The Constant logger.
+     */
     private static final Logger logger = LoggerFactory.getLogger(MainGUI.class);
 
 
@@ -61,7 +63,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     }
 
     private void initFrame() {
-        setSize(600,600);
+        setSize(600, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
         setVisible(true);
@@ -101,8 +103,8 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
             public void actionPerformed(ActionEvent e) {
 
                 if (shareTextField.getText().length() > 0 &&
-                    limitTextField.getText().length() > 0 &&
-                    numSharesTextField.getText().length() > 0) {
+                        limitTextField.getText().length() > 0 &&
+                        numSharesTextField.getText().length() > 0) {
 
                     OrderEntry oe = new OrderEntry(null,
                             null,
@@ -117,9 +119,10 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
             }
         });
     }
+
     private Integer getTableRowIndexByID(JTable table, Integer columnIndex, Object id) {
 
-        for (int i = 0; i < table.getRowCount();i++) {
+        for (int i = 0; i < table.getRowCount(); i++) {
             if (table.getValueAt(0, columnIndex).toString().equals(id.toString()))
                 return i;
         }
@@ -141,17 +144,20 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
 
         if (rowIndex == null)
             rowIndex = orderTable.getRowCount();
+        else
+            ((DefaultTableModel)orderTable.getModel()).removeRow(rowIndex);
 
-        Object[] newRow = new Object[] {
+        Object[] newRow = new Object[]{
                 oe.getOrderID().toString(),
                 oe.getType().toString(),
                 oe.getShareID(),
                 oe.getLimit().toString(),
                 oe.getStatus().toString(),
-                String.valueOf(oe.getNumTotal()-oe.getNumCompleted())
+                String.valueOf(oe.getNumTotal() - oe.getNumCompleted())
         };
         ((DefaultTableModel) orderTable.getModel()).insertRow(rowIndex, newRow);
 
     }
-
 }
+
+

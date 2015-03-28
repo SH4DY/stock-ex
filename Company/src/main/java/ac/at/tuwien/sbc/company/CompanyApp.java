@@ -3,9 +3,16 @@ package ac.at.tuwien.sbc.company;
 import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
 import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -31,4 +38,5 @@ public class CompanyApp {
 //        ctx.registerShutdownHook();
 //        //TODO Was macht dieser Hook?
     }
+
 }
