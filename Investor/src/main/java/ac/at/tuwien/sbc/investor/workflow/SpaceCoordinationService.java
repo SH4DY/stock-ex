@@ -188,8 +188,8 @@ public class SpaceCoordinationService implements ICoordinationService {
      */
     public class InvestorDepotNotificationListener implements NotificationListener {
 
-        CoordinationListener<InvestorDepotEntry> callbackListener;
-        Integer investorID;
+        private CoordinationListener<InvestorDepotEntry> callbackListener;
+        private Integer investorID;
 
         public InvestorDepotNotificationListener(CoordinationListener<InvestorDepotEntry> callbackListener, Integer investorID) {
             this.callbackListener = callbackListener;
@@ -215,8 +215,8 @@ public class SpaceCoordinationService implements ICoordinationService {
      */
     public class OrderNotificationListener implements NotificationListener {
 
-        CoordinationListener<OrderEntry> callbackListener;
-        Integer investorID;
+        private CoordinationListener<OrderEntry> callbackListener;
+        private Integer investorID;
 
         public OrderNotificationListener(CoordinationListener<OrderEntry> callbackListener, Integer investorID) {
             this.callbackListener = callbackListener;
