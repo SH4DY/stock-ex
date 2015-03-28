@@ -1,12 +1,16 @@
 package ac.at.tuwien.sbc.market.gui;
 
+import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
+import ac.at.tuwien.sbc.market.workflow.IMarketObserver;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 /**
  * Created by dietl_ma on 25/03/15.
  */
-public class MainGUI extends JFrame{
+public class MainGUI extends JFrame implements IMarketObserver{
     private JLabel titleLabel;
     private JPanel rootPanel;
     private JTable overviewTable;
@@ -16,7 +20,7 @@ public class MainGUI extends JFrame{
     private JScrollPane historyPanel;
     private JScrollPane orderPanel;
 
-    public MainGUI() {
+    public MainGUI(){
         setSize(1200,1200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
@@ -87,6 +91,21 @@ public class MainGUI extends JFrame{
         tableModel.addColumn("Status");
 
         orderTable.setModel(tableModel);
+    }
+
+    @Override
+    public void onStockpriceChanged() {
+
+    }
+
+    @Override
+    public void onTransactionAdded(TransactionEntry transactionEntry) {
+
+    }
+
+    @Override
+    public void onOrderAdded(OrderEntry orderEntry) {
+        //TODO display added order
     }
 
 }
