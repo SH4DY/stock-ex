@@ -25,6 +25,7 @@ public class OrderTableModel extends AbstractTableModel{
 
     public void addRow(OrderEntry orderEntry){
         content.add(orderEntry);
+        fireTableDataChanged();
     }
 
     @Override
