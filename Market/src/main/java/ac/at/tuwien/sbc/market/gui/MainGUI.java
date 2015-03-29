@@ -2,12 +2,15 @@ package ac.at.tuwien.sbc.market.gui;
 
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
+import ac.at.tuwien.sbc.market.gui.models.OrderTableModel;
 import ac.at.tuwien.sbc.market.workflow.IMarketObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-/**
+/**Entry point GUI for the Market application.
  * Created by dietl_ma on 25/03/15.
  */
 public class MainGUI extends JFrame implements IMarketObserver{
@@ -19,6 +22,10 @@ public class MainGUI extends JFrame implements IMarketObserver{
     private JScrollPane overviewPanel;
     private JScrollPane historyPanel;
     private JScrollPane orderPanel;
+
+    private static final Logger logger = LoggerFactory.getLogger(MainGUI.class);
+
+    private OrderTableModel orderTableModel;
 
     public MainGUI(){
         setSize(1200,1200);
@@ -79,18 +86,8 @@ public class MainGUI extends JFrame implements IMarketObserver{
     }
 
     private void initOrderPanel(){
-        DefaultTableModel tableModel = new DefaultTableModel();
-
-        tableModel.addColumn("OrderID");
-        tableModel.addColumn("InvestorID");
-        tableModel.addColumn("ShareID");
-        tableModel.addColumn("Type");
-        tableModel.addColumn("Limit");
-        tableModel.addColumn("Total");
-        tableModel.addColumn("Completed");
-        tableModel.addColumn("Status");
-
-        orderTable.setModel(tableModel);
+        orderTableModel = new OrderTableModel(null);
+        orderTable.setModel(orderTableModel);
     }
 
     @Override
@@ -105,7 +102,10 @@ public class MainGUI extends JFrame implements IMarketObserver{
 
     @Override
     public void onOrderAdded(OrderEntry orderEntry) {
-        //TODO display added order
+        if(orderEntry != null) {
+            logger.debug("Main GUI notified of orderEntry");
+            orderTableModel.addRow(orderEntry);
+        }
     }
 
 }

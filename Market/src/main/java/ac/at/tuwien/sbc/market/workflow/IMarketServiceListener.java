@@ -6,5 +6,5 @@ package ac.at.tuwien.sbc.market.workflow;
  */
 
 
-public interface IMarketEventListener {
+public interface IMarketServiceListener {
 }
