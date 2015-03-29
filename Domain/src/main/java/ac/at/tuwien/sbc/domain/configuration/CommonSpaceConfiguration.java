@@ -5,6 +5,7 @@ import ac.at.tuwien.sbc.domain.util.SpaceUtils;
 import org.mozartspaces.capi3.FifoCoordinator;
 import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
+import org.mozartspaces.capi3.RandomCoordinator;
 import org.mozartspaces.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,13 +43,27 @@ public class CommonSpaceConfiguration {
     @Bean(name = "investorDepotContainer")
     public ContainerReference investorDepotContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
-        return SpaceUtils.getOrCreateNamedContainer(uri, "defaultContainer", capi, new KeyCoordinator());
+        return SpaceUtils.getOrCreateNamedContainer(uri, "investorDepotContainer", capi, new KeyCoordinator());
     }
 
     @Bean(name = "orderContainer")
     public ContainerReference orderContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
         return SpaceUtils.getOrCreateNamedContainer(uri, "orderContainer", capi, new LindaCoordinator(false));
+    }
+
+    //Companies release their shares into this space
+    //Broker can observe it and generate Orders out of them
+    @Bean(name = "releaseContainer")
+    public ContainerReference releaseContainer(Capi capi) throws URISyntaxException, MzsCoreException {
+        URI uri = new URI(SPACE_URI);
+        return SpaceUtils.getOrCreateNamedContainer(uri, "releaseContainer", capi, new FifoCoordinator());
+    }
+
+    @Bean(name = "shareContainer")
+    public ContainerReference shareContainer(Capi capi) throws URISyntaxException, MzsCoreException {
+        URI uri = new URI(SPACE_URI);
+        return SpaceUtils.getOrCreateNamedContainer(uri, "shareContainer", capi, new KeyCoordinator());
     }
 
 }

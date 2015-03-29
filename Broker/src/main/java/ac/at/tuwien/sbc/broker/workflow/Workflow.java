@@ -1,6 +1,14 @@
 package ac.at.tuwien.sbc.broker.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
+import ac.at.tuwien.sbc.domain.entry.ShareEntry;
+import ac.at.tuwien.sbc.domain.enums.OrderStatus;
+import ac.at.tuwien.sbc.domain.enums.OrderType;
+import ac.at.tuwien.sbc.domain.event.CoordinationListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
@@ -12,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by dietl_ma on 27/03/15.
@@ -22,32 +32,65 @@ public class Workflow {
     private Integer brokerId;
 
     @Autowired
-    private RabbitTemplate template;
+    private ICoordinationService coordinationService;
 
-    @Autowired
-    private TopicExchange exchange;
+    private Thread releaseRequestThread;
 
-    @Autowired
-    private RabbitAdmin rabbitAdmin;
-    //@Autowired
-    //private ICoordinationService coordinationService;
+    /** The Constant logger. */
+    private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
     @PostConstruct
-    public void test() {
+    private void onPostConstruct() {
+        initReleaseRequestHandling();
 
-       /* Queue queue = new Queue("stockqueue_test1", true);
-        BindingBuilder.bind(queue).to(exchange).with("stockqueue_test1");
-
-        rabbitAdmin.declareQueue(queue);
-        //rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(exchange).with("stockqueue123"));
-        //rabbitAdmin.deleteQueue(BindingBuilder.bind(queue).to(exchange).with("stockqueue123"));
-        //template.convertAndSend("stockqueue123", "blalalala");
-        System.out.println("Message send 1");
-        InvestorDepotEntry e = new InvestorDepotEntry(10, 2.0, null);
-        Object o = template.convertSendAndReceive("stockqueue_test1", e);
-
-
-        System.out.println("Message send:" + o.toString());*/
+        handleReleaseRequests();
     }
+
+    private void initReleaseRequestHandling() {
+        coordinationService.registerReleaseNotification(new CoordinationListener<ArrayList<ReleaseEntry>>() {
+            @Override
+            public void onResult(ArrayList<ReleaseEntry> releaseEntries) {
+
+                logger.info("on ReleaseEntry notification" );
+                handleReleaseRequests();
+            }
+        });
+    }
+
+    private void handleReleaseRequests() {
+        Object sharedTransaction = coordinationService.createTransaction(1000);
+        ReleaseEntry releaseEntry = coordinationService.getReleaseEntry(sharedTransaction);
+
+        if (releaseEntry == null) {
+
+            return;
+        }
+        //update or create share
+        ShareEntry shareEntry = coordinationService.getShareEntry(releaseEntry.getCompanyID(), sharedTransaction);
+
+        if (shareEntry == null)
+            shareEntry = new ShareEntry(releaseEntry.getCompanyID(), releaseEntry.getNumShares(), releaseEntry.getPrice());
+        else {
+            shareEntry.setNumShares(shareEntry.getNumShares()+releaseEntry.getNumShares());
+        }
+
+        coordinationService.setShareEntry(shareEntry, sharedTransaction);
+
+        //add order
+        OrderEntry oe = new OrderEntry(UUID.randomUUID(),
+                0,
+                releaseEntry.getCompanyID(),
+                OrderType.SELL,
+                0.0,
+                releaseEntry.getNumShares(),
+                0,
+                OrderStatus.OPEN);
+
+        coordinationService.addOrder(oe, sharedTransaction);
+
+        coordinationService.commitTransaction(sharedTransaction);
+
+    }
+
 
 }

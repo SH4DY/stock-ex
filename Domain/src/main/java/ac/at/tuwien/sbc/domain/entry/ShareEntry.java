@@ -22,6 +22,18 @@ public  class ShareEntry implements Serializable {
         this.shareID = shareID;
     }
 
+    public void setShareID(String shareID) {
+        this.shareID = shareID;
+    }
+
+    public void setNumShares(Integer numShares) {
+        this.numShares = numShares;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
     public String getShareID() {
         return shareID;
     }

@@ -1,0 +1,13 @@
+/* Queue queue = new Queue("stockqueue_test1", true);
+        BindingBuilder.bind(queue).to(exchange).with("stockqueue_test1");
+
+        rabbitAdmin.declareQueue(queue);
+        //rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(exchange).with("stockqueue123"));
+        //rabbitAdmin.deleteQueue(BindingBuilder.bind(queue).to(exchange).with("stockqueue123"));
+        //template.convertAndSend("stockqueue123", "blalalala");
+        System.out.println("Message send 1");
+        InvestorDepotEntry e = new InvestorDepotEntry(10, 2.0, null);
+        Object o = template.convertSendAndReceive("stockqueue_test1", e);
+
+
+        System.out.println("Message send:" + o.toString());*/
