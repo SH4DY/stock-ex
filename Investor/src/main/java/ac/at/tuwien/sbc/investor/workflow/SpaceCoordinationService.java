@@ -3,6 +3,7 @@ package ac.at.tuwien.sbc.investor.workflow;
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
+import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
 import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.*;
@@ -159,7 +160,6 @@ public class SpaceCoordinationService implements ICoordinationService {
         try {
             entries = capi.read(orderContainer, LindaCoordinator.newSelector(template, MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.DEFAULT, null);
         } catch (MzsCoreException e) {
-            e.printStackTrace();
         }
 
         if (entries != null && !entries.isEmpty())

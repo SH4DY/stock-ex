@@ -1,13 +1,12 @@
 package ac.at.tuwien.sbc.broker.workflow;
 
 import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
-import ac.at.tuwien.sbc.domain.entry.OrderEntry;
-import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
-import ac.at.tuwien.sbc.domain.entry.ShareEntry;
+import ac.at.tuwien.sbc.domain.entry.*;
+import ac.at.tuwien.sbc.domain.enums.OrderStatus;
+import ac.at.tuwien.sbc.domain.enums.OrderType;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
-import org.mozartspaces.capi3.FifoCoordinator;
-import org.mozartspaces.capi3.KeyCoordinator;
+import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
+import org.mozartspaces.capi3.*;
 import org.mozartspaces.core.*;
 import org.mozartspaces.notifications.Notification;
 import org.mozartspaces.notifications.NotificationListener;
@@ -19,11 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import static org.mozartspaces.capi3.Matchmakers.*;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,7 +45,6 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Qualifier("releaseContainer")
     ContainerReference releaseContainer;
 
-
     @Autowired
     @Qualifier("shareContainer")
     ContainerReference shareContainer;
@@ -52,6 +53,14 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Qualifier("orderContainer")
     ContainerReference orderContainer;
 
+    @Autowired
+    @Qualifier("investorDepotContainer")
+    ContainerReference investorDepotContainer;
+
+    @Autowired
+    @Qualifier("transactionContainer")
+    ContainerReference transactionContainer;
+
     private ArrayList<Notification> notifications = new ArrayList<Notification>();
 
 
@@ -59,51 +68,126 @@ public class SpaceCoordinationService implements ICoordinationService {
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
 
-    @Override
-    public void getInvestor(Integer investorId, CoordinationListener clistener) {
 
+    @Override
+    public InvestorDepotEntry getInvestor(Integer investorId, Object sharedTransaction) {
+        logger.info("Try to read investor with arguments: " + String.valueOf(investorId));
+        TransactionReference tx = (TransactionReference)sharedTransaction;
+        ArrayList<InvestorDepotEntry> entries = null;
+        InvestorDepotEntry entry = null;
+        try {
+            entries = capi.read(investorDepotContainer, KeyCoordinator.newSelector(investorId.toString()), MzsConstants.RequestTimeout.ZERO, tx);
+        } catch (MzsCoreException e) {
+            logger.info("Investor depot not found for: " + investorId);
+        }
+
+        if (entries != null && !entries.isEmpty())
+            entry = entries.get(0);
+
+        return entry;
     }
 
     @Override
-    public void setInvestor(InvestorDepotEntry ide) {
-
-    }
-
-    @Override
-    public void addOrder(OrderEntry oe, Object sharedTransaction) {
-
+    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction) throws CoordinationServiceException {
+        logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
         TransactionReference tx = (TransactionReference)sharedTransaction;
         try {
-            logger.info("Try to write OerderEntry: " + oe.getShareID());
-            capi.write(new Entry(oe), orderContainer, MzsConstants.RequestTimeout.ZERO, tx);
-        } catch (MzsCoreException e) {
-            logger.info("Something went wrong writing an order");
+            capi.take(investorDepotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+            Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getInvestorID().toString()));
+            capi.write(investorDepotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
+        }
+        catch (MzsCoreException e) {
+            throw new CoordinationServiceException("Could not update InvestorDepotEntry");
         }
     }
 
     @Override
-    public void getOrders(Integer id, CoordinationListener cListener) {
+    public void addOrder(OrderEntry oe, Object sharedTransaction) throws CoordinationServiceException {
+
+        TransactionReference tx = null;
+        if (sharedTransaction != null)
+             tx = (TransactionReference)sharedTransaction;
+
+        try {
+            logger.info("Try to write OerderEntry: " + oe.getShareID());
+            capi.write(new Entry(oe), orderContainer, MzsConstants.RequestTimeout.ZERO, tx);
+        } catch (MzsCoreException e) {
+            logger.info("Something went wrong writing an order:" + e.getMessage());
+            throw new CoordinationServiceException("Could not update OrderEntry");
+        }
+    }
+
+    @Override
+    public OrderEntry getOrderByTemplate(OrderEntry oe, Object sharedTransaction) {
+        logger.info("Try to get order by template:" + oe.getStatus());
+        TransactionReference tx = (TransactionReference)sharedTransaction;
+        ArrayList<OrderEntry> entries = null;
+        OrderEntry entry = null;
+        try {
+          entries = capi.take(orderContainer, LindaCoordinator.newSelector(oe), MzsConstants.RequestTimeout.ZERO, tx);
+        } catch (MzsCoreException e) {logger.info("Try to get order by template FAILED:" + e.getMessage()); };
+
+        if (entries != null && !entries.isEmpty())
+            entry = entries.get(0);
+
+        return entry;
+    }
+
+
+    @Override
+    public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price, Object sharedTransaction) {
+        TransactionReference tx = (TransactionReference)sharedTransaction;
+        ArrayList<OrderEntry> entries = null;
+
+        Matchmaker mShareId = Property.forName("shareID").equalTo(shareId);
+        Matchmaker mType = Property.forName("type").equalTo(type);
+        Matchmaker mStatus1 = Property.forName("status").equalTo(OrderStatus.OPEN);
+        Matchmaker mStatus2 = Property.forName("status").equalTo(OrderStatus.PARTIAL);
+        Matchmaker mLimit = ComparableProperty.forName("limit").lessThan(price);
+        if (type.equals(OrderType.BUY))
+            mLimit = ComparableProperty.forName("limit").greaterThan(price);
+
+        Query q = new Query().filter(mShareId);
+        OrderEntry entry = null;
+        try {
+            capi.read(orderContainer,
+                    Arrays.asList(QueryCoordinator.newSelector(q)),
+                    0, tx);
+        } catch (MzsCoreException e) {}
+
+        if (entries != null && !entries.isEmpty())
+            entry = entries.get(0);
+
+        return entry;
+
 
     }
 
     @Override
+    public ArrayList<ShareEntry> readShares() {
+
+        ArrayList<ShareEntry> entries = null;
+        try {
+            entries = capi.read(shareContainer, FifoCoordinator.newSelector(MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.TRY_ONCE, null);
+        } catch (MzsCoreException e) {
+            e.printStackTrace();
+        }
+        return entries;
+    }
+
+
+    @Override
     public ReleaseEntry getReleaseEntry(Object sharedTransaction) {
-        logger.info("Try to get a release:" + Thread.currentThread());
 
         TransactionReference tx = (TransactionReference)sharedTransaction;
         ReleaseEntry re = null;
         try {
-           // releaseTx = capi.createTransaction(1000, releaseContainer.getSpace());
             ArrayList<ReleaseEntry> entries = null;
-            logger.info("Try to get a release TAKE");
-
             entries = capi.take(releaseContainer, FifoCoordinator.newSelector(), MzsConstants.RequestTimeout.ZERO, tx);
-            logger.info("Try to get a release GOT");
 
             if (entries != null && !entries.isEmpty())
                 re = entries.get(0);
 
-            //capi.commitTransaction(releaseTx);
         }
         catch (MzsCoreException e) {
             try {
@@ -111,7 +195,6 @@ public class SpaceCoordinationService implements ICoordinationService {
             } catch (MzsCoreException e1) {
                 e1.printStackTrace();
             }
-            logger.info("TRANSACTION MAY TIMED OUT");
         }
 
         return re;
@@ -119,30 +202,25 @@ public class SpaceCoordinationService implements ICoordinationService {
 
     @Override
     public ShareEntry getShareEntry(String shareId, Object sharedTransaction) {
-        logger.info("Try to get a share:");
 
         TransactionReference tx = (TransactionReference)sharedTransaction;
         ShareEntry se = null;
         ArrayList<ShareEntry> entries = null;
-
         try {
             entries = capi.read(shareContainer, KeyCoordinator.newSelector(shareId), MzsConstants.RequestTimeout.ZERO, tx);
         }
         catch (MzsCoreException e) {
             logger.info("Share not found for: " + shareId);
         }
-        logger.info("Try to get a share GOT");
         if (entries != null && !entries.isEmpty())
             se = entries.get(0);
-
 
         return se;
     }
 
     @Override
-    public void setShareEntry(ShareEntry se, Object sharedTransaction) {
+    public void setShareEntry(ShareEntry se, Object sharedTransaction) throws CoordinationServiceException {
 
-        logger.info("Try to write ShareEntry: " + se.getShareID());
         TransactionReference tx = (TransactionReference)sharedTransaction;
         try {
 
@@ -155,23 +233,17 @@ public class SpaceCoordinationService implements ICoordinationService {
             capi.write(shareContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
         }
         catch (MzsCoreException e) {
-            try {
-                capi.rollbackTransaction(tx);
-            } catch (MzsCoreException e1) {
-                e1.printStackTrace();
-            }
-            e.printStackTrace();
-            logger.info("Something went wrong writing a ShareEntry");
+            throw new CoordinationServiceException("Something went wrong writing a ShareEntry");
         }
     }
 
     @Override
-    public void registerReleaseNotification(CoordinationListener clistener) {
+    public void registerReleaseNotification(CoordinationListener cListener) {
         try {
             NotificationManager notificationManager = new NotificationManager(core);
 
             Notification notification = notificationManager.createNotification(releaseContainer,
-                    new ReleaseNotificationListener(clistener),
+                    new ReleaseNotificationListener(cListener),
                     Operation.WRITE);
 
             notifications.add(notification);
@@ -180,6 +252,53 @@ public class SpaceCoordinationService implements ICoordinationService {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void registerOrderNotification(CoordinationListener cListener) {
+        try {
+            NotificationManager notificationManager = new NotificationManager(core);
+
+            Notification notification = notificationManager.createNotification(orderContainer,
+                    new OrderNotificationListener(cListener),
+                    Operation.WRITE);
+
+            notifications.add(notification);
+
+        } catch (MzsCoreException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void registerShareNotification(CoordinationListener cListener) {
+        try {
+            NotificationManager notificationManager = new NotificationManager(core);
+
+            Notification notification = notificationManager.createNotification(shareContainer,
+                    new ShareNotificationListener(cListener),
+                    Operation.WRITE);
+
+            notifications.add(notification);
+
+        } catch (MzsCoreException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void addTransaction(TransactionEntry te, Object sharedTransaction) throws CoordinationServiceException {
+        TransactionReference tx = (TransactionReference)sharedTransaction;
+        try {
+            capi.write(new Entry(te), transactionContainer, MzsConstants.RequestTimeout.ZERO, tx);
+        } catch (MzsCoreException e) {
+            logger.info("Something went wrong writing a TransactionEntry");
+            throw new CoordinationServiceException("Could not write a TransactionEntry");
         }
     }
 
@@ -242,6 +361,47 @@ public class SpaceCoordinationService implements ICoordinationService {
                 releaseEntries.add((ReleaseEntry)((Entry)entry).getValue());
             }
             callbackListener.onResult(releaseEntries);
+        }
+    }
+
+    /**
+     * OrderNotificationListener
+     */
+    public class OrderNotificationListener implements NotificationListener {
+
+        private CoordinationListener<ArrayList<OrderEntry>> callbackListener;
+
+        public OrderNotificationListener(CoordinationListener<ArrayList<OrderEntry>> callbackListener) {
+            this.callbackListener = callbackListener;
+        }
+
+        @Override
+        public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
+
+            ArrayList<OrderEntry> orderEntries = new ArrayList<OrderEntry>();
+            for (Serializable entry : entries) {
+                orderEntries.add((OrderEntry)((Entry)entry).getValue());
+            }
+            callbackListener.onResult(orderEntries);
+        }
+    }
+
+    public class ShareNotificationListener implements NotificationListener {
+
+        private CoordinationListener<ArrayList<ShareEntry>> callbackListener;
+
+        public ShareNotificationListener(CoordinationListener<ArrayList<ShareEntry>> callbackListener) {
+            this.callbackListener = callbackListener;
+        }
+
+        @Override
+        public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
+
+            ArrayList<ShareEntry> shareEntries = new ArrayList<ShareEntry>();
+            for (Serializable entry : entries) {
+                shareEntries.add((ShareEntry)((Entry)entry).getValue());
+            }
+            callbackListener.onResult(shareEntries);
         }
     }
 }

@@ -123,7 +123,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     private Integer getTableRowIndexByID(JTable table, Integer columnIndex, Object id) {
 
         for (int i = 0; i < table.getRowCount(); i++) {
-            if (table.getValueAt(0, columnIndex).toString().equals(id.toString()))
+            if (table.getValueAt(i, columnIndex).toString().equals(id.toString()))
                 return i;
         }
         return null;
@@ -140,7 +140,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     public void onOrderEntryNotification(OrderEntry oe) {
         logger.info("ORDER ENTRY OBSERVED:" + oe.getShareID().toString() + "/" + oe.getInvestorID());
 
-        Integer rowIndex = getTableRowIndexByID(orderTable, 1, oe.getOrderID());
+        Integer rowIndex = getTableRowIndexByID(orderTable, 0, oe.getOrderID());
 
         if (rowIndex == null)
             rowIndex = orderTable.getRowCount();

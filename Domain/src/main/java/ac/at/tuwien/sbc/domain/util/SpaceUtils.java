@@ -27,12 +27,12 @@ public abstract class SpaceUtils {
      * @param space
      * @param containerName
      * @param capi
-     * @param coordinator
+     * @param coordinators
      * @return
      * @throws MzsCoreException
      */
     public static ContainerReference getOrCreateNamedContainer(final URI space, final String containerName,
-                                                               final Capi capi, final Coordinator coordinator) throws MzsCoreException {
+                                                               final Capi capi, final ArrayList<Coordinator> coordinators) throws MzsCoreException {
 
         ContainerReference cref;
         try {
@@ -44,9 +44,9 @@ public abstract class SpaceUtils {
         } catch (MzsCoreException e) {
             logger.info("Container not found, creating it ...");
             // Create the Container
-            ArrayList<Coordinator> obligatoryCoords = new ArrayList<Coordinator>();
-            obligatoryCoords.add(coordinator);
-            cref = capi.createContainer(containerName, space, MzsConstants.Container.UNBOUNDED, obligatoryCoords, null, null);
+            //ArrayList<Coordinator> optionalCoordinators = new ArrayList<Coordinator>();
+            //optionalCoordinators.add(new FifoCoordinator());
+            cref = capi.createContainer(containerName, space, MzsConstants.Container.UNBOUNDED, coordinators, null, null);
             logger.info("Container created: " + containerName);
         }
         return cref;

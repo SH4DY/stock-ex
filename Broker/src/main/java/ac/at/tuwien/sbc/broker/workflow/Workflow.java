@@ -1,26 +1,19 @@
 package ac.at.tuwien.sbc.broker.workflow;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
-import ac.at.tuwien.sbc.domain.entry.OrderEntry;
-import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
-import ac.at.tuwien.sbc.domain.entry.ShareEntry;
+import ac.at.tuwien.sbc.domain.entry.*;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
+import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -39,11 +32,16 @@ public class Workflow {
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
+    public static final Double brokerProvision = 0.03;
+
     @PostConstruct
     private void onPostConstruct() {
-        initReleaseRequestHandling();
 
         handleReleaseRequests();
+        initOrderRequestHandling();
+        initFirstOrderRequestHandling();
+        initReleaseRequestHandling();
+        initShareNotification();
     }
 
     private void initReleaseRequestHandling() {
@@ -57,12 +55,49 @@ public class Workflow {
         });
     }
 
+    private void initOrderRequestHandling() {
+        coordinationService.registerOrderNotification(new CoordinationListener<ArrayList<OrderEntry>>() {
+            @Override
+            public void onResult(ArrayList<OrderEntry> oeList) {
+                logger.info("on OrderEntry notification" );
+                ArrayList<String> shareIds= new ArrayList<String>();
+                for (OrderEntry oe : oeList) {
+
+                    if (!shareIds.contains(oe.getShareID())) {
+                        shareIds.add(oe.getShareID());
+                        handleOrderRequests(oe.getShareID());
+                    }
+                }
+            }
+        });
+    }
+
+    private void initFirstOrderRequestHandling() {
+        ArrayList<ShareEntry> shareList = coordinationService.readShares();
+
+        if (shareList != null && !shareList.isEmpty()) {
+            for (ShareEntry se : shareList)
+                handleOrderRequests(se.getShareID());
+        }
+    }
+
+    private void initShareNotification() {
+        coordinationService.registerShareNotification(new CoordinationListener<ArrayList<ShareEntry>>() {
+            @Override
+            public void onResult(ArrayList<ShareEntry> entries) {
+                if (entries != null && !entries.isEmpty()) {
+                    for (ShareEntry se : entries)
+                        handleOrderRequests(se.getShareID());
+                }
+            }
+        });
+    }
+
     private void handleReleaseRequests() {
-        Object sharedTransaction = coordinationService.createTransaction(1000);
+        Object sharedTransaction = coordinationService.createTransaction(1000L);
         ReleaseEntry releaseEntry = coordinationService.getReleaseEntry(sharedTransaction);
 
         if (releaseEntry == null) {
-
             return;
         }
         //update or create share
@@ -71,10 +106,15 @@ public class Workflow {
         if (shareEntry == null)
             shareEntry = new ShareEntry(releaseEntry.getCompanyID(), releaseEntry.getNumShares(), releaseEntry.getPrice());
         else {
-            shareEntry.setNumShares(shareEntry.getNumShares()+releaseEntry.getNumShares());
+            shareEntry.setNumShares(shareEntry.getNumShares() + releaseEntry.getNumShares());
         }
 
-        coordinationService.setShareEntry(shareEntry, sharedTransaction);
+        try {
+            coordinationService.setShareEntry(shareEntry, sharedTransaction);
+        } catch (CoordinationServiceException e) {
+            coordinationService.rollbackTransaction(sharedTransaction);
+            return;
+        }
 
         //add order
         OrderEntry oe = new OrderEntry(UUID.randomUUID(),
@@ -86,11 +126,168 @@ public class Workflow {
                 0,
                 OrderStatus.OPEN);
 
-        coordinationService.addOrder(oe, sharedTransaction);
-
-        coordinationService.commitTransaction(sharedTransaction);
-
+        logger.info("INIT SHARE:" + shareEntry.getShareID() + " / " + shareEntry.getNumShares());
+        try {
+            coordinationService.addOrder(oe, sharedTransaction);
+            logger.info("INIT SHARE1");
+            coordinationService.commitTransaction(sharedTransaction);
+            logger.info("INIT SHARE1");
+        } catch (CoordinationServiceException e) {
+            coordinationService.rollbackTransaction(sharedTransaction);
+        }
     }
 
 
+    private void handleOrderRequests(String shareId) {
+
+        Object sharedTransaction = coordinationService.createTransaction(1000L);
+
+        //get share entry
+        ShareEntry shareEntry = coordinationService.getShareEntry(shareId, sharedTransaction);
+
+        if (shareEntry == null) {
+            logger.info("Share entry not found");
+            coordinationService.rollbackTransaction(sharedTransaction);
+            return;
+        }
+
+        //take partial sell orders first
+        OrderEntry sellOrderTemplate = new OrderEntry(null, null, shareId, OrderType.SELL, null, null, null, OrderStatus.PARTIAL);
+        OrderEntry sellOrder = null;
+
+
+        sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
+        //try with open sell orders
+        if (sellOrder == null) {
+            sellOrderTemplate.setStatus(OrderStatus.OPEN);
+            sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
+        }
+
+        //return and rollback if no buy order exists
+        if (sellOrder == null) {
+            logger.info("No sell order available");
+            coordinationService.rollbackTransaction(sharedTransaction);
+            return;
+        }
+
+        //find corresponding buy order
+        OrderEntry buyOrderTemplate = new OrderEntry(null, null, shareId, OrderType.BUY, null, null, null, OrderStatus.PARTIAL);
+        OrderEntry buyOrder = null;
+
+        buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
+        //try with opm sell order
+        if (buyOrder == null) {
+            buyOrderTemplate.setStatus(OrderStatus.OPEN);
+            buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
+        }
+
+        //return and rollback if no corresponding sell order exists
+        if (buyOrder == null) {
+            logger.info("No buy order available");
+            coordinationService.rollbackTransaction(sharedTransaction);
+            return;
+        }
+
+        //get seller if seller is not a company
+        InvestorDepotEntry seller = null;
+        if (sellOrder.getInvestorID() != 0) {
+           seller = coordinationService.getInvestor(sellOrder.getInvestorID(), sharedTransaction);
+        }
+        //get buyer
+        InvestorDepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedTransaction);
+
+        //check if transaction is valid
+        HashMap<OrderEntry, Boolean> validationResult =
+                TransactionValidator.validate(sellOrder, buyOrder, seller, buyer, shareEntry, brokerProvision);
+
+        if (!validationResult.get(sellOrder) || !validationResult.get(buyOrder)) {
+            //role back transaction if it is not valid
+            //coordinationService.rollbackTransaction(sharedTransaction);
+            logger.info("Transaction is invalid");
+
+            if (!validationResult.get(sellOrder)) {
+                sellOrder.setStatus(OrderStatus.DELETED);
+            }
+            if (!validationResult.get(buyOrder)) {
+                buyOrder.setStatus(OrderStatus.DELETED);
+            }
+
+            try {
+                coordinationService.addOrder(sellOrder, sharedTransaction);
+                coordinationService.addOrder(buyOrder, sharedTransaction);
+            } catch (CoordinationServiceException e) {
+                coordinationService.rollbackTransaction(sharedTransaction);
+            }
+            coordinationService.commitTransaction(sharedTransaction);
+            return;
+        }
+        else {
+            //transaction seems to be valid
+            logger.info("Transaction is valid");
+            try {
+                doTransaction(sellOrder, buyOrder, seller, buyer, shareEntry, sharedTransaction);
+            } catch (CoordinationServiceException e1) {
+                coordinationService.rollbackTransaction(sharedTransaction);
+            }
+        }
+    }
+
+    private void doTransaction(OrderEntry sellOrder, OrderEntry buyOrder, InvestorDepotEntry seller, InvestorDepotEntry buyer, ShareEntry shareEntry, Object sharedTransaction) throws CoordinationServiceException {
+
+        Integer numSharesToTransact = Math.min(sellOrder.getNumTotal() - sellOrder.getNumCompleted(),
+                buyOrder.getNumTotal() - buyOrder.getNumCompleted());
+        sellOrder.setNumCompleted(sellOrder.getNumCompleted() + numSharesToTransact);
+        buyOrder.setNumCompleted(buyOrder.getNumCompleted() + numSharesToTransact);
+
+        sellOrder.setStatus(OrderStatus.PARTIAL);
+        if (sellOrder.getNumCompleted() >= sellOrder.getNumTotal())
+            sellOrder.setStatus(OrderStatus.COMPLETED);
+
+        buyOrder.setStatus(OrderStatus.PARTIAL);
+        if (buyOrder.getNumCompleted() >= buyOrder.getNumTotal())
+            buyOrder.setStatus(OrderStatus.COMPLETED);
+
+        //skip if seller is a company
+        if (seller != null) {
+            //set new budget
+            seller.setBudget(seller.getBudget() + (shareEntry.getPrice() * numSharesToTransact * (1 - brokerProvision)));
+            //decrease num shares
+            seller.getShareDepot().put(shareEntry.getShareID(), seller.getShareDepot().get(shareEntry.getShareID()) - numSharesToTransact);
+        }
+
+        buyer.setBudget(buyer.getBudget() - (shareEntry.getPrice() * numSharesToTransact * (1 + brokerProvision)));
+
+        Integer currentNumShare = buyer.getShareDepot().containsKey(shareEntry.getShareID()) ? buyer.getShareDepot().get(shareEntry.getShareID()) : 0;
+        buyer.getShareDepot().put(shareEntry.getShareID(), currentNumShare + numSharesToTransact);
+
+        //create transaction
+        TransactionEntry transactionEntry = new TransactionEntry();
+        transactionEntry.setTransactionID(UUID.randomUUID().toString());
+        transactionEntry.setBrokerID(brokerId);
+        transactionEntry.setSellerID(seller != null ? seller.getInvestorID() : 0);
+        transactionEntry.setBuyerID(buyer.getInvestorID());
+        transactionEntry.setSellOrderID(sellOrder.getOrderID());
+        transactionEntry.setBuyOrderID(buyOrder.getOrderID());
+        transactionEntry.setShareID(shareEntry.getShareID());
+        transactionEntry.setPrice(shareEntry.getPrice());
+        transactionEntry.setNumShares(numSharesToTransact);
+        transactionEntry.setSumPrice(numSharesToTransact * shareEntry.getPrice());
+        transactionEntry.setProvision((shareEntry.getPrice() * numSharesToTransact * 2 * brokerProvision));
+
+
+        //update investors
+        if (seller != null)
+            coordinationService.setInvestor(seller, sharedTransaction);
+
+        coordinationService.setInvestor(buyer, sharedTransaction);
+        //add transaction
+        coordinationService.addTransaction(transactionEntry, sharedTransaction);
+
+        coordinationService.commitTransaction(sharedTransaction);
+        //update orders
+        Object addOrdersTransaction = coordinationService.createTransaction(1000L);
+        coordinationService.addOrder(sellOrder, addOrdersTransaction);
+        coordinationService.addOrder(buyOrder, addOrdersTransaction);
+        coordinationService.commitTransaction(addOrdersTransaction);
+    }
 }
