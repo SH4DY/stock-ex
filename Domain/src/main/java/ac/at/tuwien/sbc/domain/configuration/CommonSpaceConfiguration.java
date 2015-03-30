@@ -32,8 +32,6 @@ public class CommonSpaceConfiguration {
         return new Capi(core);
     }
 
-
-
     @Bean(name = "investorDepotContainer")
     public ContainerReference investorDepotContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
