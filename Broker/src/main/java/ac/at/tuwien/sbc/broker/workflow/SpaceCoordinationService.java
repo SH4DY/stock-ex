@@ -110,6 +110,7 @@ public class SpaceCoordinationService implements ICoordinationService {
 
         try {
             logger.info("Try to write OerderEntry: " + oe.getShareID());
+            //QueryCoordinator.newCoordinationData())
             capi.write(new Entry(oe), orderContainer, MzsConstants.RequestTimeout.ZERO, tx);
         } catch (MzsCoreException e) {
             logger.info("Something went wrong writing an order:" + e.getMessage());
@@ -124,7 +125,12 @@ public class SpaceCoordinationService implements ICoordinationService {
         ArrayList<OrderEntry> entries = null;
         OrderEntry entry = null;
         try {
-          entries = capi.take(orderContainer, LindaCoordinator.newSelector(oe), MzsConstants.RequestTimeout.ZERO, tx);
+
+          ArrayList<Selector> selectors = new ArrayList<Selector>();
+          selectors.add(LindaCoordinator.newSelector(oe, MzsConstants.Selecting.COUNT_ALL));
+          selectors.add(RandomCoordinator.newSelector(1));
+
+          entries = capi.take(orderContainer, selectors, MzsConstants.RequestTimeout.ZERO, tx);
         } catch (MzsCoreException e) {logger.info("Try to get order by template FAILED:" + e.getMessage()); };
 
         if (entries != null && !entries.isEmpty())
@@ -141,19 +147,25 @@ public class SpaceCoordinationService implements ICoordinationService {
 
         Matchmaker mShareId = Property.forName("shareID").equalTo(shareId);
         Matchmaker mType = Property.forName("type").equalTo(type);
-        Matchmaker mStatus1 = Property.forName("status").equalTo(OrderStatus.OPEN);
-        Matchmaker mStatus2 = Property.forName("status").equalTo(OrderStatus.PARTIAL);
+        Matchmaker mStatus = Property.forName("status").equalTo(status);
+        //Matchmaker mStatus1 = Property.forName("status").equalTo(OrderStatus.OPEN);
+        //Matchmaker mStatus2 = Property.forName("status").equalTo(OrderStatus.PARTIAL);
         Matchmaker mLimit = ComparableProperty.forName("limit").lessThan(price);
         if (type.equals(OrderType.BUY))
             mLimit = ComparableProperty.forName("limit").greaterThan(price);
 
-        Query q = new Query().filter(mShareId);
+        Query q = new Query().filter(and(mShareId, mType, mStatus, mLimit)).cnt(1);
         OrderEntry entry = null;
         try {
-            capi.read(orderContainer,
-                    Arrays.asList(QueryCoordinator.newSelector(q)),
-                    0, tx);
-        } catch (MzsCoreException e) {}
+
+            ArrayList<Selector> selectors = new ArrayList<Selector>();
+            selectors.add(QueryCoordinator.newSelector(q, MzsConstants.Selecting.COUNT_ALL));
+            selectors.add(RandomCoordinator.newSelector(1));
+
+            entries = capi.take(orderContainer,
+                    selectors,
+                    MzsConstants.RequestTimeout.ZERO, tx);
+        } catch (MzsCoreException e) {logger.info("Try to get order by properties FAILED:" + e.getMessage());}
 
         if (entries != null && !entries.isEmpty())
             entry = entries.get(0);

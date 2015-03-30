@@ -138,7 +138,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
 
     @Override
     public void onOrderEntryNotification(OrderEntry oe) {
-        logger.info("ORDER ENTRY OBSERVED:" + oe.getShareID().toString() + "/" + oe.getInvestorID());
+
 
         Integer rowIndex = getTableRowIndexByID(orderTable, 0, oe.getOrderID());
 
@@ -146,6 +146,10 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
             rowIndex = orderTable.getRowCount();
         else
             ((DefaultTableModel)orderTable.getModel()).removeRow(rowIndex);
+
+        //ignore completed
+        if (oe.getStatus().equals(OrderStatus.COMPLETED))
+            return;
 
         Object[] newRow = new Object[]{
                 oe.getOrderID().toString(),

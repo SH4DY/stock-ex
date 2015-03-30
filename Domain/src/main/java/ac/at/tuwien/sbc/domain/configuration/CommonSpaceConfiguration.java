@@ -45,6 +45,9 @@ public class CommonSpaceConfiguration {
         URI uri = new URI(SPACE_URI);
         ArrayList<Coordinator> coordinators= new ArrayList<Coordinator>();
         coordinators.add(new LindaCoordinator(false));
+        //coordinators.add(new FifoCoordinator());
+        coordinators.add(new RandomCoordinator());
+        coordinators.add(new QueryCoordinator());
         return SpaceUtils.getOrCreateNamedContainer(uri, "orderContainer", capi, coordinators);
     }
 

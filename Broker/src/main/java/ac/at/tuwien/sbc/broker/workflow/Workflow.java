@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -63,10 +64,10 @@ public class Workflow {
                 ArrayList<String> shareIds= new ArrayList<String>();
                 for (OrderEntry oe : oeList) {
 
-                    if (!shareIds.contains(oe.getShareID())) {
-                        shareIds.add(oe.getShareID());
+                   // if (!shareIds.contains(oe.getShareID())) {
+                    //    shareIds.add(oe.getShareID());
                         handleOrderRequests(oe.getShareID());
-                    }
+                    //}
                 }
             }
         });
@@ -155,12 +156,13 @@ public class Workflow {
         OrderEntry sellOrderTemplate = new OrderEntry(null, null, shareId, OrderType.SELL, null, null, null, OrderStatus.PARTIAL);
         OrderEntry sellOrder = null;
 
-
-        sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
+        //sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
+        sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedTransaction);
         //try with open sell orders
         if (sellOrder == null) {
             sellOrderTemplate.setStatus(OrderStatus.OPEN);
-            sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
+            //sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
+            sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.OPEN, shareEntry.getPrice(), sharedTransaction);
         }
 
         //return and rollback if no buy order exists
@@ -174,16 +176,26 @@ public class Workflow {
         OrderEntry buyOrderTemplate = new OrderEntry(null, null, shareId, OrderType.BUY, null, null, null, OrderStatus.PARTIAL);
         OrderEntry buyOrder = null;
 
-        buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
+        //buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
+        buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedTransaction);
         //try with opm sell order
         if (buyOrder == null) {
             buyOrderTemplate.setStatus(OrderStatus.OPEN);
-            buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
+            //buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
+            buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.OPEN, shareEntry.getPrice(), sharedTransaction);
         }
 
         //return and rollback if no corresponding sell order exists
         if (buyOrder == null) {
             logger.info("No buy order available");
+            coordinationService.rollbackTransaction(sharedTransaction);
+            return;
+        }
+        logger.info("Buy order found: " + buyOrder.getOrderID().toString());
+        //check limits
+        if (sellOrder.getLimit() > shareEntry.getPrice() ||
+                buyOrder.getLimit() < shareEntry.getPrice()) {
+            logger.info("Order limits not valid");
             coordinationService.rollbackTransaction(sharedTransaction);
             return;
         }
