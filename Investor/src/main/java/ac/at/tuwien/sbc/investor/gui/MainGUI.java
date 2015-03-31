@@ -6,28 +6,19 @@ import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
 import ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver;
-import ac.at.tuwien.sbc.investor.workflow.SpaceCoordinationService;
 import ac.at.tuwien.sbc.investor.workflow.Workflow;
-import org.mozartspaces.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumnModel;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.UUID;
-import java.util.Vector;
 
 /**
  * Created by dietl_ma on 25/03/15.

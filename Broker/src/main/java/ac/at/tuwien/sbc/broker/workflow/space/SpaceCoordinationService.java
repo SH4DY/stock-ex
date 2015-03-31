@@ -90,7 +90,10 @@ public class SpaceCoordinationService implements ICoordinationService {
         logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
         TransactionReference tx = (TransactionReference)sharedTransaction;
         try {
-            //capi.take(investorDepotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+            try {
+                capi.take(investorDepotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+            }
+            catch (MzsCoreException e1) {}
             Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getInvestorID().toString()));
             capi.write(investorDepotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
         }

@@ -1,8 +1,10 @@
-package ac.at.tuwien.sbc.investor.workflow;
+package ac.at.tuwien.sbc.investor.workflow.amqp;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
+import ac.at.tuwien.sbc.investor.workflow.ICoordinationService;
+import ac.at.tuwien.sbc.investor.workflow.ICoordinationServiceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;

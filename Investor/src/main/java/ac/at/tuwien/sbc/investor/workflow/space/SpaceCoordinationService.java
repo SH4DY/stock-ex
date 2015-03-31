@@ -1,11 +1,12 @@
-package ac.at.tuwien.sbc.investor.workflow;
+package ac.at.tuwien.sbc.investor.workflow.space;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
-import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
+import ac.at.tuwien.sbc.investor.workflow.ICoordinationService;
+import ac.at.tuwien.sbc.investor.workflow.ICoordinationServiceListener;
 import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.*;

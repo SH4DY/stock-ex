@@ -128,9 +128,7 @@ public class Workflow {
         logger.info("INIT SHARE:" + shareEntry.getShareID() + " / " + shareEntry.getNumShares());
         try {
             coordinationService.addOrder(oe, sharedTransaction);
-            logger.info("INIT SHARE1");
             coordinationService.commitTransaction(sharedTransaction);
-            logger.info("INIT SHARE1");
         } catch (CoordinationServiceException e) {
             coordinationService.rollbackTransaction(sharedTransaction);
         }

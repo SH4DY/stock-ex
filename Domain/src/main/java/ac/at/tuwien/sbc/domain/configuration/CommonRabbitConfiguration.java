@@ -47,6 +47,7 @@ public class CommonRabbitConfiguration {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
         template.setReplyTimeout(10000);
+
         return template;
 
     }
