@@ -65,11 +65,7 @@ public class Workflow {
                 logger.info("on OrderEntry notification" );
                 ArrayList<String> shareIds= new ArrayList<String>();
                 for (OrderEntry oe : oeList) {
-
-                   // if (!shareIds.contains(oe.getShareID())) {
-                    //    shareIds.add(oe.getShareID());
-                        handleOrderRequests(oe.getShareID());
-                    //}
+                   handleOrderRequests(oe.getShareID());
                 }
             }
         });
@@ -143,9 +139,7 @@ public class Workflow {
 
     private synchronized void handleOrderRequests(String shareId) {
 
-       // if (sharedOrderRequestTransaction != null)
-           // return;
-
+        //create shared transaction
         Object sharedOrderRequestTransaction = coordinationService.createTransaction(1000L);
 
 
@@ -235,8 +229,12 @@ public class Workflow {
             }
 
             try {
+                //write updated order
                 coordinationService.addOrder(sellOrder, sharedOrderRequestTransaction);
                 coordinationService.addOrder(buyOrder, sharedOrderRequestTransaction);
+                //write buyer and seller back
+                coordinationService.setInvestor(seller, sharedOrderRequestTransaction);
+                coordinationService.setInvestor(buyer, sharedOrderRequestTransaction);
             } catch (CoordinationServiceException e) {
                 coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
                 sharedOrderRequestTransaction = null;

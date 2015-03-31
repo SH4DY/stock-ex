@@ -74,7 +74,7 @@ public class SpaceCoordinationService implements ICoordinationService {
         ArrayList<InvestorDepotEntry> entries = null;
         InvestorDepotEntry entry = null;
         try {
-            entries = capi.read(investorDepotContainer, KeyCoordinator.newSelector(investorId.toString()), MzsConstants.RequestTimeout.ZERO, tx);
+            entries = capi.take(investorDepotContainer, KeyCoordinator.newSelector(investorId.toString()), MzsConstants.RequestTimeout.ZERO, tx);
         } catch (MzsCoreException e) {
             logger.info("Investor depot not found for: " + investorId);
         }
@@ -90,7 +90,7 @@ public class SpaceCoordinationService implements ICoordinationService {
         logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
         TransactionReference tx = (TransactionReference)sharedTransaction;
         try {
-            capi.take(investorDepotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+            //capi.take(investorDepotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
             Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getInvestorID().toString()));
             capi.write(investorDepotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
         }
