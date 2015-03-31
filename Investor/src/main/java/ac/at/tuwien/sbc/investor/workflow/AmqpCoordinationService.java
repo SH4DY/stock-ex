@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by dietl_ma on 27/03/15.
@@ -37,12 +39,22 @@ public class AmqpCoordinationService implements ICoordinationService {
     }
 
     @Override
-    public void registerInvestorNotification(Integer investorId, CoordinationListener clistener) {
+    public void getShares(ArrayList<String> shareIds, CoordinationListener clistener) {
 
     }
 
     @Override
-    public void registerOrderNotification(Integer investorId, CoordinationListener clistener) {
+    public void registerInvestorNotification(CoordinationListener clistener) {
+
+    }
+
+    @Override
+    public void registerOrderNotification(CoordinationListener clistener) {
+
+    }
+
+    @Override
+    public void registerShareNotification(CoordinationListener clistener) {
 
     }
 
@@ -58,6 +70,11 @@ public class AmqpCoordinationService implements ICoordinationService {
 
     @Override
     public void getOrders(Integer investorId, CoordinationListener cListener) {
+
+    }
+
+    @Override
+    public void deleteOrder(UUID orderID) {
 
     }
 }

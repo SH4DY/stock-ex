@@ -8,12 +8,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Created by dietl_ma on 25/03/15.
  */
 
 @SpringBootApplication
+@EnableScheduling
 @Import({CommonRabbitConfiguration.class, CommonSpaceConfiguration.class})
 public class MarketAgentApp {
 

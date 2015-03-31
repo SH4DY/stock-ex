@@ -24,7 +24,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 
 @SpringBootApplication
-@EnableScheduling
 @Import({CommonRabbitConfiguration.class, CommonSpaceConfiguration.class})
 public class BrokerApp {
 

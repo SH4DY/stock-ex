@@ -16,6 +16,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by dietl_ma on 27/03/15.
@@ -34,6 +35,7 @@ public class Workflow {
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
     public static final Double brokerProvision = 0.03;
+
 
     @PostConstruct
     private void onPostConstruct() {
@@ -139,16 +141,21 @@ public class Workflow {
     }
 
 
-    private void handleOrderRequests(String shareId) {
+    private synchronized void handleOrderRequests(String shareId) {
 
-        Object sharedTransaction = coordinationService.createTransaction(1000L);
+       // if (sharedOrderRequestTransaction != null)
+           // return;
+
+        Object sharedOrderRequestTransaction = coordinationService.createTransaction(1000L);
+
 
         //get share entry
-        ShareEntry shareEntry = coordinationService.getShareEntry(shareId, sharedTransaction);
+        ShareEntry shareEntry = coordinationService.getShareEntry(shareId, sharedOrderRequestTransaction);
 
         if (shareEntry == null) {
             logger.info("Share entry not found");
-            coordinationService.rollbackTransaction(sharedTransaction);
+            coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
+            sharedOrderRequestTransaction = null;
             return;
         }
 
@@ -157,18 +164,19 @@ public class Workflow {
         OrderEntry sellOrder = null;
 
         //sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
-        sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedTransaction);
+        sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedOrderRequestTransaction);
         //try with open sell orders
         if (sellOrder == null) {
             sellOrderTemplate.setStatus(OrderStatus.OPEN);
             //sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
-            sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.OPEN, shareEntry.getPrice(), sharedTransaction);
+            sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.OPEN, shareEntry.getPrice(), sharedOrderRequestTransaction);
         }
 
         //return and rollback if no buy order exists
         if (sellOrder == null) {
             logger.info("No sell order available");
-            coordinationService.rollbackTransaction(sharedTransaction);
+            coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
+            sharedOrderRequestTransaction = null;
             return;
         }
 
@@ -177,18 +185,19 @@ public class Workflow {
         OrderEntry buyOrder = null;
 
         //buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
-        buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedTransaction);
+        buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedOrderRequestTransaction);
         //try with opm sell order
         if (buyOrder == null) {
             buyOrderTemplate.setStatus(OrderStatus.OPEN);
             //buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
-            buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.OPEN, shareEntry.getPrice(), sharedTransaction);
+            buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.OPEN, shareEntry.getPrice(), sharedOrderRequestTransaction);
         }
 
         //return and rollback if no corresponding sell order exists
         if (buyOrder == null) {
             logger.info("No buy order available");
-            coordinationService.rollbackTransaction(sharedTransaction);
+            coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
+            sharedOrderRequestTransaction = null;
             return;
         }
         logger.info("Buy order found: " + buyOrder.getOrderID().toString());
@@ -196,17 +205,18 @@ public class Workflow {
         if (sellOrder.getLimit() > shareEntry.getPrice() ||
                 buyOrder.getLimit() < shareEntry.getPrice()) {
             logger.info("Order limits not valid");
-            coordinationService.rollbackTransaction(sharedTransaction);
+            coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
+            sharedOrderRequestTransaction = null;
             return;
         }
 
         //get seller if seller is not a company
         InvestorDepotEntry seller = null;
         if (sellOrder.getInvestorID() != 0) {
-           seller = coordinationService.getInvestor(sellOrder.getInvestorID(), sharedTransaction);
+           seller = coordinationService.getInvestor(sellOrder.getInvestorID(), sharedOrderRequestTransaction);
         }
         //get buyer
-        InvestorDepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedTransaction);
+        InvestorDepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedOrderRequestTransaction);
 
         //check if transaction is valid
         HashMap<OrderEntry, Boolean> validationResult =
@@ -225,21 +235,23 @@ public class Workflow {
             }
 
             try {
-                coordinationService.addOrder(sellOrder, sharedTransaction);
-                coordinationService.addOrder(buyOrder, sharedTransaction);
+                coordinationService.addOrder(sellOrder, sharedOrderRequestTransaction);
+                coordinationService.addOrder(buyOrder, sharedOrderRequestTransaction);
             } catch (CoordinationServiceException e) {
-                coordinationService.rollbackTransaction(sharedTransaction);
+                coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
+                sharedOrderRequestTransaction = null;
             }
-            coordinationService.commitTransaction(sharedTransaction);
+            coordinationService.commitTransaction(sharedOrderRequestTransaction);
             return;
         }
         else {
             //transaction seems to be valid
             logger.info("Transaction is valid");
             try {
-                doTransaction(sellOrder, buyOrder, seller, buyer, shareEntry, sharedTransaction);
+                doTransaction(sellOrder, buyOrder, seller, buyer, shareEntry, sharedOrderRequestTransaction);
             } catch (CoordinationServiceException e1) {
-                coordinationService.rollbackTransaction(sharedTransaction);
+                coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
+                sharedOrderRequestTransaction = null;
             }
         }
     }
@@ -296,6 +308,7 @@ public class Workflow {
         coordinationService.addTransaction(transactionEntry, sharedTransaction);
 
         coordinationService.commitTransaction(sharedTransaction);
+        sharedTransaction = null;
         //update orders
         Object addOrdersTransaction = coordinationService.createTransaction(1000L);
         coordinationService.addOrder(sellOrder, addOrdersTransaction);

@@ -1,5 +1,6 @@
-package ac.at.tuwien.sbc.broker.workflow;
+package ac.at.tuwien.sbc.broker.workflow.space;
 
+import ac.at.tuwien.sbc.broker.workflow.ICoordinationService;
 import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import ac.at.tuwien.sbc.domain.entry.*;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
@@ -21,11 +22,8 @@ import org.springframework.stereotype.Service;
 import static org.mozartspaces.capi3.Matchmakers.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -150,9 +148,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         Matchmaker mStatus = Property.forName("status").equalTo(status);
         //Matchmaker mStatus1 = Property.forName("status").equalTo(OrderStatus.OPEN);
         //Matchmaker mStatus2 = Property.forName("status").equalTo(OrderStatus.PARTIAL);
-        Matchmaker mLimit = ComparableProperty.forName("limit").lessThan(price);
+        Matchmaker mLimit = ComparableProperty.forName("limit").lessThanOrEqualTo(price);
         if (type.equals(OrderType.BUY))
-            mLimit = ComparableProperty.forName("limit").greaterThan(price);
+            mLimit = ComparableProperty.forName("limit").greaterThanOrEqualTo(price);
 
         Query q = new Query().filter(and(mShareId, mType, mStatus, mLimit)).cnt(1);
         OrderEntry entry = null;
@@ -171,8 +169,6 @@ public class SpaceCoordinationService implements ICoordinationService {
             entry = entries.get(0);
 
         return entry;
-
-
     }
 
     @Override
@@ -338,7 +334,15 @@ public class SpaceCoordinationService implements ICoordinationService {
             } catch (MzsCoreException e) {
                 logger.info("Transaction failed at some point");
             }
+
+            sharedTransaction = null;
         }
+    }
+
+    @Override
+    public Boolean transactionIsRunning(Object sharedTransaction) {
+
+        return false;
     }
 
     @Override
@@ -351,6 +355,8 @@ public class SpaceCoordinationService implements ICoordinationService {
             } catch (MzsCoreException e) {
                 logger.info("Transaction failed at some point");
             }
+
+            sharedTransaction = null;
         }
     }
 

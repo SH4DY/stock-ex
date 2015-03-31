@@ -2,6 +2,8 @@ package ac.at.tuwien.sbc.investor.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ShareEntry;
+import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
 import org.mozartspaces.capi3.KeyCoordinator;
@@ -22,6 +24,7 @@ import javax.annotation.PreDestroy;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by dietl_ma on 26/03/15.
@@ -43,6 +46,10 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Autowired
     @Qualifier("orderContainer")
     ContainerReference orderContainer;
+
+    @Autowired
+    @Qualifier("shareContainer")
+    ContainerReference shareContainer;
 
     private ICoordinationServiceListener listener;
 
@@ -77,13 +84,31 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     @Override
-    public void registerInvestorNotification(Integer id, CoordinationListener clistener) {
+    public void getShares(ArrayList<String> shareIds, CoordinationListener cListener) {
+
+        ArrayList<ShareEntry> entries = new ArrayList<ShareEntry>();
+        for (String shareId : shareIds) {
+            try {
+                ArrayList<ShareEntry> currentEntries = capi.read(shareContainer, KeyCoordinator.newSelector(shareId), MzsConstants.RequestTimeout.ZERO, null);
+
+                if (currentEntries != null && !currentEntries.isEmpty())
+                    entries.add(currentEntries.get(0));
+
+            } catch (MzsCoreException e) {
+                logger.info("Share not found for: " + shareId);
+            }
+        }
+        cListener.onResult(entries);
+    }
+
+    @Override
+    public void registerInvestorNotification(CoordinationListener cListener) {
 
         try {
             NotificationManager notificationManager = new NotificationManager(core);
 
             Notification notification = notificationManager.createNotification(investorDepotContainer,
-                    new InvestorDepotNotificationListener(clistener, id),
+                    new InvestorDepotNotificationListener(cListener),
                     Operation.WRITE);
 
             notifications.add(notification);
@@ -96,12 +121,30 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     @Override
-    public void registerOrderNotification(Integer id, CoordinationListener clistener) {
+    public void registerOrderNotification(CoordinationListener clistener) {
         try {
             NotificationManager notificationManager = new NotificationManager(core);
 
             Notification notification = notificationManager.createNotification(orderContainer,
-                    new OrderNotificationListener(clistener, id),
+                    new OrderNotificationListener(clistener),
+                    Operation.WRITE);
+
+            notifications.add(notification);
+
+        } catch (MzsCoreException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void registerShareNotification(CoordinationListener clistener) {
+        try {
+            NotificationManager notificationManager = new NotificationManager(core);
+
+            Notification notification = notificationManager.createNotification(shareContainer,
+                    new ShareNotificationListener(clistener),
                     Operation.WRITE);
 
             notifications.add(notification);
@@ -145,7 +188,7 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Override
     public void addOrder(OrderEntry oe) {
         try {
-            capi.write(orderContainer, new Entry(oe));
+            capi.write(new Entry(oe), orderContainer, MzsConstants.RequestTimeout.ZERO, null);
         } catch (MzsCoreException e) {
             logger.info("Something went wrong writing an order");
         }
@@ -170,6 +213,22 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    @Override
+    public void deleteOrder(UUID orderID) {
+
+        OrderEntry template = new OrderEntry(orderID, null, null, null, null, null, null, null);
+        try {
+            logger.info("Try to delete order:" + orderID.toString());
+            ArrayList<OrderEntry> orderEntries = capi.take(orderContainer, LindaCoordinator.newSelector(template, 1), MzsConstants.RequestTimeout.TRY_ONCE, null);
+
+            if (orderEntries != null && !orderEntries.isEmpty()) {
+                orderEntries.get(0).setStatus(OrderStatus.DELETED);
+                capi.write(new Entry(orderEntries.get(0)), orderContainer, MzsConstants.RequestTimeout.ZERO, null);
+            }
+        }
+        catch (MzsCoreException e) {logger.info("Not able to delete order:" + e.getMessage());}
+    }
+
     @PreDestroy
     public void onPreDestroy() {
 
@@ -188,25 +247,21 @@ public class SpaceCoordinationService implements ICoordinationService {
      */
     public class InvestorDepotNotificationListener implements NotificationListener {
 
-        private CoordinationListener<InvestorDepotEntry> callbackListener;
-        private Integer investorID;
+        private CoordinationListener<ArrayList<InvestorDepotEntry>> callbackListener;
 
-        public InvestorDepotNotificationListener(CoordinationListener<InvestorDepotEntry> callbackListener, Integer investorID) {
+        public InvestorDepotNotificationListener(CoordinationListener<ArrayList<InvestorDepotEntry>> callbackListener) {
             this.callbackListener = callbackListener;
-            this.investorID = investorID;
         }
 
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 
+            ArrayList<InvestorDepotEntry> investorDeptEntries = new ArrayList<InvestorDepotEntry>();
             for (Serializable entry : entries) {
-                InvestorDepotEntry ide = ((InvestorDepotEntry)((Entry)entry).getValue());
-                if (ide.getInvestorID().equals(investorID)) {
-                    callbackListener.onResult(ide);
-                    break;
-                }
-            }
+                investorDeptEntries.add((InvestorDepotEntry)((Entry)entry).getValue());
 
+            }
+            callbackListener.onResult(investorDeptEntries);
         }
     }
 
@@ -215,24 +270,42 @@ public class SpaceCoordinationService implements ICoordinationService {
      */
     public class OrderNotificationListener implements NotificationListener {
 
-        private CoordinationListener<OrderEntry> callbackListener;
-        private Integer investorID;
+        private CoordinationListener<ArrayList<OrderEntry>> callbackListener;
 
-        public OrderNotificationListener(CoordinationListener<OrderEntry> callbackListener, Integer investorID) {
+        public OrderNotificationListener(CoordinationListener<ArrayList<OrderEntry>> callbackListener) {
             this.callbackListener = callbackListener;
-            this.investorID = investorID;
         }
 
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 
+            ArrayList<OrderEntry> orderEntries = new ArrayList<OrderEntry>();
             for (Serializable entry : entries) {
-                OrderEntry oe = ((OrderEntry)((Entry)entry).getValue());
-                if (oe.getInvestorID().equals(investorID)) {
-                    callbackListener.onResult(oe);
-                }
+                orderEntries.add((OrderEntry)((Entry)entry).getValue());
             }
+            callbackListener.onResult(orderEntries);
+        }
+    }
 
+    /**
+     * InvestorDepotNotificationListener
+     */
+    public class ShareNotificationListener implements NotificationListener {
+
+        private CoordinationListener<ArrayList<ShareEntry>> callbackListener;
+
+        public ShareNotificationListener(CoordinationListener<ArrayList<ShareEntry>> callbackListener) {
+            this.callbackListener = callbackListener;
+        }
+
+        @Override
+        public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
+
+            ArrayList<ShareEntry> shareEntries = new ArrayList<ShareEntry>();
+            for (Serializable entry : entries) {
+                shareEntries.add((ShareEntry)((Entry)entry).getValue());
+            }
+            callbackListener.onResult(shareEntries);
         }
     }
 }

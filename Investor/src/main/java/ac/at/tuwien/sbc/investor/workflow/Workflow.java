@@ -2,6 +2,7 @@ package ac.at.tuwien.sbc.investor.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.investor.gui.MainGUI;
@@ -13,7 +14,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.awt.event.ActionEvent;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -35,6 +38,8 @@ public class Workflow implements ICoordinationServiceListener {
     @Autowired
     private IWorkFlowObserver observer;
 
+    private InvestorDepotEntry currentInvestor;
+
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
@@ -47,35 +52,59 @@ public class Workflow implements ICoordinationServiceListener {
         //init notifications
         initInvestorNotification();
         initOrderNotification();
+        initShareNotification();
         //init investor
         initInvestor();
         //init orders
         initOrders();
+        //init shares
+        initShares();
     }
 
 
     private void initInvestorNotification() {
-        coordinationService.registerInvestorNotification(investorId, new CoordinationListener<InvestorDepotEntry>() {
+        coordinationService.registerInvestorNotification(new CoordinationListener<ArrayList<InvestorDepotEntry>>() {
             @Override
-            public void onResult(InvestorDepotEntry ide) {
-                logger.info("Got InvestorDepotEntry notification: " + ide.getInvestorID() + "/" + ide.getBudget());
+            public void onResult(ArrayList<InvestorDepotEntry> ideList) {
+                for (InvestorDepotEntry ide : ideList) {
+                    if (ide.getInvestorID().equals(investorId)) {
 
-                if (observer != null) {
-                    logger.info("Observer not null");
-                    observer.onInvestorDepotEntryNotification(ide);
+                        currentInvestor = ide;
+                        if (observer != null)
+                            observer.onInvestorDepotEntryNotification(ide);
+                    }
                 }
             }
         });
     }
 
     private void initOrderNotification() {
-        coordinationService.registerOrderNotification(investorId, new CoordinationListener<OrderEntry>() {
+        coordinationService.registerOrderNotification(new CoordinationListener<ArrayList<OrderEntry>>() {
             @Override
-            public void onResult(OrderEntry oe) {
-                logger.info("Got Order notification: " + oe.getInvestorID() + "/" + oe.getShareID());
+            public void onResult(ArrayList<OrderEntry> oeList) {
+                for (OrderEntry oe : oeList) {
+                    if (oe.getInvestorID().equals(investorId)) {
+                        if (observer != null)
+                            observer.onOrderEntryNotification(oe);
+                    }
+                }
+            }
+        });
+    }
 
-                if (observer != null) {
-                    observer.onOrderEntryNotification(oe);
+    public void initShareNotification() {
+        coordinationService.registerShareNotification(new CoordinationListener<ArrayList<ShareEntry>>() {
+            @Override
+            public void onResult(ArrayList<ShareEntry> sList) {
+
+                if (currentInvestor == null)
+                    return;
+
+                for (ShareEntry s : sList) {
+                    if (currentInvestor.getShareDepot().containsKey(s.getShareID())) {
+                        if (observer != null)
+                            observer.onShareEntryNotification(s);
+                    }
                 }
             }
         });
@@ -109,15 +138,32 @@ public class Workflow implements ICoordinationServiceListener {
 
                 if (entries != null) {
                     for (OrderEntry oe : entries) {
-                        if (observer != null) {
+                        if (observer != null)
                             observer.onOrderEntryNotification(oe);
-                        }
                     }
                 }
             }
         });
     }
 
+    private void initShares() {
+        if (currentInvestor == null)
+            return;
+        //get shares for investor
+        ArrayList<String> shareIds = new ArrayList<String>();
+        shareIds.addAll(currentInvestor.getShareDepot().keySet());
+
+        coordinationService.getShares(shareIds, new CoordinationListener<ArrayList<ShareEntry>>() {
+            @Override
+            public void onResult(ArrayList<ShareEntry> seList) {
+                for (ShareEntry s : seList) {
+                    if (observer != null)
+                        observer.onShareEntryNotification(s);
+
+                }
+            }
+        });
+    }
     public void addOrder(OrderEntry oe) {
 
         oe.setOrderID(UUID.randomUUID());
@@ -126,5 +172,9 @@ public class Workflow implements ICoordinationServiceListener {
         oe.setNumCompleted(0);
 
         coordinationService.addOrder(oe);
+    }
+
+    public void deleteOrder(UUID orderID) {
+        coordinationService.deleteOrder(orderID);
     }
 }

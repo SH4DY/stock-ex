@@ -43,6 +43,8 @@ public interface ICoordinationService {
 
     public void commitTransaction(Object sharedTransaction);
 
+    public Boolean transactionIsRunning(Object sharedTransaction);
+
     public void rollbackTransaction(Object sharedTransaction);
 
 }
