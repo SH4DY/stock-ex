@@ -26,7 +26,7 @@ import java.util.UUID;
 public class RabbitConfiguration {
 
     @Autowired
-    private ApplicationContext applicationContext;
+    private ApplicationContext ctx;
 
     private static final Logger logger = LoggerFactory.getLogger(RabbitConfiguration.class);
 
@@ -35,7 +35,7 @@ public class RabbitConfiguration {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setMessageConverter(messageConverter);
-        container.setQueues((Queue)applicationContext.getBean("investorEntryNotificationQueue"));
+        container.setQueues((Queue)ctx.getBean("shareEntryNotificationQueue"));
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageHandler(), messageConverter);
         adapter.setMessageConverter(messageConverter);

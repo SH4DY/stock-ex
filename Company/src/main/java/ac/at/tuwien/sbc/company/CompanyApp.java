@@ -28,8 +28,6 @@ public class CompanyApp {
 
         logger.info("COMPANY started successfully");
 
-//        ctx.registerShutdownHook();
-//        //TODO Was macht dieser Hook?
     }
 
 }

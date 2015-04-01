@@ -37,8 +37,13 @@ public class CommonRabbitConfiguration {
     public static final String RELEASE_ENTRY_QUEUE =  "releaseEntry";
     public static final String MARKET_RPC = "marketRPC";
 
+    public static UUID uuid;
+
     @Autowired
     ConnectionFactory connectionFactory;
+
+    @Autowired
+    RabbitAdmin rabbitAdmin;
 
     @Bean
     public TopicExchange topicExchange() {
@@ -80,7 +85,7 @@ public class CommonRabbitConfiguration {
     //init investorEntry topic
     @Bean
     public Queue investorEntryNotificationQueue() {
-        Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
+        Queue queue = new Queue(INVESTOR_ENTRY_TOPIC + '_' + uuid(), false, false, true);
         return queue;
     }
 
@@ -92,7 +97,7 @@ public class CommonRabbitConfiguration {
     //init shareEntry topic
     @Bean
     public Queue shareEntryNotificationQueue() {
-        Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
+        Queue queue = new Queue(SHARE_ENTRY_TOPIC + '_' + uuid(), false, false, true);
         return queue;
     }
 
@@ -103,7 +108,7 @@ public class CommonRabbitConfiguration {
     //init orderEntry topic
     @Bean
     public Queue orderEntryNotificationQueue() {
-        Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
+        Queue queue = new Queue(ORDER_ENTRY_TOPIC + '_' + uuid(), false, false, true);
         return queue;
     }
 
@@ -115,7 +120,7 @@ public class CommonRabbitConfiguration {
     //init transactionEntry topic
     @Bean
     public Queue transactionEntryNotificationQueue() {
-        Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
+        Queue queue = new Queue(TRANSACTION_ENTRY_TOPIC + '_' + uuid(), false, false, true);
         return queue;
     }
 
@@ -149,6 +154,21 @@ public class CommonRabbitConfiguration {
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
         return new RabbitAdmin(connectionFactory);
+    }
+
+    @Bean
+    public String uuid() {
+        uuid = UUID.randomUUID();
+        return uuid.toString();
+    }
+
+    @PreDestroy
+    public void onPreDestroy() {
+        //delete topic queues on shutdown
+        rabbitAdmin.deleteQueue(INVESTOR_ENTRY_TOPIC + '_' + uuid);
+        rabbitAdmin.deleteQueue(SHARE_ENTRY_TOPIC + '_' + uuid);
+        rabbitAdmin.deleteQueue(ORDER_ENTRY_TOPIC + '_' + uuid);
+        rabbitAdmin.deleteQueue(TRANSACTION_ENTRY_TOPIC + '_' + uuid);
     }
 
 
