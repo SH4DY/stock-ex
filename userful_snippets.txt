@@ -11,3 +11,59 @@
 
 
         System.out.println("Message send:" + o.toString());*/
+
+
+
+
+
+
+        @Bean
+        public SimpleMessageListenerContainer replyListenerContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
+            SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+            container.setConnectionFactory(connectionFactory);
+            container.setMessageConverter(messageConverter);
+            container.setQueues(investorEntryNotificationQueue());
+
+            MessageListenerAdapter adapter = new MessageListenerAdapter(new TestListener(), "onMessage");
+            adapter.setMessageConverter(messageConverter);
+            container.setMessageListener(adapter);
+            return container;
+        }
+
+
+            @Bean
+            Queue investorEntryNotificationQueue() {
+                Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
+                //BindingBuilder.bind(queue).to(fanoutExchange());
+                return queue;
+            }
+
+            @Bean
+            Binding investorEntryNotificationQueueBinding(FanoutExchange exchange) {
+                return BindingBuilder.bind(investorEntryNotificationQueue()).to(exchange);
+            }
+
+
+
+
+InvestorDepotEntry ide = new InvestorDepotEntry(123, 1000.0, new HashMap<String, Integer>());
+
+
+        RPCMessageRequest request = new RPCMessageRequest(
+                InvestorDepotEntry.class,
+                RPCMessageRequest.Operation.WRITE,
+                null,
+                ide, null, null);
+
+        rabbitTemplate.convertAndSend("marketRPC", request);
+        logger.info("RPC RECEIVED:" );
+
+        request = new RPCMessageRequest(
+                InvestorDepotEntry.class,
+                RPCMessageRequest.Operation.READ,
+                null,
+                ide, null, null);
+
+        ArrayList<InvestorDepotEntry> l = (ArrayList<InvestorDepotEntry>)rabbitTemplate.convertSendAndReceive("marketRPC", request);
+
+        logger.info("REPLAY RECEIVED:" + l.size());

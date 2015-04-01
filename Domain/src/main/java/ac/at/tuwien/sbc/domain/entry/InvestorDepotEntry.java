@@ -1,12 +1,15 @@
 package ac.at.tuwien.sbc.domain.entry;
 
+import com.googlecode.cqengine.attribute.Attribute;
+import com.googlecode.cqengine.attribute.SimpleAttribute;
+
 import java.io.Serializable;
 import java.util.HashMap;
 
 /**
  * Created by dietl_ma on 25/03/15.
  */
-public class InvestorDepotEntry implements Serializable {
+public class InvestorDepotEntry extends SuperEntry implements Serializable{
 
     private Integer investorID;
 
@@ -46,4 +49,6 @@ public class InvestorDepotEntry implements Serializable {
     public void setInvestorID(Integer investorID) {
         this.investorID = investorID;
     }
+
+
 }

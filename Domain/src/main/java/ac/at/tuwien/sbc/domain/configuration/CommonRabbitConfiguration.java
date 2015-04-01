@@ -1,10 +1,7 @@
 package ac.at.tuwien.sbc.domain.configuration;
 
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -13,9 +10,14 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+
+import javax.annotation.PreDestroy;
+import java.util.HashMap;
+import java.util.UUID;
 
 
 /**
@@ -25,9 +27,27 @@ import org.springframework.context.annotation.Profile;
 @Profile("amqp")
 public class CommonRabbitConfiguration {
 
+    public static final String TOPIC_EXCHANGE =  "stockTopicExchange";
+    public static final String FANOUT_EXCHANGE =  "stockFanoutExchange";
+
+    public static final String INVESTOR_ENTRY_TOPIC =  "investorEntryTopic";
+    public static final String SHARE_ENTRY_TOPIC =  "shareEntryTopic";
+    public static final String ORDER_ENTRY_TOPIC =  "orderEntryTopic";
+    public static final String TRANSACTION_ENTRY_TOPIC =  "transactionEntryTopic";
+    public static final String RELEASE_ENTRY_QUEUE =  "releaseEntry";
+    public static final String MARKET_RPC = "marketRPC";
+
+    @Autowired
+    ConnectionFactory connectionFactory;
+
     @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange("exchange");
+    public TopicExchange topicExchange() {
+        return new TopicExchange(TOPIC_EXCHANGE);
+    }
+
+    @Bean
+    public FanoutExchange fanoutExchange() {
+        return new FanoutExchange(FANOUT_EXCHANGE);
     }
 
     @Bean
@@ -47,7 +67,6 @@ public class CommonRabbitConfiguration {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
         template.setReplyTimeout(10000);
-
         return template;
 
     }
@@ -57,38 +76,80 @@ public class CommonRabbitConfiguration {
         Jackson2JsonMessageConverter jsonMessageConverter = new Jackson2JsonMessageConverter();
         return jsonMessageConverter;
     }
-/*
-    @Bean
-    Queue queue() {
-        Queue queue = new Queue("stockqueue", false);
-        BindingBuilder.bind(queue).to(exchange()).with("stockexchange");
 
+    //init investorEntry topic
+    @Bean
+    public Queue investorEntryNotificationQueue() {
+        Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
         return queue;
     }
-*/
- /*   @Bean
-    public Queue replyQueue() {
-        Queue queue = new Queue("reply.queue", true);
-        BindingBuilder.bind(queue).to(exchange()).with("stockexchange");
+
+    @Bean
+    public Binding investorEntryNotificationQueueBinding(FanoutExchange exchange) {
+        return new Binding(investorEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), INVESTOR_ENTRY_TOPIC, new HashMap<String, Object>());
+    }
+
+    //init shareEntry topic
+    @Bean
+    public Queue shareEntryNotificationQueue() {
+        Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
         return queue;
     }
-*/
-/*
+
     @Bean
-    public SimpleMessageListenerContainer replyListenerContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
-        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.setQueues(replyQueue());
-        container.setMessageListener(amqpTemplate);
-        container.setMessageConverter(messageConverter);
-        return container;
+    public Binding shareEntryNotificationQueueBinding(FanoutExchange exchange) {
+        return new Binding(shareEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), SHARE_ENTRY_TOPIC, new HashMap<String, Object>());
     }
-*/
-
+    //init orderEntry topic
+    @Bean
+    public Queue orderEntryNotificationQueue() {
+        Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
+        return queue;
+    }
 
     @Bean
-    RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+    public Binding orderEntryNotificationQueueBinding(FanoutExchange exchange) {
+        return new Binding(orderEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), ORDER_ENTRY_TOPIC, new HashMap<String, Object>());
+    }
+
+    //init transactionEntry topic
+    @Bean
+    public Queue transactionEntryNotificationQueue() {
+        Queue queue = new Queue(UUID.randomUUID().toString(), false, false, true);
+        return queue;
+    }
+
+    @Bean
+    public Binding transactionEntryNotificationQueueBinding(FanoutExchange exchange) {
+        return new Binding(transactionEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), TRANSACTION_ENTRY_TOPIC, new HashMap<String, Object>());
+    }
+
+    //init releaseEntry queue
+    @Bean
+    public Queue releaseEntryQueue() {
+        Queue queue = new Queue(RELEASE_ENTRY_QUEUE);
+        return queue;
+    }
+    @Bean
+    public Binding releaseEntryQueueBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(releaseEntryQueue()).to(exchange).with(releaseEntryQueue().getName());
+    }
+
+    //init marketRPC queue
+    @Bean
+    public Queue marketRPCQueue() {
+        Queue queue = new Queue(MARKET_RPC);
+        return queue;
+    }
+    @Bean
+    public Binding marketRPCQueueBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(marketRPCQueue()).to(exchange).with(marketRPCQueue().getName());
+    }
+
+    @Bean
+    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
         return new RabbitAdmin(connectionFactory);
     }
+
 
 }

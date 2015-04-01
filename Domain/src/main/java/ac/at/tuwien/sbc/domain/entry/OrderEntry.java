@@ -2,6 +2,8 @@ package ac.at.tuwien.sbc.domain.entry;
 
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
+import com.googlecode.cqengine.attribute.Attribute;
+import com.googlecode.cqengine.attribute.SimpleAttribute;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -10,10 +12,9 @@ import java.util.UUID;
  * Created by dietl_ma on 25/03/15.
  */
 //RANDOM OR ANY COORDINATOR
-public class OrderEntry implements Serializable {
+public class OrderEntry extends SuperEntry implements Serializable {
 
     private UUID orderID;
-
     //is null if reseller it is IPO
     private Integer investorID;
 
@@ -105,4 +106,6 @@ public class OrderEntry implements Serializable {
     public void setStatus(OrderStatus status) {
         this.status = status;
     }
+
+
 }

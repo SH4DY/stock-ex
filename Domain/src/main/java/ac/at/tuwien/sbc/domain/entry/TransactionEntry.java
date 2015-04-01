@@ -9,7 +9,7 @@ import java.util.UUID;
  * Created by dietl_ma on 25/03/15.
  */
 //FIFO CONTAINER
-public class TransactionEntry implements Serializable {
+public class TransactionEntry extends SuperEntry implements Serializable {
 
     private String transactionID;
 

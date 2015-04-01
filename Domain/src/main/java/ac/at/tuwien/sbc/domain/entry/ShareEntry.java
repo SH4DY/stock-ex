@@ -1,12 +1,15 @@
 package ac.at.tuwien.sbc.domain.entry;
 
+import com.googlecode.cqengine.attribute.Attribute;
+import com.googlecode.cqengine.attribute.SimpleAttribute;
+
 import java.io.Serializable;
 
 /**
  * Created by dietl_ma on 25/03/15.
  */
 //SEPARATE CONTAINER
-public  class ShareEntry implements Serializable {
+public  class ShareEntry extends SuperEntry implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -45,4 +48,5 @@ public  class ShareEntry implements Serializable {
     public Double getPrice() {
         return price;
     }
+
 }
