@@ -44,34 +44,18 @@ public class MarketStore {
         transactionEntries = CQEngine.newInstance();
 
         //build indexes on attributes...
-        investorDepotEntries.addIndex(NavigableIndex.onAttribute(InvestorDepotEntry.INVESTOR_ID));
-        orderEntries.addIndex(NavigableIndex.onAttribute(OrderEntry.SHARE_ID));
-        orderEntries.addIndex(NavigableIndex.onAttribute(OrderEntry.TYPE));
-        orderEntries.addIndex(NavigableIndex.onAttribute(OrderEntry.STATUS));
-        orderEntries.addIndex(NavigableIndex.onAttribute(OrderEntry.LIMIT));
-        shareEntries.addIndex(NavigableIndex.onAttribute(ShareEntry.SHARE_ID));
+        investorDepotEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.INVESTOR_INVESTOR_ID));
+        orderEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.ORDER_SHARE_ID));
+        orderEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.ORDER_TYPE));
+        orderEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.ORDER_STATUS));
+        orderEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.ORDER_LIMIT));
+        shareEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.SHARE_SHARE_ID));
 
         collectionMap.put(InvestorDepotEntry.class, investorDepotEntries);
         collectionMap.put(OrderEntry.class, orderEntries);
         collectionMap.put(ShareEntry.class, shareEntries);
         collectionMap.put(TransactionEntry.class, transactionEntries);
 
-    }
-
-    public IndexedCollection<InvestorDepotEntry> getInvestorDepotEntries() {
-        return investorDepotEntries;
-    }
-
-    public IndexedCollection<OrderEntry> getOrderEntries() {
-        return orderEntries;
-    }
-
-    public IndexedCollection<ShareEntry> getShareEntries() {
-        return shareEntries;
-    }
-
-    public IndexedCollection<TransactionEntry> getTransactionEntries() {
-        return transactionEntries;
     }
 
     public ArrayList<Object> retrieve(Class clazz, Query query, Boolean shuffle, Integer numResults) {
