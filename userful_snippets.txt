@@ -67,3 +67,17 @@ InvestorDepotEntry ide = new InvestorDepotEntry(123, 1000.0, new HashMap<String,
         ArrayList<InvestorDepotEntry> l = (ArrayList<InvestorDepotEntry>)rabbitTemplate.convertSendAndReceive("marketRPC", request);
 
         logger.info("REPLAY RECEIVED:" + l.size());
+
+
+        @Bean
+            public SimpleMessageListenerContainer replyListenerContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
+                SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+                container.setConnectionFactory(connectionFactory);
+                container.setMessageConverter(messageConverter);
+                container.setQueues((Queue)ctx.getBean("shareEntryNotificationQueue"));
+
+                MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageHandler(), messageConverter);
+                adapter.setMessageConverter(messageConverter);
+                container.setMessageListener(adapter);
+                return container;
+            }
