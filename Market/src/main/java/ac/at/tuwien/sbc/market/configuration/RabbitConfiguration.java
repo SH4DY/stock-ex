@@ -1,6 +1,6 @@
 package ac.at.tuwien.sbc.market.configuration;
 
-import ac.at.tuwien.sbc.market.workflow.amqp.MessageHandler;
+import ac.at.tuwien.sbc.market.workflow.amqp.RPCMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
@@ -26,18 +26,18 @@ public class RabbitConfiguration {
     private ApplicationContext applicationContext;
 
     @Autowired
-    private MessageHandler messageHandler;
+    private RPCMessageHandler RPCMessageHandler;
 
     private static final Logger logger = LoggerFactory.getLogger(RabbitConfiguration.class);
 
     @Bean
-    public SimpleMessageListenerContainer replyListenerContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
+    public SimpleMessageListenerContainer marketRPCContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setMessageConverter(messageConverter);
         container.setQueues((Queue)applicationContext.getBean("marketRPCQueue"));
 
-        MessageListenerAdapter adapter = new MessageListenerAdapter(messageHandler, messageConverter);
+        MessageListenerAdapter adapter = new MessageListenerAdapter(RPCMessageHandler, messageConverter);
         adapter.setMessageConverter(messageConverter);
         container.setMessageListener(adapter);
         return container;

@@ -1,7 +1,6 @@
 package ac.at.tuwien.sbc.market.workflow.amqp;
 
 import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
-import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import ac.at.tuwien.sbc.domain.entry.*;
 import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import ac.at.tuwien.sbc.market.store.MarketStore;
@@ -9,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,7 +18,8 @@ import java.util.HashMap;
  * Created by dietl_ma on 01/04/15.
  */
 @Service
-public class MessageHandler {
+@Profile("amqp")
+public class RPCMessageHandler {
 
     @Autowired
     private MarketStore store;
@@ -28,9 +29,9 @@ public class MessageHandler {
 
     private HashMap<Class, String> topicMap = new HashMap<>();
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(RPCMessageHandler.class);
 
-    public MessageHandler() {
+    public RPCMessageHandler() {
         topicMap.put(InvestorDepotEntry.class, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC);
         topicMap.put(ShareEntry.class, CommonRabbitConfiguration.SHARE_ENTRY_TOPIC);
         topicMap.put(OrderEntry.class, CommonRabbitConfiguration.ORDER_ENTRY_TOPIC);
@@ -65,7 +66,9 @@ public class MessageHandler {
     private void doWrite(RPCMessageRequest request) {
         store.add(request.getClazz(), request.getObject());
         //notify
-        template.convertAndSend(CommonRabbitConfiguration.FANOUT_EXCHANGE, topicMap.get(request.getClass()), request.getObject());
+        ArrayList<Object> notificationList = new ArrayList<>();
+        notificationList.add(request.getObject());
+        template.convertAndSend(CommonRabbitConfiguration.FANOUT_EXCHANGE, topicMap.get(request.getClass()), notificationList);
     }
 
     private  ArrayList<Object> doTake(RPCMessageRequest request) {
