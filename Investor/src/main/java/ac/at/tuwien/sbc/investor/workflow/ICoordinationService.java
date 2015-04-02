@@ -15,15 +15,15 @@ public interface ICoordinationService {
 
     public void setListener(ICoordinationServiceListener listener);
 
-    public void getInvestor(Integer investorId, CoordinationListener clistener);
+    public void getInvestor(Integer investorId, CoordinationListener cListener);
 
-    public void getShares(ArrayList<String> shareIds, CoordinationListener clistener);
+    public void getShares(ArrayList<String> shareIds, CoordinationListener cListener);
 
-    public void registerInvestorNotification(CoordinationListener clistener);
+    public void registerInvestorNotification(CoordinationListener cListener);
 
-    public void registerOrderNotification(CoordinationListener clistener);
+    public void registerOrderNotification(CoordinationListener cListener);
 
-    public void registerShareNotification(CoordinationListener clistener);
+    public void registerShareNotification(CoordinationListener cListener);
 
     public void setInvestor(InvestorDepotEntry ide);
 

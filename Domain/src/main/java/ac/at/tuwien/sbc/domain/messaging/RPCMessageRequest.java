@@ -2,81 +2,59 @@ package ac.at.tuwien.sbc.domain.messaging;
 
 import ac.at.tuwien.sbc.domain.entry.SuperEntry;
 import com.googlecode.cqengine.query.Query;
+import org.mozartspaces.core.MzsCoreException;
+
+import java.util.ArrayList;
 
 /**
  * Created by dietl_ma on 01/04/15.
  */
 public class RPCMessageRequest {
 
-    public static enum Operation {READ, WRITE, TAKE, DELETE}
+    public static enum Method {GET_INVESTOR_DEPOT_ENTRY_BY_ID,
+        DELETE_INVESTOR_DEPOT_ENTRY_BY_ID,
+        WRITE_INVESTOR_DEPOT_ENTRY}
 
-    private Class clazz;
-    private Query<SuperEntry> query;
-    private SuperEntry object;
-    private Operation op;
-    private Integer numResults;
-    private Boolean shuffle;
+    private Method method;
+    private Object[] args;
+    private SuperEntry entry;
 
     public RPCMessageRequest() {}
 
-    public RPCMessageRequest(Class clazz, Operation op,  Query<SuperEntry> query, SuperEntry object, Integer numResults, Boolean shuffle) {
-        this.clazz = clazz;
-        this.query = query;
-        this.object = object;
-        this.op = op;
-        this.numResults = numResults;
-        this.shuffle = shuffle;
+    public RPCMessageRequest(Method method,Object[] args) {
+        this.method = method;
+        this.args = args;
+        this.entry = null;
     }
 
-
-
-    public Integer getNumResults() {
-        return numResults;
+    public RPCMessageRequest(Method method,Object[] args, SuperEntry entry) {
+        this.method = method;
+        this.entry = entry;
+        this.args = args;
     }
 
-    public void setNumResults(Integer numResults) {
-        this.numResults = numResults;
+    public Method getMethod() {
+        return method;
     }
 
-    public Query<SuperEntry> getQuery() {
-        return query;
+    public void setMethod(Method op) {
+        this.method = op;
     }
 
-    public void setQuery(Query<SuperEntry> query) {
-        this.query = query;
+    public Object[] getArgs() {
+        return args;
     }
 
-    public Class getClazz() {
-        return clazz;
-
-    }
-    public void setClazz(Class clazz) {
-        this.clazz = clazz;
+    public void setArgs(Object[] args) {
+        this.args = args;
     }
 
-    public SuperEntry getObject() {
-        return object;
+    public SuperEntry getEntry() {
+        return entry;
     }
 
-    public void setObject(SuperEntry object) {
-        this.object = object;
+    public void setEntry(SuperEntry entry) {
+        this.entry = entry;
     }
-
-    public Boolean getShuffle() {
-        return shuffle;
-    }
-
-    public void setShuffle(Boolean shuffle) {
-        this.shuffle = shuffle;
-    }
-
-    public Operation getOp() {
-        return op;
-    }
-
-    public void setOp(Operation op) {
-        this.op = op;
-    }
-
 }
 

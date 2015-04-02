@@ -58,7 +58,7 @@ public class MarketStore {
 
     }
 
-    public ArrayList<Object> retrieve(Class clazz, Query query, Boolean shuffle, Integer numResults) {
+    public ArrayList<SuperEntry> retrieve(Class clazz, Query query, Boolean shuffle, Integer numResults) {
 
         IndexedCollection col = collectionMap.get(clazz);
 
@@ -68,11 +68,11 @@ public class MarketStore {
         if (numResults == null)
             numResults = 1;
 
-        ArrayList<Object> result = new ArrayList<>();
+        ArrayList<SuperEntry> result = new ArrayList<>();
 
         if (query == null) {
             for (Object object : col) {
-                result.add(object);
+                result.add((SuperEntry)object);
             }
             return result;
         }
@@ -81,7 +81,7 @@ public class MarketStore {
             if (result.size() >= numResults)
                 break;
 
-            result.add(object);
+            result.add((SuperEntry)object);
         }
         return result;
     }

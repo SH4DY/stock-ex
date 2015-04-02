@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.domain.configuration;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -79,6 +80,10 @@ public class CommonRabbitConfiguration {
     @Bean
     public MessageConverter jsonMessageConverter(){
         Jackson2JsonMessageConverter jsonMessageConverter = new Jackson2JsonMessageConverter();
+
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.enableDefaultTyping();
+        jsonMessageConverter.setJsonObjectMapper(jsonObjectMapper);
         return jsonMessageConverter;
     }
 

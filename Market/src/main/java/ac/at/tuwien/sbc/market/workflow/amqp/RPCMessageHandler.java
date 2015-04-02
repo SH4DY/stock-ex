@@ -4,6 +4,7 @@ import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
 import ac.at.tuwien.sbc.domain.entry.*;
 import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import ac.at.tuwien.sbc.market.store.MarketStore;
+import com.googlecode.cqengine.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -11,8 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
+
+import static com.googlecode.cqengine.query.QueryFactory.equal;
 
 /**
  * Created by dietl_ma on 01/04/15.
@@ -38,49 +40,47 @@ public class RPCMessageHandler {
         topicMap.put(TransactionEntry.class, CommonRabbitConfiguration.TRANSACTION_ENTRY_TOPIC);
     }
 
-    public ArrayList<Object> handleMessage(RPCMessageRequest request) {
+    public List<SuperEntry> handleMessage(RPCMessageRequest request) {
 
-        ArrayList<Object> result = null;
-        switch (request.getOp()) {
-            case READ:
-                result = doRead(request);
+        logger.info("RECEIVED CALL:" + request.getMethod());
+        //ArrayList<Object> result = null;
+        List<SuperEntry> result = null;
+        switch (request.getMethod()) {
+            case GET_INVESTOR_DEPOT_ENTRY_BY_ID:
+                result = getInvestorDepotEntry((Integer) request.getArgs()[0]);
                 break;
-            case WRITE:
-                doWrite(request);
+            case DELETE_INVESTOR_DEPOT_ENTRY_BY_ID:
+                deleteInvestorDepotEntry((Integer)request.getArgs()[0]);
                 break;
-            case TAKE:
-                result = doTake(request);
+            case WRITE_INVESTOR_DEPOT_ENTRY:
+                writeInvestorDepotEntry(request.getEntry());
                 break;
-            case DELETE:
-                doDelete(request);
-                break;
+
         }
 
+        logger.info("DID CALL:" + request.getMethod());
         return result;
     }
 
-    private ArrayList<Object> doRead(RPCMessageRequest request) {
-        return store.retrieve(request.getClazz(), request.getQuery(), request.getShuffle(), request.getNumResults());
+    private ArrayList<SuperEntry> getInvestorDepotEntry(Integer investorId) {
+        Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
+        return store.retrieve(InvestorDepotEntry.class, q, null, 1);
     }
 
-    private void doWrite(RPCMessageRequest request) {
-        store.add(request.getClazz(), request.getObject());
-        //notify
-        ArrayList<Object> notificationList = new ArrayList<>();
-        notificationList.add(request.getObject());
-        template.convertAndSend(CommonRabbitConfiguration.FANOUT_EXCHANGE, topicMap.get(request.getClass()), notificationList);
-    }
-
-    private  ArrayList<Object> doTake(RPCMessageRequest request) {
-        ArrayList<Object> result = store.retrieve(request.getClazz(), request.getQuery(), request.getShuffle(), request.getNumResults());
+    private void deleteInvestorDepotEntry(Integer investorId) {
+        Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
+        ArrayList<SuperEntry> result = store.retrieve(InvestorDepotEntry.class, q, null, 1);
 
         for (Object object : result)
-            store.delete(request.getClazz(), object);
-
-        return result;
+            store.delete(InvestorDepotEntry.class, object);
     }
 
-    private void doDelete(RPCMessageRequest request) {
-        store.delete(request.getClazz(), request.getObject());
+    private void writeInvestorDepotEntry(SuperEntry investorDepotEntry) {
+        store.add(InvestorDepotEntry.class, investorDepotEntry);
+        ArrayList<SuperEntry> notificationList = new ArrayList<>();
+        notificationList.add(investorDepotEntry);
+        template.convertAndSend(CommonRabbitConfiguration.FANOUT_EXCHANGE, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC);
     }
+
+
 }

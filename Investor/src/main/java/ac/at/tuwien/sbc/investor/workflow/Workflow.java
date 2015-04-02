@@ -39,7 +39,7 @@ public class Workflow implements ICoordinationServiceListener {
 
 
     /** The Constant logger. */
-    private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
     @PostConstruct
     private void onPostConstruct() {
@@ -115,6 +115,7 @@ public class Workflow implements ICoordinationServiceListener {
             @Override
             public void onResult(InvestorDepotEntry ide) {
                 if (ide == null) {
+                    logger.info("Got InvestorDepotEntry is null");
                     //new entry
                     ide = new InvestorDepotEntry(investorId, budget, new HashMap<String, Integer>());
                 }
