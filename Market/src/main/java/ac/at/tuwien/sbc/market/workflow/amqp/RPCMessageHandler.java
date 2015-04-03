@@ -50,6 +50,9 @@ public class RPCMessageHandler {
             case GET_INVESTOR_DEPOT_ENTRY_BY_ID:
                 result = doGetInvestorDepotEntry((Integer)request.getArgs()[0]);
                 break;
+            case TAKE_INVESTOR_DEPOT_ENTRY_BY_ID:
+                result = doTakeInvestorDepotEntry((Integer)request.getArgs()[0]);
+                break;
             case DELETE_INVESTOR_DEPOT_ENTRY_BY_ID:
                 doDeleteInvestorDepotEntry((Integer)request.getArgs()[0]);
                 break;
@@ -86,6 +89,15 @@ public class RPCMessageHandler {
         return store.retrieve(InvestorDepotEntry.class, q, null, 1);
     }
 
+    private ArrayList<SuperEntry> doTakeInvestorDepotEntry(Integer investorId) {
+
+        ArrayList<SuperEntry> result = doGetInvestorDepotEntry(investorId);
+        if (!result.isEmpty())
+            doDeleteInvestorDepotEntry(((InvestorDepotEntry)result.get(0)).getInvestorID());
+
+        return result;
+    }
+
     private void doDeleteInvestorDepotEntry(Integer investorId) {
         Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
         ArrayList<SuperEntry> result = store.retrieve(InvestorDepotEntry.class, q, null, 1);
@@ -102,9 +114,9 @@ public class RPCMessageHandler {
         Query<OrderEntry> q = equal(CQAttributes.ORDER_ORDER_ID, orderId);
         ArrayList<SuperEntry> result = store.retrieve(OrderEntry.class, q, null, 1);
 
-        if (!result.isEmpty()) {
+        if (!result.isEmpty())
             doDeleteOrderEntry(((OrderEntry)result.get(0)).getOrderID());
-        }
+
         return result;
     }
 

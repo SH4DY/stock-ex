@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.ArrayList;
 
 /**
  * Created by dietl_ma on 31/03/15.
@@ -33,9 +34,8 @@ public class AmqpReleaseService implements IReleaseService {
     @Override
     public void makeRelease(ReleaseEntry rls) {
 
-        template.convertAndSend(CommonRabbitConfiguration.RELEASE_ENTRY_QUEUE,
-                rls);
+        ArrayList<ReleaseEntry> entries = new ArrayList<ReleaseEntry>();
+        entries.add(rls);
+        template.convertAndSend(CommonRabbitConfiguration.RELEASE_ENTRY_QUEUE, entries);
     }
-
-
 }

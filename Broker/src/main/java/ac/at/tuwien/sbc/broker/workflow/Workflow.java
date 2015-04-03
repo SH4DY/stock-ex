@@ -210,6 +210,12 @@ public class Workflow {
         //get buyer
         InvestorDepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedOrderRequestTransaction);
 
+        if (buyer == null) {
+            coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
+            sharedOrderRequestTransaction = null;
+            return;
+        }
+
         //check if transaction is valid
         HashMap<OrderEntry, Boolean> validationResult =
                 TransactionValidator.validate(sellOrder, buyOrder, seller, buyer, shareEntry, brokerProvision);

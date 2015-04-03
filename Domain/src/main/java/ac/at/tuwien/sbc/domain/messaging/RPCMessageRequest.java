@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class RPCMessageRequest {
 
     public static enum Method {GET_INVESTOR_DEPOT_ENTRY_BY_ID,
+        TAKE_INVESTOR_DEPOT_ENTRY_BY_ID,
         DELETE_INVESTOR_DEPOT_ENTRY_BY_ID,
         WRITE_INVESTOR_DEPOT_ENTRY,
         TAKE_ORDER_BY_ORDER_ID,
