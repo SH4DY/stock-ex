@@ -51,10 +51,10 @@ public class CommonRabbitConfiguration {
         return new TopicExchange(TOPIC_EXCHANGE);
     }
 
-    @Bean
-    public FanoutExchange fanoutExchange() {
-        return new FanoutExchange(FANOUT_EXCHANGE);
-    }
+    /*@Bean
+    public TopicExchange fanoutExchange() {
+        return new TopicExchange(FANOUT_EXCHANGE);
+    }*/
 
     @Bean
     public RabbitTransactionManager rabbitTransactionManager(ConnectionFactory connectionFactory) {
@@ -95,7 +95,7 @@ public class CommonRabbitConfiguration {
     }
 
     @Bean
-    public Binding investorEntryNotificationQueueBinding(FanoutExchange exchange) {
+    public Binding investorEntryNotificationQueueBinding(TopicExchange exchange) {
         return new Binding(investorEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), INVESTOR_ENTRY_TOPIC, new HashMap<String, Object>());
     }
 
@@ -107,7 +107,7 @@ public class CommonRabbitConfiguration {
     }
 
     @Bean
-    public Binding shareEntryNotificationQueueBinding(FanoutExchange exchange) {
+    public Binding shareEntryNotificationQueueBinding(TopicExchange exchange) {
         return new Binding(shareEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), SHARE_ENTRY_TOPIC, new HashMap<String, Object>());
     }
     //init orderEntry topic
@@ -118,7 +118,7 @@ public class CommonRabbitConfiguration {
     }
 
     @Bean
-    public Binding orderEntryNotificationQueueBinding(FanoutExchange exchange) {
+    public Binding orderEntryNotificationQueueBinding(TopicExchange exchange) {
         return new Binding(orderEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), ORDER_ENTRY_TOPIC, new HashMap<String, Object>());
     }
 
@@ -130,7 +130,7 @@ public class CommonRabbitConfiguration {
     }
 
     @Bean
-    public Binding transactionEntryNotificationQueueBinding(FanoutExchange exchange) {
+    public Binding transactionEntryNotificationQueueBinding(TopicExchange exchange) {
         return new Binding(transactionEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), TRANSACTION_ENTRY_TOPIC, new HashMap<String, Object>());
     }
 

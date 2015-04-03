@@ -6,7 +6,6 @@ import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.investor.workflow.ICoordinationService;
-import ac.at.tuwien.sbc.investor.workflow.ICoordinationServiceListener;
 import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.*;
@@ -52,17 +51,10 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Qualifier("shareContainer")
     ContainerReference shareContainer;
 
-    private ICoordinationServiceListener listener;
-
     private ArrayList<Notification> notifications = new ArrayList<Notification>();
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
-
-    @Override
-    public void setListener(ICoordinationServiceListener l) {
-        listener = l;
-    }
 
     @Override
     public void getInvestor(Integer id, CoordinationListener cListener) {
@@ -94,7 +86,6 @@ public class SpaceCoordinationService implements ICoordinationService {
 
                 if (currentEntries != null && !currentEntries.isEmpty())
                     entries.add(currentEntries.get(0));
-
             } catch (MzsCoreException e) {
                 logger.info("Share not found for: " + shareId);
             }

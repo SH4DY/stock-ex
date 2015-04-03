@@ -13,7 +13,13 @@ public class RPCMessageRequest {
 
     public static enum Method {GET_INVESTOR_DEPOT_ENTRY_BY_ID,
         DELETE_INVESTOR_DEPOT_ENTRY_BY_ID,
-        WRITE_INVESTOR_DEPOT_ENTRY}
+        WRITE_INVESTOR_DEPOT_ENTRY,
+        TAKE_ORDER_BY_ORDER_ID,
+        GET_ORDER_ENTRIES_BY_INVESTOR_ID,
+        WRITE_ORDER_ENTRY,
+        DELETE_ORDER_ENTRY_BY_ID,
+        GET_SHARE_ENTRY_BY_ID,
+        }
 
     private Method method;
     private Object[] args;

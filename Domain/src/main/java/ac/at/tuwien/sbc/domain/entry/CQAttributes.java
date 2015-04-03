@@ -5,6 +5,8 @@ import ac.at.tuwien.sbc.domain.enums.OrderType;
 import com.googlecode.cqengine.attribute.Attribute;
 import com.googlecode.cqengine.attribute.SimpleAttribute;
 
+import java.util.UUID;
+
 /**
  * Created by dietl_ma on 01/04/15.
  */
@@ -15,8 +17,17 @@ public class CQAttributes {
     };
 
     //CQEngine attribute for OrderEntry
+
+    public static final Attribute<OrderEntry, UUID> ORDER_ORDER_ID= new SimpleAttribute<OrderEntry, UUID>("orderID") {
+        public UUID getValue(OrderEntry orderEntry) { return orderEntry.getOrderID(); }
+    };
+
     public static final Attribute<OrderEntry, String> ORDER_SHARE_ID = new SimpleAttribute<OrderEntry, String>("shareID") {
         public String getValue(OrderEntry orderEntry) { return orderEntry.getShareID(); }
+    };
+
+    public static final Attribute<OrderEntry, Integer> ORDER_INVESTOR_ID = new SimpleAttribute<OrderEntry, Integer>("investorID") {
+        public Integer getValue(OrderEntry orderEntry) { return orderEntry.getInvestorID(); }
     };
 
     public static final Attribute<OrderEntry, OrderType> ORDER_TYPE = new SimpleAttribute<OrderEntry, OrderType>("type") {

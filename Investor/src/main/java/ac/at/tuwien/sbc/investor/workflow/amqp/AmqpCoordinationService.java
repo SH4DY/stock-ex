@@ -1,11 +1,14 @@
 package ac.at.tuwien.sbc.investor.workflow.amqp;
 
 import ac.at.tuwien.sbc.domain.entry.*;
+import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import ac.at.tuwien.sbc.investor.workflow.ICoordinationService;
-import ac.at.tuwien.sbc.investor.workflow.ICoordinationServiceListener;
 import com.googlecode.cqengine.query.Query;
+import org.mozartspaces.capi3.KeyCoordinator;
+import org.mozartspaces.core.MzsConstants;
+import org.mozartspaces.core.MzsCoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -38,33 +41,32 @@ public class AmqpCoordinationService implements ICoordinationService {
     private static final Logger logger = LoggerFactory.getLogger(AmqpCoordinationService.class);
 
 
-    @PostConstruct
-    public void onPostConstruct() {
-        logger.info("I'M YOUR AmqpCoordinationService");
-    }
-
-    @Override
-    public void setListener(ICoordinationServiceListener listener) {
-
-    }
-
     @Override
     public void getInvestor(Integer investorId, CoordinationListener cListener) {
 
-        logger.info("BEGIN GET");
         InvestorDepotEntry entry = null;
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{investorId});
         ArrayList<InvestorDepotEntry> result = (ArrayList<InvestorDepotEntry>)template.convertSendAndReceive("marketRPC", request);
         if (result != null && !result.isEmpty())
             entry = (InvestorDepotEntry)result.toArray()[0];
 
-        logger.info("END GET");
         cListener.onResult(entry);
     }
 
     @Override
     public void getShares(ArrayList<String> shareIds, CoordinationListener cListener) {
 
+        RPCMessageRequest request = null;
+        ArrayList<ShareEntry> entries = new ArrayList<ShareEntry>();
+        for (String shareId : shareIds) {
+
+            request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRY_BY_ID, new Object[]{shareId});
+            ArrayList<ShareEntry> currentEntries = (ArrayList<ShareEntry>)template.convertSendAndReceive("marketRPC", request);
+            if (currentEntries != null && !currentEntries.isEmpty())
+                entries.add(currentEntries.get(0));
+
+        }
+        cListener.onResult(entries);
     }
 
     @Override
@@ -85,31 +87,41 @@ public class AmqpCoordinationService implements ICoordinationService {
     @Override
     public void setInvestor(InvestorDepotEntry ide) {
 
-        logger.info("BEGIN DELETE");
         //delete investor
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getInvestorID()});
         template.convertAndSend("marketRPC", request);
-        logger.info("END DELETE");
+
         //write investor
-        logger.info("BEGIN SET");
         request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_INVESTOR_DEPOT_ENTRY, null, ide);
         template.convertAndSend("marketRPC", request);
-
-        logger.info("END SET");
     }
 
     @Override
     public void addOrder(OrderEntry oe) {
-
+        //write order
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, oe);
+        template.convertAndSend("marketRPC", request);
     }
 
     @Override
     public void getOrders(Integer investorId, CoordinationListener cListener) {
 
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_ORDER_ENTRIES_BY_INVESTOR_ID, new Object[]{investorId});
+        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
+        cListener.onResult(result);
     }
 
     @Override
     public void deleteOrder(UUID orderID) {
+        //delete order
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_ORDER_BY_ORDER_ID, new Object[]{orderID});
+        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
+
+        if (!result.isEmpty()) {
+            result.get(0).setStatus(OrderStatus.DELETED);
+            request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, result.get(0));
+            template.convertAndSend("marketRPC", request);
+        }
 
     }
 

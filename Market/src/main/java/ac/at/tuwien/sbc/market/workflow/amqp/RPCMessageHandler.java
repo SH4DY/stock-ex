@@ -45,15 +45,34 @@ public class RPCMessageHandler {
         logger.info("RECEIVED CALL:" + request.getMethod());
         //ArrayList<Object> result = null;
         List<SuperEntry> result = null;
+        List<SuperEntry> notification = new ArrayList<SuperEntry>();
         switch (request.getMethod()) {
             case GET_INVESTOR_DEPOT_ENTRY_BY_ID:
-                result = getInvestorDepotEntry((Integer) request.getArgs()[0]);
+                result = doGetInvestorDepotEntry((Integer)request.getArgs()[0]);
                 break;
             case DELETE_INVESTOR_DEPOT_ENTRY_BY_ID:
-                deleteInvestorDepotEntry((Integer)request.getArgs()[0]);
+                doDeleteInvestorDepotEntry((Integer)request.getArgs()[0]);
                 break;
             case WRITE_INVESTOR_DEPOT_ENTRY:
-                writeInvestorDepotEntry(request.getEntry());
+                doWriteInvestorDepotEntry(request.getEntry());
+                notification.add(request.getEntry());
+                template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC, notification);
+                break;
+            case TAKE_ORDER_BY_ORDER_ID:
+                return doTakeOrderByOrderId((UUID)request.getArgs()[0]);
+            case GET_ORDER_ENTRIES_BY_INVESTOR_ID:
+                result = doGetOrdersByInvestorId((Integer)request.getArgs()[0]);
+                break;
+            case WRITE_ORDER_ENTRY:
+                doWriteOrderEntry(request.getEntry());
+                notification.add(request.getEntry());
+                template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.ORDER_ENTRY_TOPIC, notification);
+                break;
+            case DELETE_ORDER_ENTRY_BY_ID:
+                doDeleteOrderEntry((UUID)request.getArgs()[0]);
+                break;
+            case GET_SHARE_ENTRY_BY_ID:
+                result = doGetShareEntry((String)request.getArgs()[0]);
                 break;
 
         }
@@ -62,12 +81,12 @@ public class RPCMessageHandler {
         return result;
     }
 
-    private ArrayList<SuperEntry> getInvestorDepotEntry(Integer investorId) {
+    private ArrayList<SuperEntry> doGetInvestorDepotEntry(Integer investorId) {
         Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
         return store.retrieve(InvestorDepotEntry.class, q, null, 1);
     }
 
-    private void deleteInvestorDepotEntry(Integer investorId) {
+    private void doDeleteInvestorDepotEntry(Integer investorId) {
         Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
         ArrayList<SuperEntry> result = store.retrieve(InvestorDepotEntry.class, q, null, 1);
 
@@ -75,11 +94,40 @@ public class RPCMessageHandler {
             store.delete(InvestorDepotEntry.class, object);
     }
 
-    private void writeInvestorDepotEntry(SuperEntry investorDepotEntry) {
+    private void doWriteInvestorDepotEntry(SuperEntry investorDepotEntry) {
         store.add(InvestorDepotEntry.class, investorDepotEntry);
-        ArrayList<SuperEntry> notificationList = new ArrayList<>();
-        notificationList.add(investorDepotEntry);
-        template.convertAndSend(CommonRabbitConfiguration.FANOUT_EXCHANGE, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC);
+    }
+
+    private ArrayList<SuperEntry> doTakeOrderByOrderId(UUID orderId) {
+        Query<OrderEntry> q = equal(CQAttributes.ORDER_ORDER_ID, orderId);
+        ArrayList<SuperEntry> result = store.retrieve(OrderEntry.class, q, null, 1);
+
+        if (!result.isEmpty()) {
+            doDeleteOrderEntry(((OrderEntry)result.get(0)).getOrderID());
+        }
+        return result;
+    }
+
+    private ArrayList<SuperEntry> doGetOrdersByInvestorId(Integer investorId) {
+        Query<OrderEntry> q = equal(CQAttributes.ORDER_INVESTOR_ID, investorId);
+        return store.retrieve(OrderEntry.class, q, null, Integer.MAX_VALUE);
+    };
+
+    private void doWriteOrderEntry(SuperEntry orderEntry) {
+        store.add(OrderEntry.class, orderEntry);
+    }
+
+    private void doDeleteOrderEntry(UUID orderId) {
+        Query<OrderEntry> q = equal(CQAttributes.ORDER_ORDER_ID, orderId);
+        ArrayList<SuperEntry> result = store.retrieve(OrderEntry.class, q, null, 1);
+
+        for (Object object : result)
+            store.delete(InvestorDepotEntry.class, object);
+    }
+
+    private ArrayList<SuperEntry> doGetShareEntry(String shareId) {
+        Query<ShareEntry> q = equal(CQAttributes.SHARE_SHARE_ID, shareId);
+        return store.retrieve(ShareEntry.class, q, null, 1);
     }
 
 

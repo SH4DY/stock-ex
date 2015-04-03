@@ -13,8 +13,6 @@ import java.util.UUID;
  */
 public interface ICoordinationService {
 
-    public void setListener(ICoordinationServiceListener listener);
-
     public void getInvestor(Integer investorId, CoordinationListener cListener);
 
     public void getShares(ArrayList<String> shareIds, CoordinationListener cListener);

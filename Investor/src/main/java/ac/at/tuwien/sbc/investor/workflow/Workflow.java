@@ -21,7 +21,7 @@ import java.util.UUID;
  * Created by dietl_ma on 26/03/15.
  */
 @Service
-public class Workflow implements ICoordinationServiceListener {
+public class Workflow  {
 
     @Value("${id}")
     private Integer investorId;
@@ -44,8 +44,6 @@ public class Workflow implements ICoordinationServiceListener {
     @PostConstruct
     private void onPostConstruct() {
 
-        //add listener to coordination service
-        coordinationService.setListener(this);
         //init notifications
         initInvestorNotification();
         initOrderNotification();
