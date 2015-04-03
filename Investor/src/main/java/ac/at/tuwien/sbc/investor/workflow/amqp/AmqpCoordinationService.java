@@ -117,7 +117,7 @@ public class AmqpCoordinationService implements ICoordinationService {
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_ORDER_BY_ORDER_ID, new Object[]{orderID});
         ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
 
-        if (!result.isEmpty()) {
+        if (result != null && !result.isEmpty()) {
             result.get(0).setStatus(OrderStatus.DELETED);
             request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, result.get(0));
             template.convertAndSend("marketRPC", request);
