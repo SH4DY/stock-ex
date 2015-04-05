@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.market.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,23 @@ public class Workflow implements IMarketServiceListener {
     private void postConstruct(){
         getAllOrders();
         setupOrderNotification();
+
+        getAllTransactions();
+        setupTransactionNotifiction();
     }
+
+    private void setupOrderNotification() {
+        marketPublisherService.registerOrderObserver(new CoordinationListener<OrderEntry>(){
+
+            @Override
+            public void onResult(OrderEntry orderEntry) {
+                if(observer != null){
+                    observer.onOrderAdded(orderEntry);
+                }
+            }
+        });
+    }
+
     private void getAllOrders(){
         marketPublisherService.getOrders(new CoordinationListener<List<OrderEntry>>() {
             @Override
@@ -46,16 +63,33 @@ public class Workflow implements IMarketServiceListener {
         });
     }
 
-    private void setupOrderNotification() {
-        marketPublisherService.registerOrderObserver(new CoordinationListener<OrderEntry>(){
 
+    private void setupTransactionNotifiction(){
+        marketPublisherService.registerTransactionObserver(new CoordinationListener<TransactionEntry>() {
             @Override
-            public void onResult(OrderEntry orderEntry) {
-                if(observer != null){
-                    observer.onOrderAdded(orderEntry);
+            public void onResult(TransactionEntry transactionEntry) {
+                if(observer != null) {
+                    observer.onTransactionAdded(transactionEntry);
                 }
             }
         });
     }
+
+    private void getAllTransactions(){
+        marketPublisherService.getTransactions(new CoordinationListener<List<TransactionEntry>>() {
+            @Override
+            public void onResult(List<TransactionEntry> entries) {
+                if(entries != null){
+                    for(TransactionEntry entry : entries){
+                        if(observer != null){
+                            observer.onTransactionAdded(entry);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
 
 }

@@ -2,6 +2,7 @@ package ac.at.tuwien.sbc.market.gui;
 
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
+import ac.at.tuwien.sbc.market.gui.models.HistoryTableModel;
 import ac.at.tuwien.sbc.market.gui.models.OrderTableModel;
 import ac.at.tuwien.sbc.market.workflow.IMarketObserver;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public class MainGUI extends JFrame implements IMarketObserver{
     private static final Logger logger = LoggerFactory.getLogger(MainGUI.class);
 
     private OrderTableModel orderTableModel;
+    private HistoryTableModel historyTableModel;
 
     public MainGUI(){
         setSize(1200,1200);
@@ -44,21 +46,6 @@ public class MainGUI extends JFrame implements IMarketObserver{
         tableModel.addColumn("Volume");
         tableModel.addColumn("Stockprice");
 
-        tableModel.addRow(new String[]{"GOOG", "10", "100"});
-        tableModel.addRow(new String[]{"MSFT", "10", "100"});
-        tableModel.addRow(new String[]{"YAHO", "5", "700"});
-        tableModel.addRow(new String[]{"GOOG", "10", "100"});
-        tableModel.addRow(new String[]{"MSFT", "10", "100"});
-        tableModel.addRow(new String[]{"YAHO", "5", "700"});
-        tableModel.addRow(new String[]{"GOOG", "10", "100"});
-        tableModel.addRow(new String[]{"MSFT", "10", "100"});
-        tableModel.addRow(new String[]{"YAHO", "5", "700"});
-        tableModel.addRow(new String[]{"GOOG", "10", "100"});
-        tableModel.addRow(new String[]{"MSFT", "10", "100"});
-        tableModel.addRow(new String[]{"YAHO", "5", "700"});
-        tableModel.addRow(new String[]{"GOOG", "10", "100"});
-        tableModel.addRow(new String[]{"MSFT", "10", "100"});
-        tableModel.addRow(new String[]{"YAHO", "5", "700"});
         overviewTable.setModel(tableModel);
 
         //This is just a hack to make the table not-editable
@@ -66,20 +53,8 @@ public class MainGUI extends JFrame implements IMarketObserver{
     }
 
     private void initHistoryPanel(){
-        DefaultTableModel tableModel = new DefaultTableModel();
-        tableModel.addColumn("Transaction ID");
-        tableModel.addColumn("BrokerID");
-        tableModel.addColumn("BuyerID");
-        tableModel.addColumn("SellerID");
-        tableModel.addColumn("ShareID");
-        tableModel.addColumn("SellOrderID");
-        tableModel.addColumn("buyOrderID");
-        tableModel.addColumn("price");
-        tableModel.addColumn("Volume");
-        tableModel.addColumn("Total");
-        tableModel.addColumn("Provision");
-
-        historyTable.setModel(tableModel);
+        historyTableModel = new HistoryTableModel(null);
+        historyTable.setModel(historyTableModel);
 
         //This is just a hack to make the table not-editable
         overviewTable.setEnabled(false);
@@ -97,7 +72,10 @@ public class MainGUI extends JFrame implements IMarketObserver{
 
     @Override
     public void onTransactionAdded(TransactionEntry transactionEntry) {
-
+        if(transactionEntry != null) {
+            logger.debug("Main GUI notified of transactionEntry");
+            historyTableModel.addRow(transactionEntry);
+        }
     }
 
     @Override
