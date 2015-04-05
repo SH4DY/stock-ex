@@ -3,10 +3,7 @@ package ac.at.tuwien.sbc.market.gui.models;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * TableModel to visualize the OverviewTable on the Main GUI
@@ -14,21 +11,20 @@ import java.util.Set;
  * Created by shady on 05/04/15.
  */
 public class ShareTableModel extends AbstractTableModel{
-
     String[] columnNames = {"Share ID", "Volume", "Stockprice"};
 
-    Set<ShareEntry> content = new HashSet<>();
+    LinkedHashSet<ShareEntry> content = new LinkedHashSet<>();
 
     public ShareTableModel(List<ShareEntry> shareEntries){
         if(shareEntries != null) {
-            for(ShareEntry entry : shareEntries)
-            content.;
-        }else{
-            content = new ArrayList<>();
+            content.addAll(content);
         }
     }
 
     public void addRow(ShareEntry shareEntry){
+        if(content.contains(shareEntry)){
+            content.remove(shareEntry);
+        }
         content.add(shareEntry);
         fireTableDataChanged();
     }
@@ -50,10 +46,16 @@ public class ShareTableModel extends AbstractTableModel{
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
+        Iterator<ShareEntry> it = content.iterator();
+
+        for(int i = 0; i < rowIndex; i++) it.next();
+
+        ShareEntry entry = it.next();
+
         switch (columnIndex) {
-            case 0: return content.get(rowIndex).getShareID();
-            case 1: return content.get(rowIndex).getNumShares();
-            case 2: return content.get(rowIndex).getPrice();
+            case 0: return entry.getShareID();
+            case 1: return entry.getNumShares();
+            case 2: return entry.getPrice();
         }
         return null;
     }

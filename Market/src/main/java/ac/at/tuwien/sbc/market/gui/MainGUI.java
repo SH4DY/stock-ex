@@ -89,7 +89,6 @@ public class MainGUI extends JFrame implements IMarketObserver{
         if(shareEntry != null) {
             logger.debug("Main GUI notified of shareEntry");
 
-            if(shareEntry.)
             shareTableModel.addRow(shareEntry);
         }
     }

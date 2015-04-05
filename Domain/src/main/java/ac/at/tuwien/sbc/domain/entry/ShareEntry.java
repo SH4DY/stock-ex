@@ -49,4 +49,25 @@ public  class ShareEntry extends SuperEntry implements Serializable {
         return price;
     }
 
+    //We override equality and hashes because
+    //the shareID is the only property of uniqueness
+    //Main reason: GUI shall display every share
+    //only ONCE, even after updating the price.
+    //GUI uses a HashSet in the background.
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ShareEntry)) return false;
+
+        ShareEntry that = (ShareEntry) o;
+
+        return shareID.equals(that.getShareID());
+
+    }
+
+    @Override
+    public int hashCode() {
+        return shareID.hashCode();
+    }
+
 }
