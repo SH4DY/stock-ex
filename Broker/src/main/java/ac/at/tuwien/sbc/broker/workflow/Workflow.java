@@ -102,8 +102,10 @@ public class Workflow {
         //update or create share
         ShareEntry shareEntry = coordinationService.getShareEntry(releaseEntry.getCompanyID(), sharedTransaction);
 
-        if (shareEntry == null)
+        if (shareEntry == null) {
             shareEntry = new ShareEntry(releaseEntry.getCompanyID(), releaseEntry.getNumShares(), releaseEntry.getPrice());
+            logger.info("INIT SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares());
+        }
         else {
             shareEntry.setNumShares(shareEntry.getNumShares() + releaseEntry.getNumShares());
         }
@@ -115,20 +117,21 @@ public class Workflow {
             return;
         }
 
-        //add order
+        //TODO @Martin: Ich setze den Preis = Limit. Wir wissen ja immer noch, dass es sich
+        //um ein Release handelt da die Investor ID null ist.
         OrderEntry oe = new OrderEntry(UUID.randomUUID(),
                 0,
                 releaseEntry.getCompanyID(),
                 OrderType.SELL,
-                0.0,
+                releaseEntry.getPrice(),
                 releaseEntry.getNumShares(),
                 0,
                 OrderStatus.OPEN);
 
-        logger.info("INIT SHARE:" + shareEntry.getShareID() + " / " + shareEntry.getNumShares());
         try {
             coordinationService.addOrder(oe, sharedTransaction);
             coordinationService.commitTransaction(sharedTransaction);
+            logger.info("Broker " + brokerId +" , converted release into OrderEntry " + oe.getOrderID());
         } catch (CoordinationServiceException e) {
             coordinationService.rollbackTransaction(sharedTransaction);
         }
