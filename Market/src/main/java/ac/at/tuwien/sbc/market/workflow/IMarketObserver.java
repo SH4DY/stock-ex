@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.market.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
 
 /**
@@ -14,4 +15,5 @@ public interface IMarketObserver {
 
     public void onTransactionAdded(TransactionEntry transactionEntry);
     public void onOrderAdded(OrderEntry orderEntry);
+    public void onShareAdded(ShareEntry shareEntry);
 }

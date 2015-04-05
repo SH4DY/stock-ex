@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.market.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ public class Workflow implements IMarketServiceListener {
 
         getAllTransactions();
         setupTransactionNotifiction();
+
+        getAllShares();
+        setupShareNotification();
     }
 
     private void setupOrderNotification() {
@@ -90,6 +94,30 @@ public class Workflow implements IMarketServiceListener {
         });
     }
 
+    private void setupShareNotification(){
+        marketPublisherService.registerShareObserver(new CoordinationListener<ShareEntry>() {
+            @Override
+            public void onResult(ShareEntry shareEntry) {
+                if (observer != null) {
+                    observer.onShareAdded(shareEntry);
+                }
+            }
+        });
+    }
 
+    private void getAllShares(){
+        marketPublisherService.getShares(new CoordinationListener<List<ShareEntry>>() {
+            @Override
+            public void onResult(List<ShareEntry> entries) {
+                if (entries != null) {
+                    for (ShareEntry entry : entries) {
+                        if (observer != null) {
+                            observer.onShareAdded(entry);
+                        }
+                    }
+                }
+            }
+        });
+    }
 
 }

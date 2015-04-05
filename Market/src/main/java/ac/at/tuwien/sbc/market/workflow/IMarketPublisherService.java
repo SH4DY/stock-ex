@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.market.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 
@@ -13,4 +14,7 @@ public interface IMarketPublisherService {
 
     public void registerTransactionObserver(CoordinationListener<TransactionEntry> coordinationListener);
     public void getTransactions(CoordinationListener listener);
+
+    public void registerShareObserver(CoordinationListener<ShareEntry> coordinationListener);
+    public void getShares(CoordinationListener listener);
 }
