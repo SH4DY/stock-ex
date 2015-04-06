@@ -51,7 +51,6 @@ public class Workflow {
         coordinationService.registerReleaseNotification(new CoordinationListener<ArrayList<ReleaseEntry>>() {
             @Override
             public void onResult(ArrayList<ReleaseEntry> releaseEntries) {
-
                 logger.info("on ReleaseEntry notification" );
                 handleReleaseRequests();
             }

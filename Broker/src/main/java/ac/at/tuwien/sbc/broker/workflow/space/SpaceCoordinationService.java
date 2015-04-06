@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import static org.mozartspaces.capi3.Matchmakers.*;
 
@@ -259,9 +260,7 @@ public class SpaceCoordinationService implements ICoordinationService {
 
             notifications.add(notification);
 
-        } catch (MzsCoreException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -277,9 +276,7 @@ public class SpaceCoordinationService implements ICoordinationService {
 
             notifications.add(notification);
 
-        } catch (MzsCoreException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -295,9 +292,7 @@ public class SpaceCoordinationService implements ICoordinationService {
 
             notifications.add(notification);
 
-        } catch (MzsCoreException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
