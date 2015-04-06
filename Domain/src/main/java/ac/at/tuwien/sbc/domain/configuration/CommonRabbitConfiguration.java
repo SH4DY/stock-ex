@@ -110,7 +110,7 @@ public class CommonRabbitConfiguration {
     public Binding shareEntryNotificationQueueBinding(TopicExchange exchange) {
         return new Binding(shareEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), SHARE_ENTRY_TOPIC, new HashMap<String, Object>());
     }
-    //init orderEntry topic
+    //init transactionEntry topic
     @Bean
     public Queue orderEntryNotificationQueue() {
         Queue queue = new Queue(ORDER_ENTRY_TOPIC + '_' + uuid(), false, false, true);
