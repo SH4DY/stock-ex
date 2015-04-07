@@ -67,6 +67,9 @@ public class Workflow  {
                         currentInvestor = ide;
                         if (observer != null)
                             observer.onInvestorDepotEntryNotification(ide);
+
+                        //re-init shares
+                        initShares();
                     }
                 }
             }

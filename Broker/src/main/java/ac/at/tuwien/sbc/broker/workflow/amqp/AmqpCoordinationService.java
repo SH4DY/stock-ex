@@ -44,41 +44,57 @@ public class AmqpCoordinationService implements ICoordinationService {
     }
 
     @Override
-    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction) throws CoordinationServiceException {
+    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
+
+        if (ide == null)
+            return;
+
         //delete investor
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getInvestorID()});
         template.convertAndSend("marketRPC", request);
 
         //write investor
-        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_INVESTOR_DEPOT_ENTRY, null, ide);
+        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_INVESTOR_DEPOT_ENTRY, null, ide, isRollbackAction);
         template.convertAndSend("marketRPC", request);
     }
 
     @Override
-    public void addOrder(OrderEntry oe, Object sharedTransaction) throws CoordinationServiceException {
+    public void addOrder(OrderEntry oe, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
         //write order
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, oe);
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, oe, isRollbackAction);
         template.convertAndSend("marketRPC", request);
-    }
-
-    @Override
-    public OrderEntry getOrderByTemplate(OrderEntry oe, Object sharedTransaction) {
-        return null;
     }
 
     @Override
     public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price, Object sharedTransaction) {
-        return null;
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_ORDER_BY_PROPERTIES,
+                                                          new Object[]{shareId, type, status, price});
+        ArrayList<OrderEntry> entries = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
+        OrderEntry entry = null;
+
+        if (entries != null && !entries.isEmpty())
+            entry = entries.get(0);
+
+        return entry;
     }
 
     @Override
     public ArrayList<ShareEntry> readShares() {
-        return null;
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRIES, null);
+        ArrayList<ShareEntry> entries = (ArrayList<ShareEntry>)template.convertSendAndReceive("marketRPC", request);
+        return entries;
     }
 
     @Override
     public ReleaseEntry getReleaseEntry(Object sharedTransaction) {
-        return null;
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_RELEASE_ENTRY, null, null);
+        ArrayList<ReleaseEntry> entries = (ArrayList<ReleaseEntry>)template.convertSendAndReceive("marketRPC", request);
+        ReleaseEntry entry = null;
+
+        if (entries != null && !entries.isEmpty())
+            entry = entries.get(0);
+
+        return entry;
     }
 
     @Override
@@ -96,7 +112,13 @@ public class AmqpCoordinationService implements ICoordinationService {
 
     @Override
     public void setShareEntry(ShareEntry se, Object sharedTransaction) throws CoordinationServiceException {
+        //delete share
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_SHARE_ENTRY_BY_ID, new Object[]{se.getShareID()});
+        template.convertAndSend("marketRPC", request);
 
+        //write share
+        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_SHARE_ENTRY, null, se);
+        template.convertAndSend("marketRPC", request);
     }
 
     @Override
@@ -116,7 +138,9 @@ public class AmqpCoordinationService implements ICoordinationService {
 
     @Override
     public void addTransaction(TransactionEntry te, Object sharedTransaction) throws CoordinationServiceException {
-
+        //write share
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_TRANSACTION_ENTRY, null, te);
+        template.convertAndSend("marketRPC", request);
     }
 
     @Override
@@ -127,11 +151,6 @@ public class AmqpCoordinationService implements ICoordinationService {
     @Override
     public void commitTransaction(Object sharedTransaction) {
 
-    }
-
-    @Override
-    public Boolean transactionIsRunning(Object sharedTransaction) {
-        return null;
     }
 
     @Override
@@ -154,7 +173,7 @@ public class AmqpCoordinationService implements ICoordinationService {
             orderEntryNotificationListener.onResult(list);
     }
 
-    public void onReleaseEntryMessage(ArrayList<ReleaseEntry> list) {
+    public void onReleaseEntryNotification(ArrayList<ReleaseEntry> list) {
         if (releaseEntryMessageListener != null)
             releaseEntryMessageListener.onResult(list);
     }

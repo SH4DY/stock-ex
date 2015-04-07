@@ -87,7 +87,7 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     @Override
-    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction) throws CoordinationServiceException {
+    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
         logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
         TransactionReference tx = (TransactionReference)sharedTransaction;
         try {
@@ -104,7 +104,7 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     @Override
-    public void addOrder(OrderEntry oe, Object sharedTransaction) throws CoordinationServiceException {
+    public void addOrder(OrderEntry oe, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
 
         TransactionReference tx = null;
         if (sharedTransaction != null)
@@ -120,27 +120,6 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
-    @Override
-    public OrderEntry getOrderByTemplate(OrderEntry oe, Object sharedTransaction) {
-        logger.info("Try to get order by template:" + oe.getStatus());
-        TransactionReference tx = (TransactionReference)sharedTransaction;
-        ArrayList<OrderEntry> entries = null;
-        OrderEntry entry = null;
-        try {
-
-          ArrayList<Selector> selectors = new ArrayList<Selector>();
-          selectors.add(LindaCoordinator.newSelector(oe, MzsConstants.Selecting.COUNT_ALL));
-          selectors.add(RandomCoordinator.newSelector(1));
-
-          entries = capi.take(orderContainer, selectors, MzsConstants.RequestTimeout.ZERO, tx);
-        } catch (MzsCoreException e) {logger.info("Try to get order by template FAILED:" + e.getMessage()); };
-
-        if (entries != null && !entries.isEmpty())
-            entry = entries.get(0);
-
-        return entry;
-    }
-
 
     @Override
     public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price, Object sharedTransaction) {
@@ -150,8 +129,6 @@ public class SpaceCoordinationService implements ICoordinationService {
         Matchmaker mShareId = Property.forName("shareID").equalTo(shareId);
         Matchmaker mType = Property.forName("type").equalTo(type);
         Matchmaker mStatus = Property.forName("status").equalTo(status);
-        //Matchmaker mStatus1 = Property.forName("status").equalTo(OrderStatus.OPEN);
-        //Matchmaker mStatus2 = Property.forName("status").equalTo(OrderStatus.PARTIAL);
         Matchmaker mLimit = ComparableProperty.forName("limit").lessThanOrEqualTo(price);
         if (type.equals(OrderType.BUY))
             mLimit = ComparableProperty.forName("limit").greaterThanOrEqualTo(price);
@@ -332,15 +309,8 @@ public class SpaceCoordinationService implements ICoordinationService {
             } catch (MzsCoreException e) {
                 logger.info("Transaction failed at some point");
             }
-
             sharedTransaction = null;
         }
-    }
-
-    @Override
-    public Boolean transactionIsRunning(Object sharedTransaction) {
-
-        return false;
     }
 
     @Override

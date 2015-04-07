@@ -70,13 +70,13 @@ public class RabbitConfiguration {
     }
 
     @Bean
-    public SimpleMessageListenerContainer releaseEntryListenerContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
+    public SimpleMessageListenerContainer releaseEntryNotifcationContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setMessageConverter(messageConverter);
-        container.setQueues((Queue)applicationContext.getBean("releaseEntryQueue"));
+        container.setQueues((Queue)applicationContext.getBean("releaseEntryNotificationQueue"));
 
-        MessageListenerAdapter adapter = new MessageListenerAdapter(messageHandler, "onReleaseEntryMessage");
+        MessageListenerAdapter adapter = new MessageListenerAdapter(messageHandler, "onReleaseEntryNotification");
         adapter.setMessageConverter(messageConverter);
         container.setMessageListener(adapter);
         return container;

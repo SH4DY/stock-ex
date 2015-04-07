@@ -26,6 +26,7 @@ public class MarketStore {
     private IndexedCollection<OrderEntry> orderEntries;
     private IndexedCollection<ShareEntry> shareEntries;
     private IndexedCollection<TransactionEntry> transactionEntries;
+    private IndexedCollection<ReleaseEntry> releaseEntries;
 
     private HashMap<Class, IndexedCollection> collectionMap = new HashMap<Class, IndexedCollection>();
 
@@ -42,6 +43,7 @@ public class MarketStore {
         orderEntries = CQEngine.newInstance();
         shareEntries = CQEngine.newInstance();
         transactionEntries = CQEngine.newInstance();
+        releaseEntries = CQEngine.newInstance();
 
         //build indexes on attributes...
         investorDepotEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.INVESTOR_INVESTOR_ID));
@@ -55,15 +57,24 @@ public class MarketStore {
         collectionMap.put(OrderEntry.class, orderEntries);
         collectionMap.put(ShareEntry.class, shareEntries);
         collectionMap.put(TransactionEntry.class, transactionEntries);
-
+        collectionMap.put(ReleaseEntry.class, releaseEntries);
     }
 
     public ArrayList<SuperEntry> retrieve(Class clazz, Query query, Boolean shuffle, Integer numResults) {
 
         IndexedCollection col = collectionMap.get(clazz);
 
-        if (shuffle != null && shuffle)
-            Collections.shuffle((java.util.List<?>) col);
+        if (shuffle != null && shuffle) {
+            ArrayList<Object> listToShuffle = new ArrayList<Object>();
+
+            for (Object object : col)
+                listToShuffle.add(object);
+
+            Collections.shuffle(listToShuffle);
+
+            col.clear();
+            col.addAll(listToShuffle);
+        }
 
         if (numResults == null)
             numResults = 1;
@@ -72,7 +83,10 @@ public class MarketStore {
 
         if (query == null) {
             for (Object object : col) {
-                result.add((SuperEntry)object);
+                if (result.size() >= numResults)
+                    break;
+
+                result.add((SuperEntry) object);
             }
             return result;
         }

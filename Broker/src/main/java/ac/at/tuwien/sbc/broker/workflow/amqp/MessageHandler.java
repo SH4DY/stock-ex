@@ -32,7 +32,7 @@ public class MessageHandler {
         amqpCoordinationService.onOrderEntryNotification(list);
     }
 
-    public void onReleaseEntryMessage(ArrayList<ReleaseEntry> list) {
-        amqpCoordinationService.onReleaseEntryMessage(list);
+    public void onReleaseEntryNotification(ArrayList<ReleaseEntry> list) {
+        amqpCoordinationService.onReleaseEntryNotification(list);
     }
 }

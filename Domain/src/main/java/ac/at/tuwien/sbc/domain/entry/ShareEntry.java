@@ -19,6 +19,8 @@ public  class ShareEntry extends SuperEntry implements Serializable {
 
     private  Double price;
 
+    public ShareEntry() {};
+
     public ShareEntry(String  shareID,  Integer numShares,  Double price) {
         this.numShares = numShares;
         this.price = price;

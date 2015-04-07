@@ -27,7 +27,7 @@ public interface ICoordinationService {
      * @param sharedTransaction
      * @throws CoordinationServiceException
      */
-    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction) throws CoordinationServiceException;
+    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException;
 
     /**
      * Add order
@@ -35,7 +35,7 @@ public interface ICoordinationService {
      * @param sharedTransaction
      * @throws CoordinationServiceException
      */
-    public void addOrder(OrderEntry oe, Object sharedTransaction) throws CoordinationServiceException;
+    public void addOrder(OrderEntry oe, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException;
 
     /**
      * Get/take order by template
@@ -43,7 +43,6 @@ public interface ICoordinationService {
      * @param sharedTransaction
      * @return
      */
-    public OrderEntry getOrderByTemplate(OrderEntry oe, Object sharedTransaction);
 
     /**
      * Get/take order by properties
@@ -123,13 +122,6 @@ public interface ICoordinationService {
      * @param sharedTransaction
      */
     public void commitTransaction(Object sharedTransaction);
-
-    /**
-     * Check if transaction is running
-     * @param sharedTransaction
-     * @return
-     */
-    public Boolean transactionIsRunning(Object sharedTransaction);
 
     /**
      * Rollback coordination transaction
