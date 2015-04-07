@@ -121,7 +121,7 @@ public class RPCMessageHandler {
 
         }
 
-        logger.info("DID CALL:" + request.getMethod() + store.retrieve(OrderEntry.class, null, null, Integer.MAX_VALUE).size());
+        logger.info("DID CALL:" + request.getMethod());
         return result;
     }
 
@@ -193,7 +193,6 @@ public class RPCMessageHandler {
     private void doDeleteOrderEntry(UUID orderId) {
         Query<OrderEntry> q = equal(CQAttributes.ORDER_ORDER_ID, orderId);
         ArrayList<SuperEntry> result = store.retrieve(OrderEntry.class, q, null, 1);
-        logger.info("DELETE SIZE:" + result.size() + ", UUID:" + orderId.toString());
         for (Object object : result)
             store.delete(OrderEntry.class, object);
     }
