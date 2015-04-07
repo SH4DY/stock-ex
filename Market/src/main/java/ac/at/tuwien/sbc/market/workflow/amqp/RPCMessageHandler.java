@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 import static com.googlecode.cqengine.query.QueryFactory.*;
+import static com.googlecode.cqengine.query.QueryFactory.and;
 
 /**
  * Created by dietl_ma on 01/04/15.
@@ -74,6 +75,10 @@ public class RPCMessageHandler {
             case TAKE_ORDER_BY_PROPERTIES:
                 Object[] args = request.getArgs();
                 result = doTakeOrderByProperties((String)args[0], (OrderType)args[1], (OrderStatus)args[2], (Double)args[3]);
+                break;
+            case READ_ORDER_BY_PROPERTIES:
+                Object[] args_read = request.getArgs();
+                result = doReadOrderByProperties((String)args_read[0], (OrderType)args_read[1], (OrderStatus)args_read[2]);
                 break;
             case WRITE_ORDER_ENTRY:
                 doWriteOrderEntry(request.getEntry());
@@ -169,9 +174,9 @@ public class RPCMessageHandler {
         }
 
         Query<OrderEntry> q = and(equal(CQAttributes.ORDER_SHARE_ID, shareId),
-                                  equal(CQAttributes.ORDER_TYPE, type),
-                                  equal(CQAttributes.ORDER_STATUS, status),
-                                  subQuery);
+                equal(CQAttributes.ORDER_TYPE, type),
+                equal(CQAttributes.ORDER_STATUS, status),
+                subQuery);
 
         ArrayList<SuperEntry> result = store.retrieve(OrderEntry.class, q, true, 1);
 
@@ -179,6 +184,15 @@ public class RPCMessageHandler {
             store.delete(OrderEntry.class, object);
 
         return result;
+    }
+
+    private ArrayList<SuperEntry> doReadOrderByProperties(String shareId, OrderType type, OrderStatus status) {
+        Query<OrderEntry> q = and(equal(CQAttributes.ORDER_SHARE_ID, shareId),
+                                equal(CQAttributes.ORDER_TYPE, type),
+                                equal(CQAttributes.ORDER_STATUS, status));
+
+
+        return store.retrieve(OrderEntry.class, q, null, Integer.MAX_VALUE);
     }
 
     private ArrayList<SuperEntry> doGetOrdersByInvestorId(Integer investorId) {
