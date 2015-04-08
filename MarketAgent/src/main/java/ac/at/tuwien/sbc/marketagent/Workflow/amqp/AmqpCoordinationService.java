@@ -20,6 +20,7 @@ import java.util.ArrayList;
 @Profile("amqp")
 public class AmqpCoordinationService implements ICoordinationService {
 
+
     @Autowired
     private RabbitTemplate template;
 
