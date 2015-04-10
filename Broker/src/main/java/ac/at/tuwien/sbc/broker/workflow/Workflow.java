@@ -29,13 +29,10 @@ public class Workflow {
     @Autowired
     private ICoordinationService coordinationService;
 
-    private Thread releaseRequestThread;
-
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
     public static final Double brokerProvision = 0.03;
-
 
     @PostConstruct
     private void onPostConstruct() {
@@ -117,9 +114,6 @@ public class Workflow {
             return;
         }
 
-        //TODO @Martin: Ich setze den Preis = Limit. Wir wissen ja immer noch, dass es sich
-        //um ein Release handelt da die Investor ID null ist.
-        //TODO: @Ramon dass limit muss ja auf 0 sein damit die Aktie immer zum aktuellen wert verkauft werden kann wenn die order von einer company kommt
         OrderEntry oe = new OrderEntry(UUID.randomUUID(),
                 0,
                 releaseEntry.getCompanyID(),

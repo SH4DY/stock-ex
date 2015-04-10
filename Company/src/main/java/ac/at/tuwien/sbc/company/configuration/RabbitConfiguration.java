@@ -12,8 +12,4 @@ import org.springframework.context.annotation.Profile;
 @Profile("amqp")
 public class RabbitConfiguration {
 
-
-    private static final Logger logger = LoggerFactory.getLogger(RabbitConfiguration.class);
-
-
 }
