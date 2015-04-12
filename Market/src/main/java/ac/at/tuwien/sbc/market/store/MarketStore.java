@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 /**
+ * This class acts as the database of all the market environment.
  * Created by dietl_ma on 31/03/15.
  */
 @Service

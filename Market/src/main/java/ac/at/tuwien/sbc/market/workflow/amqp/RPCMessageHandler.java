@@ -15,12 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 import static com.googlecode.cqengine.query.QueryFactory.*;
-import static com.googlecode.cqengine.query.QueryFactory.and;
 
 /**
+ * Acts as the central point to call methods. All the different actors
+ * (companies, investors, brokers...) call it to retrieve data or set data.
  * Created by dietl_ma on 01/04/15.
  */
 @Service
@@ -44,6 +48,11 @@ public class RPCMessageHandler {
         topicMap.put(TransactionEntry.class, CommonRabbitConfiguration.TRANSACTION_ENTRY_TOPIC);
     }
 
+    /**
+     * Main entry point for actors. Method is chosen based on request enum.
+     * @param request Which method to call on the market.
+     * @return Returns a list of SuperEntries if the request was a read operation. Else the result is undefined.
+     */
     public List<SuperEntry> handleMessage(RPCMessageRequest request) {
 
         logger.info("RECEIVED CALL:" + request.getMethod());

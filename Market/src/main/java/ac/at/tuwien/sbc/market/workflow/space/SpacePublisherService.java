@@ -4,8 +4,8 @@ import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
-import ac.at.tuwien.sbc.market.workflow.IMarketServiceListener;
 import ac.at.tuwien.sbc.market.workflow.IMarketPublisherService;
+import ac.at.tuwien.sbc.market.workflow.IMarketServiceListener;
 import org.mozartspaces.capi3.FifoCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.*;
@@ -23,6 +23,9 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ *  * Like {@link ac.at.tuwien.sbc.market.workflow.amqp.AmqpPublisherService}
+ * this layer offers methods to retrieve data from the underlying platform
+ * (in this case a MozartSpace)
  * Created by shady on 28/03/15.
  */
 @Service

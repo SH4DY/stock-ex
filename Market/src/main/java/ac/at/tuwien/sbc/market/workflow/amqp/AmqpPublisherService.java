@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Like {@link ac.at.tuwien.sbc.market.workflow.space.SpacePublisherService}
+ * this layer offers methods to retrieve data from the underlying platform
+ * (in this case an AMQP server)
  * Created by dietl_ma on 01/04/15.
  */
 @Service
