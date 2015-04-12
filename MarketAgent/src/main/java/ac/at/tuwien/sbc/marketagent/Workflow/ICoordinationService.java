@@ -1,4 +1,4 @@
-package ac.at.tuwien.sbc.marketagent.Workflow;
+package ac.at.tuwien.sbc.marketagent.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;

@@ -1,10 +1,10 @@
-package ac.at.tuwien.sbc.marketagent.Workflow;
+package ac.at.tuwien.sbc.marketagent.workflow.space;
 
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
-import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
+import ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService;
 import org.mozartspaces.capi3.*;
 import org.mozartspaces.core.*;
 import org.slf4j.Logger;

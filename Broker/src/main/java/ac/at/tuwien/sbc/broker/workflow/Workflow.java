@@ -29,13 +29,10 @@ public class Workflow {
     @Autowired
     private ICoordinationService coordinationService;
 
-    private Thread releaseRequestThread;
-
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
     public static final Double brokerProvision = 0.03;
-
 
     @PostConstruct
     private void onPostConstruct() {
@@ -51,7 +48,6 @@ public class Workflow {
         coordinationService.registerReleaseNotification(new CoordinationListener<ArrayList<ReleaseEntry>>() {
             @Override
             public void onResult(ArrayList<ReleaseEntry> releaseEntries) {
-
                 logger.info("on ReleaseEntry notification" );
                 handleReleaseRequests();
             }
@@ -104,10 +100,11 @@ public class Workflow {
 
         if (shareEntry == null) {
             shareEntry = new ShareEntry(releaseEntry.getCompanyID(), releaseEntry.getNumShares(), releaseEntry.getPrice());
-            logger.info("INIT SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares());
+            logger.info("INIT SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares() + "/" + shareEntry.getPrice());
         }
         else {
             shareEntry.setNumShares(shareEntry.getNumShares() + releaseEntry.getNumShares());
+            logger.info("SET SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares() + "/" + shareEntry.getPrice());
         }
 
         try {
@@ -117,19 +114,17 @@ public class Workflow {
             return;
         }
 
-        //TODO @Martin: Ich setze den Preis = Limit. Wir wissen ja immer noch, dass es sich
-        //um ein Release handelt da die Investor ID null ist.
         OrderEntry oe = new OrderEntry(UUID.randomUUID(),
                 0,
                 releaseEntry.getCompanyID(),
                 OrderType.SELL,
-                releaseEntry.getPrice(),
+                0.0,
                 releaseEntry.getNumShares(),
                 0,
                 OrderStatus.OPEN);
 
         try {
-            coordinationService.addOrder(oe, sharedTransaction);
+            coordinationService.addOrder(oe, sharedTransaction, false);
             coordinationService.commitTransaction(sharedTransaction);
             logger.info("Broker " + brokerId +" , converted release into OrderEntry " + oe.getOrderID());
         } catch (CoordinationServiceException e) {
@@ -155,17 +150,13 @@ public class Workflow {
         }
 
         //take partial sell orders first
-        OrderEntry sellOrderTemplate = new OrderEntry(null, null, shareId, OrderType.SELL, null, null, null, OrderStatus.PARTIAL);
         OrderEntry sellOrder = null;
 
-        //sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
         sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedOrderRequestTransaction);
         //try with open sell orders
-        if (sellOrder == null) {
-            sellOrderTemplate.setStatus(OrderStatus.OPEN);
-            //sellOrder = coordinationService.getOrderByTemplate(sellOrderTemplate, sharedTransaction);
+        if (sellOrder == null)
             sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.OPEN, shareEntry.getPrice(), sharedOrderRequestTransaction);
-        }
+
 
         //return and rollback if no buy order exists
         if (sellOrder == null) {
@@ -176,21 +167,21 @@ public class Workflow {
         }
 
         //find corresponding buy order
-        OrderEntry buyOrderTemplate = new OrderEntry(null, null, shareId, OrderType.BUY, null, null, null, OrderStatus.PARTIAL);
         OrderEntry buyOrder = null;
 
-        //buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
         buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedOrderRequestTransaction);
         //try with opm sell order
         if (buyOrder == null) {
-            buyOrderTemplate.setStatus(OrderStatus.OPEN);
-            //buyOrder = coordinationService.getOrderByTemplate(buyOrderTemplate, sharedTransaction);
             buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.OPEN, shareEntry.getPrice(), sharedOrderRequestTransaction);
         }
 
         //return and rollback if no corresponding sell order exists
         if (buyOrder == null) {
             logger.info("No buy order available");
+
+            if (sharedOrderRequestTransaction == null)
+                doManualRollback(sellOrder, null, null, null);
+
             coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
             sharedOrderRequestTransaction = null;
             return;
@@ -200,6 +191,10 @@ public class Workflow {
         if (sellOrder.getLimit() > shareEntry.getPrice() ||
                 buyOrder.getLimit() < shareEntry.getPrice()) {
             logger.info("Order limits not valid");
+
+            if (sharedOrderRequestTransaction == null)
+                doManualRollback(sellOrder, buyOrder, null, null);
+
             coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
             sharedOrderRequestTransaction = null;
             return;
@@ -213,7 +208,14 @@ public class Workflow {
         //get buyer
         InvestorDepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedOrderRequestTransaction);
 
-        if (buyer == null) {
+        if (seller != null && buyer != null)
+            logger.info("seller:" + seller.getInvestorID() + ", buyer:" + buyer.getInvestorID());
+
+        if (buyer == null || (sellOrder.getInvestorID() != 0 && seller == null)) {
+
+            if (sharedOrderRequestTransaction == null)
+                doManualRollback(sellOrder, buyOrder, seller, buyer);
+
             coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
             sharedOrderRequestTransaction = null;
             return;
@@ -224,8 +226,6 @@ public class Workflow {
                 TransactionValidator.validate(sellOrder, buyOrder, seller, buyer, shareEntry, brokerProvision);
 
         if (!validationResult.get(sellOrder) || !validationResult.get(buyOrder)) {
-            //role back transaction if it is not valid
-            //coordinationService.rollbackTransaction(sharedTransaction);
             logger.info("Transaction is invalid");
 
             if (!validationResult.get(sellOrder)) {
@@ -237,12 +237,16 @@ public class Workflow {
 
             try {
                 //write updated order
-                coordinationService.addOrder(sellOrder, sharedOrderRequestTransaction);
-                coordinationService.addOrder(buyOrder, sharedOrderRequestTransaction);
+                coordinationService.addOrder(sellOrder, sharedOrderRequestTransaction, false);
+                coordinationService.addOrder(buyOrder, sharedOrderRequestTransaction, false);
                 //write buyer and seller back
-                coordinationService.setInvestor(seller, sharedOrderRequestTransaction);
-                coordinationService.setInvestor(buyer, sharedOrderRequestTransaction);
+                coordinationService.setInvestor(seller, sharedOrderRequestTransaction, false);
+                coordinationService.setInvestor(buyer, sharedOrderRequestTransaction, false);
             } catch (CoordinationServiceException e) {
+
+                if (sharedOrderRequestTransaction == null)
+                    doManualRollback(sellOrder, buyOrder, seller, buyer);
+
                 coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
                 sharedOrderRequestTransaction = null;
             }
@@ -255,6 +259,9 @@ public class Workflow {
             try {
                 doTransaction(sellOrder, buyOrder, seller, buyer, shareEntry, sharedOrderRequestTransaction);
             } catch (CoordinationServiceException e1) {
+                if (sharedOrderRequestTransaction == null)
+                    doManualRollback(sellOrder, buyOrder, seller, buyer);
+
                 coordinationService.rollbackTransaction(sharedOrderRequestTransaction);
                 sharedOrderRequestTransaction = null;
             }
@@ -306,9 +313,9 @@ public class Workflow {
 
         //update investors
         if (seller != null)
-            coordinationService.setInvestor(seller, sharedTransaction);
+            coordinationService.setInvestor(seller, sharedTransaction, false);
 
-        coordinationService.setInvestor(buyer, sharedTransaction);
+        coordinationService.setInvestor(buyer, sharedTransaction, false);
         //add transaction
         coordinationService.addTransaction(transactionEntry, sharedTransaction);
 
@@ -316,8 +323,24 @@ public class Workflow {
         sharedTransaction = null;
         //update orders
         Object addOrdersTransaction = coordinationService.createTransaction(1000L);
-        coordinationService.addOrder(sellOrder, addOrdersTransaction);
-        coordinationService.addOrder(buyOrder, addOrdersTransaction);
+        coordinationService.addOrder(sellOrder, addOrdersTransaction, false);
+        coordinationService.addOrder(buyOrder, addOrdersTransaction, false);
         coordinationService.commitTransaction(addOrdersTransaction);
     }
+
+    private void doManualRollback(OrderEntry sellOrder, OrderEntry buyOrder, InvestorDepotEntry seller, InvestorDepotEntry buyer) {
+
+        try {
+            if (sellOrder != null)
+                coordinationService.addOrder(sellOrder, null, true);
+            if (buyOrder != null)
+                coordinationService.addOrder(buyOrder, null, true);
+            if (seller != null)
+                coordinationService.setInvestor(seller, null, true);
+            if (buyer != null)
+                coordinationService.setInvestor(buyer, null, true);
+        } catch (CoordinationServiceException e) {e.printStackTrace();}
+    }
 }
+
+

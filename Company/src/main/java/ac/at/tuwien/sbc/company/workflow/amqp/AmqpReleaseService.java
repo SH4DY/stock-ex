@@ -3,6 +3,7 @@ package ac.at.tuwien.sbc.company.workflow.amqp;
 import ac.at.tuwien.sbc.company.workflow.IReleaseService;
 import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
+import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +31,8 @@ public class AmqpReleaseService implements IReleaseService {
 
     @Override
     public void makeRelease(ReleaseEntry rls) {
-
-        ArrayList<ReleaseEntry> entries = new ArrayList<ReleaseEntry>();
-        entries.add(rls);
-        template.convertAndSend(CommonRabbitConfiguration.RELEASE_ENTRY_QUEUE, entries);
+        //write release entry
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_RELEASE_ENTRY, null, rls);
+        template.convertAndSend("marketRPC", request);
     }
 }

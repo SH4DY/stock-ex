@@ -35,7 +35,7 @@ public class CommonRabbitConfiguration {
     public static final String SHARE_ENTRY_TOPIC =  "shareEntryTopic";
     public static final String ORDER_ENTRY_TOPIC =  "orderEntryTopic";
     public static final String TRANSACTION_ENTRY_TOPIC =  "transactionEntryTopic";
-    public static final String RELEASE_ENTRY_QUEUE =  "releaseEntry";
+    public static final String RELEASE_ENTRY_TOPIC =  "releaseEntry";
     public static final String MARKET_RPC = "marketRPC";
 
     public static UUID uuid;
@@ -134,15 +134,15 @@ public class CommonRabbitConfiguration {
         return new Binding(transactionEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), TRANSACTION_ENTRY_TOPIC, new HashMap<String, Object>());
     }
 
-    //init releaseEntry queue
+    //init releaseEntry topic
     @Bean
-    public Queue releaseEntryQueue() {
-        Queue queue = new Queue(RELEASE_ENTRY_QUEUE);
+    public Queue releaseEntryNotificationQueue() {
+        Queue queue = new Queue(RELEASE_ENTRY_TOPIC + '_' + uuid(), false, false, true);
         return queue;
     }
     @Bean
-    public Binding releaseEntryQueueBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(releaseEntryQueue()).to(exchange).with(releaseEntryQueue().getName());
+    public Binding releaseEntryNotificationQueueBinding(TopicExchange exchange) {
+        return new Binding(releaseEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), RELEASE_ENTRY_TOPIC, new HashMap<String, Object>());
     }
 
     //init marketRPC queue
@@ -174,6 +174,7 @@ public class CommonRabbitConfiguration {
         rabbitAdmin.deleteQueue(SHARE_ENTRY_TOPIC + '_' + uuid);
         rabbitAdmin.deleteQueue(ORDER_ENTRY_TOPIC + '_' + uuid);
         rabbitAdmin.deleteQueue(TRANSACTION_ENTRY_TOPIC + '_' + uuid);
+        rabbitAdmin.deleteQueue(RELEASE_ENTRY_TOPIC + '_' + uuid);
     }
 
 
