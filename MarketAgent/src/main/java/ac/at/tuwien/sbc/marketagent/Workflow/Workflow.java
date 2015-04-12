@@ -34,16 +34,13 @@ public class Workflow {
             ArrayList<OrderEntry> sellOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.SELL);
             ArrayList<OrderEntry> buyOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.BUY);
 
-            if (sellOrders == null || buyOrders == null)
-                continue;
+            if (sellOrders == null || buyOrders == null) continue;
 
             Double numSellOrders = 0.0;
-            for (OrderEntry oe : sellOrders)
-                numSellOrders += oe.getNumTotal()-oe.getNumCompleted();
+            for (OrderEntry oe : sellOrders) numSellOrders += oe.getNumTotal()-oe.getNumCompleted();
 
             Double numBuyOrders = 0.0;
-            for (OrderEntry oe : buyOrders)
-                numBuyOrders += oe.getNumTotal()-oe.getNumCompleted();
+            for (OrderEntry oe : buyOrders) numBuyOrders += oe.getNumTotal()-oe.getNumCompleted();
 
             Double currentPrice = se.getPrice();
 
