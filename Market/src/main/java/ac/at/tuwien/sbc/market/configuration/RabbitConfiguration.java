@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.market.configuration;
 
+import ac.at.tuwien.sbc.market.workflow.amqp.AmqpMessageHandler;
 import ac.at.tuwien.sbc.market.workflow.amqp.RPCMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,9 @@ public class RabbitConfiguration {
     @Autowired
     private RPCMessageHandler RPCMessageHandler;
 
+    @Autowired
+    private AmqpMessageHandler messageHandler;
+
     private static final Logger logger = LoggerFactory.getLogger(RabbitConfiguration.class);
 
     @Bean
@@ -38,6 +42,32 @@ public class RabbitConfiguration {
         container.setQueues((Queue)applicationContext.getBean("marketRPCQueue"));
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(RPCMessageHandler, messageConverter);
+        adapter.setMessageConverter(messageConverter);
+        container.setMessageListener(adapter);
+        return container;
+    }
+
+    @Bean
+    public SimpleMessageListenerContainer orderEntryNotificationContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setMessageConverter(messageConverter);
+        container.setQueues((Queue)applicationContext.getBean("orderEntryNotificationQueue"));
+
+        MessageListenerAdapter adapter = new MessageListenerAdapter(messageHandler, "onOrderEntryNotification");
+        adapter.setMessageConverter(messageConverter);
+        container.setMessageListener(adapter);
+        return container;
+    }
+
+    @Bean
+    public SimpleMessageListenerContainer shareEntryNotificationContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setMessageConverter(messageConverter);
+        container.setQueues((Queue)applicationContext.getBean("shareEntryNotificationQueue"));
+
+        MessageListenerAdapter adapter = new MessageListenerAdapter(messageHandler, "onShareEntryNotification");
         adapter.setMessageConverter(messageConverter);
         container.setMessageListener(adapter);
         return container;

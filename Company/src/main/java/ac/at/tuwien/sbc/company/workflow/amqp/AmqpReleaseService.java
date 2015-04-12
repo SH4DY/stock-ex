@@ -1,7 +1,6 @@
 package ac.at.tuwien.sbc.company.workflow.amqp;
 
 import ac.at.tuwien.sbc.company.workflow.IReleaseService;
-import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -10,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 
 /**
  * Created by dietl_ma on 31/03/15.
