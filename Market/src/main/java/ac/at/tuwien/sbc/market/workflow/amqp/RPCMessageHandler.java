@@ -67,6 +67,9 @@ public class RPCMessageHandler {
                     template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC, notification);
                 }
                 break;
+            case GET_ORDER_ENTRIES:
+                result = doGetOrderEntries();
+                break;
             case TAKE_ORDER_BY_ORDER_ID:
                 return doTakeOrderByOrderId((UUID)request.getArgs()[0]);
             case GET_ORDER_ENTRIES_BY_INVESTOR_ID:
@@ -113,6 +116,9 @@ public class RPCMessageHandler {
                     template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.RELEASE_ENTRY_TOPIC, notification);
                 }
                 break;
+            case GET_TRANSACTION_ENTRIES:
+                result = doGetTransactionEntries();
+                break;
             case TAKE_RELEASE_ENTRY:
                 result =  doTakeReleaseEntry();
                 break;
@@ -123,7 +129,6 @@ public class RPCMessageHandler {
                     template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.TRANSACTION_ENTRY_TOPIC, notification);
                 }
                 break;
-
         }
 
         logger.info("DID CALL:" + request.getMethod());
@@ -154,6 +159,10 @@ public class RPCMessageHandler {
 
     private void doWriteInvestorDepotEntry(SuperEntry investorDepotEntry) {
         store.add(InvestorDepotEntry.class, investorDepotEntry);
+    }
+
+    private ArrayList<SuperEntry> doGetOrderEntries(){
+        return store.retrieve(OrderEntry.class, null, null, Integer.MAX_VALUE);
     }
 
     private ArrayList<SuperEntry> doTakeOrderByOrderId(UUID orderId) {
@@ -238,6 +247,10 @@ public class RPCMessageHandler {
 
         for (Object object : result)
             store.delete(ShareEntry.class, object);
+    }
+
+    private ArrayList<SuperEntry> doGetTransactionEntries(){
+        return store.retrieve(TransactionEntry.class, null, null, Integer.MAX_VALUE);
     }
 
     private void doWriteShareEntry(SuperEntry shareEntry) {

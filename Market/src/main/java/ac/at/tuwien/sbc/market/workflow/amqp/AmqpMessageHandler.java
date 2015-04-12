@@ -6,6 +6,7 @@ package ac.at.tuwien.sbc.market.workflow.amqp;
 import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
+import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -24,5 +25,13 @@ public class AmqpMessageHandler {
 
     public void onShareEntryNotification(ArrayList<ShareEntry> list) {
         amqpPublisherService.onShareEntryNotification(list);
+    }
+
+    public void onOrderEntryNotification(ArrayList<OrderEntry> list) {
+        amqpPublisherService.onOrderEntryNotification(list);
+    }
+
+    public void onTransactionEntryNotification(ArrayList<TransactionEntry> list) {
+        amqpPublisherService.onTransactionEntryNotification(list);
     }
 }

@@ -28,6 +28,8 @@ public class RPCMessageRequest {
         WRITE_RELEASE_ENTRY,
         TAKE_RELEASE_ENTRY,
         WRITE_TRANSACTION_ENTRY,
+        GET_TRANSACTION_ENTRIES,
+        GET_ORDER_ENTRIES
         }
 
     private Method method;

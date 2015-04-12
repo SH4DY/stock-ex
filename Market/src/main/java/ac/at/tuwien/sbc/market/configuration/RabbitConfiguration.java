@@ -73,4 +73,17 @@ public class RabbitConfiguration {
         return container;
     }
 
+    @Bean
+    public SimpleMessageListenerContainer transactionEntryNotificationContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setMessageConverter(messageConverter);
+        container.setQueues((Queue)applicationContext.getBean("transactionEntryNotificationQueue"));
+
+        MessageListenerAdapter adapter = new MessageListenerAdapter(messageHandler, "onTransactionEntryNotification");
+        adapter.setMessageConverter(messageConverter);
+        container.setMessageListener(adapter);
+        return container;
+    }
+
 }
