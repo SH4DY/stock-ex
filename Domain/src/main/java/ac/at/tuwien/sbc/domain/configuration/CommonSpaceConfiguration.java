@@ -1,11 +1,8 @@
 package ac.at.tuwien.sbc.domain.configuration;
 
-import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.util.SpaceUtils;
 import org.mozartspaces.capi3.*;
 import org.mozartspaces.core.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
