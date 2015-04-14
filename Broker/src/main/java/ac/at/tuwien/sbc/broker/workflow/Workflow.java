@@ -240,7 +240,9 @@ public class Workflow {
                 coordinationService.addOrder(sellOrder, sharedOrderRequestTransaction, false);
                 coordinationService.addOrder(buyOrder, sharedOrderRequestTransaction, false);
                 //write buyer and seller back
-                coordinationService.setInvestor(seller, sharedOrderRequestTransaction, false);
+                if (seller != null)
+                    coordinationService.setInvestor(seller, sharedOrderRequestTransaction, false);
+
                 coordinationService.setInvestor(buyer, sharedOrderRequestTransaction, false);
             } catch (CoordinationServiceException e) {
 
