@@ -35,6 +35,7 @@ public class MainGUI extends JFrame implements IMarketObserver{
         setSize(1200,1200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
+        setTitle("Market App");
 
         initSharePanel();
         initHistoryPanel();
