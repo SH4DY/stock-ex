@@ -89,46 +89,53 @@ public class Workflow {
     }
 
     private void handleReleaseRequests() {
-        Object sharedTransaction = coordinationService.createTransaction(1000L);
-        ReleaseEntry releaseEntry = coordinationService.getReleaseEntry(sharedTransaction);
 
-        if (releaseEntry == null) {
-            return;
-        }
-        //update or create share
-        ShareEntry shareEntry = coordinationService.getShareEntry(releaseEntry.getCompanyID(), sharedTransaction);
+        Boolean tryAgain = true;
+        while (tryAgain) {
 
-        if (shareEntry == null) {
-            shareEntry = new ShareEntry(releaseEntry.getCompanyID(), releaseEntry.getNumShares(), releaseEntry.getPrice());
-            logger.info("INIT SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares() + "/" + shareEntry.getPrice());
-        }
-        else {
-            shareEntry.setNumShares(shareEntry.getNumShares() + releaseEntry.getNumShares());
-            logger.info("SET SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares() + "/" + shareEntry.getPrice());
-        }
+            Object sharedTransaction = coordinationService.createTransaction(1000L);
+            ReleaseEntry releaseEntry = coordinationService.getReleaseEntry(sharedTransaction);
 
-        try {
-            coordinationService.setShareEntry(shareEntry, sharedTransaction);
-        } catch (CoordinationServiceException e) {
-            coordinationService.rollbackTransaction(sharedTransaction);
-            return;
-        }
+            if (releaseEntry != null) {
 
-        OrderEntry oe = new OrderEntry(UUID.randomUUID(),
-                0,
-                releaseEntry.getCompanyID(),
-                OrderType.SELL,
-                0.0,
-                releaseEntry.getNumShares(),
-                0,
-                OrderStatus.OPEN);
+                //update or create share
+                ShareEntry shareEntry = coordinationService.getShareEntry(releaseEntry.getCompanyID(), sharedTransaction);
 
-        try {
-            coordinationService.addOrder(oe, sharedTransaction, false);
-            coordinationService.commitTransaction(sharedTransaction);
-            logger.info("Broker " + brokerId +" , converted release into OrderEntry " + oe.getOrderID());
-        } catch (CoordinationServiceException e) {
-            coordinationService.rollbackTransaction(sharedTransaction);
+                if (shareEntry == null) {
+                    shareEntry = new ShareEntry(releaseEntry.getCompanyID(), releaseEntry.getNumShares(), releaseEntry.getPrice());
+                    logger.info("INIT SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares() + "/" + shareEntry.getPrice());
+                } else {
+                    shareEntry.setNumShares(shareEntry.getNumShares() + releaseEntry.getNumShares());
+                    logger.info("SET SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares() + "/" + shareEntry.getPrice());
+                }
+
+                try {
+                    coordinationService.setShareEntry(shareEntry, sharedTransaction);
+                } catch (CoordinationServiceException e) {
+                    coordinationService.rollbackTransaction(sharedTransaction);
+                    return;
+                }
+
+                OrderEntry oe = new OrderEntry(UUID.randomUUID(),
+                        0,
+                        releaseEntry.getCompanyID(),
+                        OrderType.SELL,
+                        0.0,
+                        releaseEntry.getNumShares(),
+                        0,
+                        OrderStatus.OPEN);
+
+                try {
+                    coordinationService.addOrder(oe, sharedTransaction, false);
+                    coordinationService.commitTransaction(sharedTransaction);
+                    logger.info("Broker " + brokerId + " , converted release into OrderEntry " + oe.getOrderID());
+                } catch (CoordinationServiceException e) {
+                    coordinationService.rollbackTransaction(sharedTransaction);
+                }
+            }
+            else {
+                tryAgain = false;
+            }
         }
     }
 

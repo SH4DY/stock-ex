@@ -1,9 +1,10 @@
-#!/bin/sh
-MYSELF=`which "$0" 2>/dev/null`
-[ $? -gt 0 -a -f "$0" ] && MYSELF="./$0"
-java=java
-if test -n "$JAVA_HOME"; then
-    java="$JAVA_HOME/bin/java"
-fi
-exec "$java" $java_args -jar $MYSELF "$@"
-exit 1 
+#!/bin/bash
+
+SCRIPTPATH = ${pwd%/*}
+
+echo "Positional Parameters"
+echo '$0 = ' $0
+echo '$1 = ' $1
+echo '$2 = ' $2
+echo '$3 = ' $3
+echo $SCRIPTPATH

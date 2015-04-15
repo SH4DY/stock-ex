@@ -24,6 +24,7 @@
         <module>Investor</module>
         <module>Market</module>
         <module>MarketAgent</module>
+        <module>AppRunner</module>
     </modules>
 
     <repositories>
