@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.io.Serializable;
 import java.util.List;
 
+// TODO: Auto-generated Javadoc
 /**
  *  * Like {@link ac.at.tuwien.sbc.market.workflow.amqp.AmqpPublisherService}
  * this layer offers methods to retrieve data from the underlying platform
@@ -32,33 +33,48 @@ import java.util.List;
 @Profile("space")
 public class SpacePublisherService implements IMarketPublisherService {
 
+    /** The capi. */
     @Autowired
     Capi capi;
 
+    /** The core. */
     @Autowired
     MzsCore core;
 
+    /** The order container. */
     @Autowired
     @Qualifier("orderContainer")
     ContainerReference orderContainer;
 
+    /** The transaction container. */
     @Autowired
     @Qualifier("transactionContainer")
     ContainerReference transactionContainer;
 
+    /** The share container. */
     @Autowired
     @Qualifier("shareContainer")
     ContainerReference shareContainer;
 
+    /** The listener. */
     IMarketServiceListener listener;
 
+    /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpacePublisherService.class);
 
 
+    /**
+     * Register listener.
+     *
+     * @param listener the listener
+     */
     public void registerListener(IMarketServiceListener listener){
         this.listener = listener;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#registerOrderObserver(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerOrderObserver(CoordinationListener<OrderEntry> coordinationListener) {
         NotificationManager nm = new NotificationManager(core);
@@ -76,6 +92,9 @@ public class SpacePublisherService implements IMarketPublisherService {
         //TODO what to do with these notifications?
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#getOrders(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getOrders(CoordinationListener listener){
         List<OrderEntry> readEntries = null;
@@ -94,6 +113,9 @@ public class SpacePublisherService implements IMarketPublisherService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#registerTransactionObserver(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerTransactionObserver(CoordinationListener<TransactionEntry> coordinationListener) {
         NotificationManager nm = new NotificationManager(core);
@@ -109,6 +131,9 @@ public class SpacePublisherService implements IMarketPublisherService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#getTransactions(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getTransactions(CoordinationListener listener) {
         List<TransactionEntry> readEntries = null;
@@ -126,6 +151,9 @@ public class SpacePublisherService implements IMarketPublisherService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#registerShareObserver(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerShareObserver(CoordinationListener<ShareEntry> coordinationListener) {
         NotificationManager nm = new NotificationManager(core);
@@ -141,6 +169,9 @@ public class SpacePublisherService implements IMarketPublisherService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#getShares(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getShares(CoordinationListener listener) {
         List<ShareEntry> readEntries = null;
@@ -158,13 +189,34 @@ public class SpacePublisherService implements IMarketPublisherService {
         }
     }
 
+    /**
+     * The listener interface for receiving orderAdded events.
+     * The class that is interested in processing a orderAdded
+     * event implements this interface, and the object created
+     * with that class is registered with a component using the
+     * component's <code>addOrderAddedListener<code> method. When
+     * the orderAdded event occurs, that object's appropriate
+     * method is invoked.
+     *
+     * @see OrderAddedEvent
+     */
     private class OrderAddedListener implements org.mozartspaces.notifications.NotificationListener{
+        
+        /** The listener. */
         CoordinationListener<OrderEntry> listener;
 
+        /**
+         * Instantiates a new order added listener.
+         *
+         * @param listener the listener
+         */
         public OrderAddedListener(CoordinationListener<OrderEntry> listener) {
             this.listener = listener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(org.mozartspaces.notifications.Notification notification, Operation operation, List<? extends Serializable> entries) {
             for(Serializable entry : entries){
@@ -173,13 +225,34 @@ public class SpacePublisherService implements IMarketPublisherService {
         }
     }
 
+    /**
+     * The listener interface for receiving transactionAdded events.
+     * The class that is interested in processing a transactionAdded
+     * event implements this interface, and the object created
+     * with that class is registered with a component using the
+     * component's <code>addTransactionAddedListener<code> method. When
+     * the transactionAdded event occurs, that object's appropriate
+     * method is invoked.
+     *
+     * @see TransactionAddedEvent
+     */
     private class TransactionAddedListener implements org.mozartspaces.notifications.NotificationListener{
+        
+        /** The listener. */
         CoordinationListener<TransactionEntry> listener;
 
+        /**
+         * Instantiates a new transaction added listener.
+         *
+         * @param listener the listener
+         */
         public TransactionAddedListener(CoordinationListener<TransactionEntry> listener) {
             this.listener = listener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(org.mozartspaces.notifications.Notification notification, Operation operation, List<? extends Serializable> entries) {
             for(Serializable entry : entries){
@@ -188,13 +261,34 @@ public class SpacePublisherService implements IMarketPublisherService {
         }
     }
 
+    /**
+     * The listener interface for receiving shareAdded events.
+     * The class that is interested in processing a shareAdded
+     * event implements this interface, and the object created
+     * with that class is registered with a component using the
+     * component's <code>addShareAddedListener<code> method. When
+     * the shareAdded event occurs, that object's appropriate
+     * method is invoked.
+     *
+     * @see ShareAddedEvent
+     */
     private class ShareAddedListener implements org.mozartspaces.notifications.NotificationListener{
+        
+        /** The listener. */
         CoordinationListener<ShareEntry> listener;
 
+        /**
+         * Instantiates a new share added listener.
+         *
+         * @param listener the listener
+         */
         public ShareAddedListener(CoordinationListener<ShareEntry> listener) {
             this.listener = listener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(org.mozartspaces.notifications.Notification notification, Operation operation, List<? extends Serializable> entries) {
             for(Serializable entry : entries){

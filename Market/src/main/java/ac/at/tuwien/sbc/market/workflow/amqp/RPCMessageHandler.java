@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import static com.googlecode.cqengine.query.QueryFactory.*;
 
+// TODO: Auto-generated Javadoc
 /**
  * Acts as the central point to call methods. All the different actors
  * (companies, investors, brokers...) call it to retrieve data or set data.
@@ -31,16 +32,23 @@ import static com.googlecode.cqengine.query.QueryFactory.*;
 @Profile("amqp")
 public class RPCMessageHandler {
 
+    /** The store. */
     @Autowired
     private MarketStore store;
 
+    /** The template. */
     @Autowired
     private RabbitTemplate template;
 
+    /** The topic map. */
     private HashMap<Class, String> topicMap = new HashMap<>();
 
+    /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(RPCMessageHandler.class);
 
+    /**
+     * Instantiates a new RPC message handler.
+     */
     public RPCMessageHandler() {
         topicMap.put(InvestorDepotEntry.class, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC);
         topicMap.put(ShareEntry.class, CommonRabbitConfiguration.SHARE_ENTRY_TOPIC);
@@ -144,11 +152,23 @@ public class RPCMessageHandler {
         return result;
     }
 
+    /**
+     * Do get investor depot entry.
+     *
+     * @param investorId the investor id
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doGetInvestorDepotEntry(Integer investorId) {
         Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
         return store.retrieve(InvestorDepotEntry.class, q, null, 1);
     }
 
+    /**
+     * Do take investor depot entry.
+     *
+     * @param investorId the investor id
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doTakeInvestorDepotEntry(Integer investorId) {
 
         ArrayList<SuperEntry> result = doGetInvestorDepotEntry(investorId);
@@ -158,6 +178,11 @@ public class RPCMessageHandler {
         return result;
     }
 
+    /**
+     * Do delete investor depot entry.
+     *
+     * @param investorId the investor id
+     */
     private void doDeleteInvestorDepotEntry(Integer investorId) {
         Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
         ArrayList<SuperEntry> result = store.retrieve(InvestorDepotEntry.class, q, null, 1);
@@ -166,14 +191,30 @@ public class RPCMessageHandler {
             store.delete(InvestorDepotEntry.class, object);
     }
 
+    /**
+     * Do write investor depot entry.
+     *
+     * @param investorDepotEntry the investor depot entry
+     */
     private void doWriteInvestorDepotEntry(SuperEntry investorDepotEntry) {
         store.add(InvestorDepotEntry.class, investorDepotEntry);
     }
 
+    /**
+     * Do get order entries.
+     *
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doGetOrderEntries(){
         return store.retrieve(OrderEntry.class, null, null, Integer.MAX_VALUE);
     }
 
+    /**
+     * Do take order by order id.
+     *
+     * @param orderId the order id
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doTakeOrderByOrderId(UUID orderId) {
         Query<OrderEntry> q = equal(CQAttributes.ORDER_ORDER_ID, orderId);
         ArrayList<SuperEntry> result = store.retrieve(OrderEntry.class, q, null, 1);
@@ -184,6 +225,15 @@ public class RPCMessageHandler {
         return result;
     }
 
+    /**
+     * Do take order by properties.
+     *
+     * @param shareId the share id
+     * @param type the type
+     * @param status the status
+     * @param price the price
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doTakeOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price) {
 
         SimpleQuery subQuery = lessThanOrEqualTo(CQAttributes.ORDER_LIMIT, price);
@@ -204,6 +254,14 @@ public class RPCMessageHandler {
         return result;
     }
 
+    /**
+     * Do read order by properties.
+     *
+     * @param shareId the share id
+     * @param type the type
+     * @param status the status
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doReadOrderByProperties(String shareId, OrderType type, OrderStatus status) {
         Query<OrderEntry> q = and(equal(CQAttributes.ORDER_SHARE_ID, shareId),
                                 equal(CQAttributes.ORDER_TYPE, type),
@@ -213,15 +271,31 @@ public class RPCMessageHandler {
         return store.retrieve(OrderEntry.class, q, null, Integer.MAX_VALUE);
     }
 
+    /**
+     * Do get orders by investor id.
+     *
+     * @param investorId the investor id
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doGetOrdersByInvestorId(Integer investorId) {
         Query<OrderEntry> q = equal(CQAttributes.ORDER_INVESTOR_ID, investorId);
         return store.retrieve(OrderEntry.class, q, null, Integer.MAX_VALUE);
     };
 
+    /**
+     * Do write order entry.
+     *
+     * @param orderEntry the order entry
+     */
     private void doWriteOrderEntry(SuperEntry orderEntry) {
         store.add(OrderEntry.class, orderEntry);
     }
 
+    /**
+     * Do delete order entry.
+     *
+     * @param orderId the order id
+     */
     private void doDeleteOrderEntry(UUID orderId) {
         Query<OrderEntry> q = equal(CQAttributes.ORDER_ORDER_ID, orderId);
         ArrayList<SuperEntry> result = store.retrieve(OrderEntry.class, q, null, 1);
@@ -229,19 +303,40 @@ public class RPCMessageHandler {
             store.delete(OrderEntry.class, object);
     }
 
+    /**
+     * Do get share entry.
+     *
+     * @param shareId the share id
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doGetShareEntry(String shareId) {
         Query<ShareEntry> q = equal(CQAttributes.SHARE_SHARE_ID, shareId);
         return store.retrieve(ShareEntry.class, q, null, 1);
     }
 
+    /**
+     * Do get share entries.
+     *
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doGetShareEntries() {
         return store.retrieve(ShareEntry.class, null, null, Integer.MAX_VALUE);
     }
 
+    /**
+     * Do write release entry.
+     *
+     * @param releaseEntry the release entry
+     */
     private void doWriteReleaseEntry(SuperEntry releaseEntry) {
         store.add(ReleaseEntry.class, releaseEntry);
     }
 
+    /**
+     * Do take release entry.
+     *
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doTakeReleaseEntry() {
         ArrayList<SuperEntry> result =  store.retrieve(ReleaseEntry.class, null, null, 1);
         if (!result.isEmpty())
@@ -250,6 +345,11 @@ public class RPCMessageHandler {
         return result;
     }
 
+    /**
+     * Do delete share entry.
+     *
+     * @param shareId the share id
+     */
     private void doDeleteShareEntry(String shareId) {
         Query<ShareEntry> q = equal(CQAttributes.SHARE_SHARE_ID, shareId);
         ArrayList<SuperEntry> result = store.retrieve(ShareEntry.class, q, null, 1);
@@ -258,14 +358,29 @@ public class RPCMessageHandler {
             store.delete(ShareEntry.class, object);
     }
 
+    /**
+     * Do get transaction entries.
+     *
+     * @return the array list
+     */
     private ArrayList<SuperEntry> doGetTransactionEntries(){
         return store.retrieve(TransactionEntry.class, null, null, Integer.MAX_VALUE);
     }
 
+    /**
+     * Do write share entry.
+     *
+     * @param shareEntry the share entry
+     */
     private void doWriteShareEntry(SuperEntry shareEntry) {
         store.add(ShareEntry.class, shareEntry);
     }
 
+    /**
+     * Do write transaction entry.
+     *
+     * @param transactionEntry the transaction entry
+     */
     private void doWriteTransactionEntry(SuperEntry transactionEntry) {
         store.add(TransactionEntry.class, transactionEntry);
     }

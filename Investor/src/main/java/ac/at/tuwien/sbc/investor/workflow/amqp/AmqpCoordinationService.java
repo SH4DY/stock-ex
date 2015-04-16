@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static com.googlecode.cqengine.query.QueryFactory.*;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 27/03/15.
  */
@@ -30,10 +31,16 @@ import static com.googlecode.cqengine.query.QueryFactory.*;
 @Profile("amqp")
 public class AmqpCoordinationService implements ICoordinationService {
 
+    /** The investor entry notification listener. */
     private CoordinationListener<ArrayList<InvestorDepotEntry>> investorEntryNotificationListener;
+    
+    /** The share entry notification listener. */
     private CoordinationListener<ArrayList<ShareEntry>> shareEntryNotificationListener;
+    
+    /** The order entry notification listener. */
     private CoordinationListener<ArrayList<OrderEntry>> orderEntryNotificationListener;
 
+    /** The template. */
     @Autowired
     private RabbitTemplate template;
 
@@ -41,6 +48,9 @@ public class AmqpCoordinationService implements ICoordinationService {
     private static final Logger logger = LoggerFactory.getLogger(AmqpCoordinationService.class);
 
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getInvestor(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getInvestor(Integer investorId, CoordinationListener cListener) {
 
@@ -53,6 +63,9 @@ public class AmqpCoordinationService implements ICoordinationService {
         cListener.onResult(entry);
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getShares(java.util.ArrayList, ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getShares(ArrayList<String> shareIds, CoordinationListener cListener) {
 
@@ -69,21 +82,33 @@ public class AmqpCoordinationService implements ICoordinationService {
         cListener.onResult(entries);
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerInvestorNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerInvestorNotification(CoordinationListener cListener) {
         investorEntryNotificationListener = cListener;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerOrderNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerOrderNotification(CoordinationListener cListener) {
         orderEntryNotificationListener = cListener;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerShareNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerShareNotification(CoordinationListener cListener) {
        shareEntryNotificationListener = cListener;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
+     */
     @Override
     public void setInvestor(InvestorDepotEntry ide) {
 
@@ -96,6 +121,9 @@ public class AmqpCoordinationService implements ICoordinationService {
         template.convertAndSend("marketRPC", request);
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#addOrder(ac.at.tuwien.sbc.domain.entry.OrderEntry)
+     */
     @Override
     public void addOrder(OrderEntry oe) {
         //write order
@@ -103,6 +131,9 @@ public class AmqpCoordinationService implements ICoordinationService {
         template.convertAndSend("marketRPC", request);
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getOrders(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getOrders(Integer investorId, CoordinationListener cListener) {
 
@@ -111,6 +142,9 @@ public class AmqpCoordinationService implements ICoordinationService {
         cListener.onResult(result);
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#deleteOrder(java.util.UUID)
+     */
     @Override
     public void deleteOrder(UUID orderID) {
         //delete order
@@ -125,16 +159,31 @@ public class AmqpCoordinationService implements ICoordinationService {
 
     }
 
+    /**
+     * On investor entry notification.
+     *
+     * @param list the list
+     */
     public void onInvestorEntryNotification(ArrayList<InvestorDepotEntry> list) {
         if (investorEntryNotificationListener != null)
             investorEntryNotificationListener.onResult(list);
     }
 
+    /**
+     * On share entry notification.
+     *
+     * @param list the list
+     */
     public void onShareEntryNotification(ArrayList<ShareEntry> list) {
         if (shareEntryNotificationListener != null)
             shareEntryNotificationListener.onResult(list);
     }
 
+    /**
+     * On order entry notification.
+     *
+     * @param list the list
+     */
     public void onOrderEntryNotification(ArrayList<OrderEntry> list) {
         if (orderEntryNotificationListener != null)
             orderEntryNotificationListener.onResult(list);

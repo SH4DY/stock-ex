@@ -6,6 +6,7 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: Auto-generated Javadoc
 /**
  * TableModel to visualize the HistoryTable on the Main GUI
  * which displays all trades happened in the given space.
@@ -13,10 +14,17 @@ import java.util.List;
  */
 public class HistoryTableModel extends AbstractTableModel{
 
+    /** The column names. */
     String[] columnNames = {"Transaction ID", "Broker ID", "Buyer ID", "Seller ID", "Share ID", "SellOrder ID", "BuyOrder ID", "Price", "Volume", "Total", "Provision"};
 
+    /** The content. */
     List<TransactionEntry> content = new ArrayList<>();
 
+    /**
+     * Instantiates a new history table model.
+     *
+     * @param transactionEntries the transaction entries
+     */
     public HistoryTableModel(List<TransactionEntry> transactionEntries){
         if(transactionEntries != null) {
             content = transactionEntries;
@@ -25,26 +33,43 @@ public class HistoryTableModel extends AbstractTableModel{
         }
     }
 
+    /**
+     * Adds the row.
+     *
+     * @param transactionEntry the transaction entry
+     */
     public void addRow(TransactionEntry transactionEntry){
         content.add(transactionEntry);
         fireTableDataChanged();
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+     */
     @Override
     public String getColumnName(int column) {
         return columnNames[column];
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getRowCount()
+     */
     @Override
     public int getRowCount() {
         return content.size();
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getColumnCount()
+     */
     @Override
     public int getColumnCount() {
         return columnNames.length;
     }
 
+    /* (non-Javadoc)
+     * @see javax.swing.table.TableModel#getValueAt(int, int)
+     */
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         switch (columnIndex) {

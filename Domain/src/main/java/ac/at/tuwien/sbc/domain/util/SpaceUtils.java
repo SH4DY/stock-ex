@@ -15,22 +15,25 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 25/03/15.
  */
 public abstract class SpaceUtils {
 
+    /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceUtils.class);
 
     /**
      * Get or create named container
-     * Inspired by mozartspace tutorial
-     * @param space
-     * @param containerName
-     * @param capi
-     * @param coordinators
-     * @return
-     * @throws MzsCoreException
+     * Inspired by mozartspace tutorial.
+     *
+     * @param space the space
+     * @param containerName the container name
+     * @param capi the capi
+     * @param coordinators the coordinators
+     * @return the or create named container
+     * @throws MzsCoreException the mzs core exception
      */
     public static ContainerReference getOrCreateNamedContainer(final URI space, final String containerName,
                                                                final Capi capi, final ArrayList<Coordinator> coordinators) throws MzsCoreException {
@@ -56,13 +59,15 @@ public abstract class SpaceUtils {
     /**
      * Overloaded for testing purposes
      * Get or create named container
-     * Inspired by mozartspace tutorial
-     * @param space
-     * @param containerName
-     * @param capi
-     * @param coordinator
-     * @return
-     * @throws MzsCoreException
+     * Inspired by mozartspace tutorial.
+     *
+     * @param space the space
+     * @param containerName the container name
+     * @param capi the capi
+     * @param coordinator the coordinator
+     * @param optionalCoordinators the optional coordinators
+     * @return the or create named container
+     * @throws MzsCoreException the mzs core exception
      */
     public static ContainerReference getOrCreateNamedContainer(final URI space, final String containerName,
                                                                final Capi capi, final Coordinator coordinator, final Coordinator... optionalCoordinators) throws MzsCoreException {

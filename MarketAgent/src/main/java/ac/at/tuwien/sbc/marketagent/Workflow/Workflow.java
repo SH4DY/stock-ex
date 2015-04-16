@@ -11,19 +11,25 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 30/03/15.
  */
 @Service
 public class Workflow {
 
+    /** The coordination service. */
     @Autowired
     private ICoordinationService coordinationService;
 
+    /** The counter. */
     private Integer counter = 0;
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
+    /**
+     * Do manipulation.
+     */
     @Scheduled(fixedDelay = 2000)
     public void doManipulation() {
 

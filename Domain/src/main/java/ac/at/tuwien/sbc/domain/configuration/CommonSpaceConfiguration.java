@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 25/03/15.
  */
@@ -18,17 +19,37 @@ import java.util.ArrayList;
 @Profile("space")
 public class CommonSpaceConfiguration {
 
+    /** The Constant SPACE_URI. */
     public static final String SPACE_URI =  "xvsm://localhost:9876";
 
+    /**
+     * Core.
+     *
+     * @return the mzs core
+     */
     @Bean MzsCore core() {
         return DefaultMzsCore.newInstance(0);
     }
 
+    /**
+     * Capi.
+     *
+     * @param core the core
+     * @return the capi
+     */
     @Bean
     public Capi capi(MzsCore core) {
         return new Capi(core);
     }
 
+    /**
+     * Investor depot container.
+     *
+     * @param capi the capi
+     * @return the container reference
+     * @throws URISyntaxException the URI syntax exception
+     * @throws MzsCoreException the mzs core exception
+     */
     @Bean(name = "investorDepotContainer")
     public ContainerReference investorDepotContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
@@ -37,6 +58,14 @@ public class CommonSpaceConfiguration {
         return SpaceUtils.getOrCreateNamedContainer(uri, "investorDepotContainer", capi, coordinators);
     }
 
+    /**
+     * Order container.
+     *
+     * @param capi the capi
+     * @return the container reference
+     * @throws URISyntaxException the URI syntax exception
+     * @throws MzsCoreException the mzs core exception
+     */
     @Bean(name = "orderContainer")
     public ContainerReference orderContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
@@ -50,6 +79,14 @@ public class CommonSpaceConfiguration {
 
     //Companies release their shares into this space
     //Broker can observe it and generate Orders out of them
+    /**
+     * Release container.
+     *
+     * @param capi the capi
+     * @return the container reference
+     * @throws URISyntaxException the URI syntax exception
+     * @throws MzsCoreException the mzs core exception
+     */
     @Bean(name = "releaseContainer")
     public ContainerReference releaseContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
@@ -58,6 +95,14 @@ public class CommonSpaceConfiguration {
         return SpaceUtils.getOrCreateNamedContainer(uri, "releaseContainer", capi, coordinators);
     }
 
+    /**
+     * Share container.
+     *
+     * @param capi the capi
+     * @return the container reference
+     * @throws URISyntaxException the URI syntax exception
+     * @throws MzsCoreException the mzs core exception
+     */
     @Bean(name = "shareContainer")
     public ContainerReference shareContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
@@ -67,6 +112,14 @@ public class CommonSpaceConfiguration {
         return SpaceUtils.getOrCreateNamedContainer(uri, "shareContainer", capi, coordinators);
     }
 
+    /**
+     * Transaction container.
+     *
+     * @param capi the capi
+     * @return the container reference
+     * @throws URISyntaxException the URI syntax exception
+     * @throws MzsCoreException the mzs core exception
+     */
     @Bean(name = "transactionContainer")
     public ContainerReference transactionContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);

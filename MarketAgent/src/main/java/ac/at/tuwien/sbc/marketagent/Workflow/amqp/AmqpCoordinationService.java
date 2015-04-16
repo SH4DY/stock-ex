@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 07/04/15.
  */
@@ -21,9 +22,13 @@ import java.util.ArrayList;
 public class AmqpCoordinationService implements ICoordinationService {
 
 
+    /** The template. */
     @Autowired
     private RabbitTemplate template;
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#getShares()
+     */
     @Override
     public ArrayList<ShareEntry> getShares() {
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRIES, null);
@@ -31,6 +36,9 @@ public class AmqpCoordinationService implements ICoordinationService {
         return entries;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#setShareEntry(ac.at.tuwien.sbc.domain.entry.ShareEntry)
+     */
     @Override
     public void setShareEntry(ShareEntry se) {
         //delete share
@@ -42,6 +50,9 @@ public class AmqpCoordinationService implements ICoordinationService {
         template.convertAndSend("marketRPC", request);
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#getOrdersByProperties(java.lang.String, ac.at.tuwien.sbc.domain.enums.OrderType)
+     */
     @Override
     public ArrayList<OrderEntry> getOrdersByProperties(String shareId, OrderType type) {
 

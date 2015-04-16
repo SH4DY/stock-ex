@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by shady on 27/03/15.
  */
@@ -16,18 +17,26 @@ import org.springframework.stereotype.Service;
 @Service
 @Profile("space")
 public class SpaceReleaseService implements ac.at.tuwien.sbc.company.workflow.IReleaseService {
+    
+    /** The core. */
     @Autowired
     MzsCore core;
 
+    /** The capi. */
     @Autowired
     Capi capi;
 
+    /** The cref. */
     @Autowired
     @Qualifier("releaseContainer")
     ContainerReference cref;
 
+    /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceReleaseService.class);
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.company.workflow.IReleaseService#makeRelease(ac.at.tuwien.sbc.domain.entry.ReleaseEntry)
+     */
     @Override
     public void makeRelease(ReleaseEntry rls) {
         Entry entry = new Entry(rls);

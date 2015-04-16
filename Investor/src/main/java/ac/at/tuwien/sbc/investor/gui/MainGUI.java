@@ -20,23 +20,43 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.UUID;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 25/03/15.
  */
 public class MainGUI extends JFrame implements IWorkFlowObserver {
 
+    /** The c. */
     private static double c = 10.0;
 
+    /** The root panel. */
     private JPanel rootPanel;
+    
+    /** The investor label. */
     private JLabel investorLabel;
+    
+    /** The share table. */
     private JTable shareTable;
+    
+    /** The order table. */
     private JTable orderTable;
+    
+    /** The add button. */
     private JButton addButton;
+    
+    /** The limit text field. */
     private JTextField limitTextField;
+    
+    /** The num shares text field. */
     private JTextField numSharesTextField;
+    
+    /** The type combo box. */
     private JComboBox typeComboBox;
+    
+    /** The share text field. */
     private JTextField shareTextField;
 
+    /** The workflow. */
     @Autowired
     Workflow workflow;
 
@@ -46,10 +66,16 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     private static final Logger logger = LoggerFactory.getLogger(MainGUI.class);
 
 
+    /**
+     * Instantiates a new main gui.
+     */
     public MainGUI() {
         initFrame();
     }
 
+    /**
+     * Post construct.
+     */
     @PostConstruct
     private void postConstruct() {
         initShareTable();
@@ -57,6 +83,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         initOrderForm();
     }
 
+    /**
+     * Inits the frame.
+     */
     private void initFrame() {
         setSize(600, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -65,6 +94,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         setTitle("Investor App");
     }
 
+    /**
+     * Inits the share table.
+     */
     private void initShareTable() {
 
         DefaultTableModel model = new DefaultTableModel();
@@ -76,6 +108,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         shareTable.setModel(model);
     }
 
+    /**
+     * Inits the order table.
+     */
     private void initOrderTable() {
 
         DefaultTableModel model = new DefaultTableModel();
@@ -105,6 +140,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         });
     }
 
+    /**
+     * Inits the order form.
+     */
     private void initOrderForm() {
         typeComboBox.addItem(OrderType.BUY.toString());
         typeComboBox.addItem(OrderType.SELL.toString());
@@ -131,6 +169,14 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         });
     }
 
+    /**
+     * Gets the table row index by id.
+     *
+     * @param table the table
+     * @param columnIndex the column index
+     * @param id the id
+     * @return the table row index by id
+     */
     private Integer getTableRowIndexByID(JTable table, Integer columnIndex, Object id) {
 
         for (int i = 0; i < table.getRowCount(); i++) {
@@ -140,6 +186,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         return null;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver#onInvestorDepotEntryNotification(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
+     */
     @Override
     public void onInvestorDepotEntryNotification(InvestorDepotEntry ide) {
 
@@ -180,6 +229,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver#onOrderEntryNotification(ac.at.tuwien.sbc.domain.entry.OrderEntry)
+     */
     @Override
     public void onOrderEntryNotification(OrderEntry oe) {
 
@@ -207,6 +259,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
 
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver#onShareEntryNotification(ac.at.tuwien.sbc.domain.entry.ShareEntry)
+     */
     @Override
     public void onShareEntryNotification(ShareEntry se) {
         DefaultTableModel model = ((DefaultTableModel) shareTable.getModel());

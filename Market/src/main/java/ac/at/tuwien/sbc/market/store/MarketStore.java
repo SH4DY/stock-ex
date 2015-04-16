@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+// TODO: Auto-generated Javadoc
 /**
  * This class acts as the database of all the market environment.
  * Created by dietl_ma on 31/03/15.
@@ -23,21 +24,38 @@ import java.util.HashMap;
 @Profile("amqp")
 public class MarketStore {
 
+    /** The investor depot entries. */
     private IndexedCollection<InvestorDepotEntry> investorDepotEntries;
+    
+    /** The order entries. */
     private IndexedCollection<OrderEntry> orderEntries;
+    
+    /** The share entries. */
     private IndexedCollection<ShareEntry> shareEntries;
+    
+    /** The transaction entries. */
     private IndexedCollection<TransactionEntry> transactionEntries;
+    
+    /** The release entries. */
     private IndexedCollection<ReleaseEntry> releaseEntries;
 
+    /** The collection map. */
     private HashMap<Class, IndexedCollection> collectionMap = new HashMap<Class, IndexedCollection>();
 
+    /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(MarketStore.class);
 
+    /**
+     * On post construct.
+     */
     @PostConstruct
     private void onPostConstruct() {
         initCollections();
     }
 
+    /**
+     * Inits the collections.
+     */
     private void initCollections() {
         //initialize query-able collection
         investorDepotEntries = CQEngine.newInstance();
@@ -61,6 +79,15 @@ public class MarketStore {
         collectionMap.put(ReleaseEntry.class, releaseEntries);
     }
 
+    /**
+     * Retrieve.
+     *
+     * @param clazz the clazz
+     * @param query the query
+     * @param shuffle the shuffle
+     * @param numResults the num results
+     * @return the array list
+     */
     public ArrayList<SuperEntry> retrieve(Class clazz, Query query, Boolean shuffle, Integer numResults) {
 
         IndexedCollection col = collectionMap.get(clazz);
@@ -101,6 +128,12 @@ public class MarketStore {
         return result;
     }
 
+    /**
+     * Delete.
+     *
+     * @param clazz the clazz
+     * @param object the object
+     */
     public void delete(Class clazz, Object object) {
 
         IndexedCollection col = collectionMap.get(clazz);
@@ -109,6 +142,12 @@ public class MarketStore {
             col.remove(object);
     }
 
+    /**
+     * Adds the.
+     *
+     * @param clazz the clazz
+     * @param object the object
+     */
     public void add(Class clazz, Object object) {
 
         logger.info("WRITE:" + object.getClass());

@@ -18,6 +18,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 25/03/15.
  */
@@ -31,6 +32,11 @@ public class InvestorApp {
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(InvestorApp.class);
 
+    /**
+     * The main method.
+     *
+     * @param args the arguments
+     */
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = new SpringApplicationBuilder(InvestorApp.class)
                 .headless(false)

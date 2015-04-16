@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 26/03/15.
  */
@@ -33,29 +34,38 @@ import java.util.UUID;
 @Profile("space")
 public class SpaceCoordinationService implements ICoordinationService {
 
+    /** The core. */
     @Autowired
     MzsCore core;
 
+    /** The capi. */
     @Autowired
     Capi capi;
 
+    /** The investor depot container. */
     @Autowired
     @Qualifier("investorDepotContainer")
     ContainerReference investorDepotContainer;
 
+    /** The order container. */
     @Autowired
     @Qualifier("orderContainer")
     ContainerReference orderContainer;
 
+    /** The share container. */
     @Autowired
     @Qualifier("shareContainer")
     ContainerReference shareContainer;
 
+    /** The notifications. */
     private ArrayList<Notification> notifications = new ArrayList<Notification>();
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getInvestor(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getInvestor(Integer id, CoordinationListener cListener) {
         logger.info("Try to read investor with arguments: " + String.valueOf(id));
@@ -76,6 +86,9 @@ public class SpaceCoordinationService implements ICoordinationService {
 
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getShares(java.util.ArrayList, ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getShares(ArrayList<String> shareIds, CoordinationListener cListener) {
 
@@ -93,6 +106,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         cListener.onResult(entries);
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerInvestorNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerInvestorNotification(CoordinationListener cListener) {
 
@@ -112,6 +128,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerOrderNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerOrderNotification(CoordinationListener clistener) {
         try {
@@ -130,6 +149,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerShareNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerShareNotification(CoordinationListener clistener) {
         try {
@@ -148,6 +170,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
+     */
     @Override
     public void setInvestor(InvestorDepotEntry ide) {
 
@@ -177,6 +202,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#addOrder(ac.at.tuwien.sbc.domain.entry.OrderEntry)
+     */
     @Override
     public void addOrder(OrderEntry oe) {
         try {
@@ -186,6 +214,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getOrders(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getOrders(Integer investorId, CoordinationListener cListener) {
 
@@ -205,6 +236,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#deleteOrder(java.util.UUID)
+     */
     @Override
     public void deleteOrder(UUID orderID) {
 
@@ -221,6 +255,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         catch (MzsCoreException e) {logger.info("Not able to delete order:" + e.getMessage());}
     }
 
+    /**
+     * On pre destroy.
+     */
     @PreDestroy
     public void onPreDestroy() {
 
@@ -235,16 +272,27 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     /**
-     * InvestorDepotNotificationListener
+     * InvestorDepotNotificationListener.
+     *
+     * @see InvestorDepotNotificationEvent
      */
     public class InvestorDepotNotificationListener implements NotificationListener {
 
+        /** The callback listener. */
         private CoordinationListener<ArrayList<InvestorDepotEntry>> callbackListener;
 
+        /**
+         * Instantiates a new investor depot notification listener.
+         *
+         * @param callbackListener the callback listener
+         */
         public InvestorDepotNotificationListener(CoordinationListener<ArrayList<InvestorDepotEntry>> callbackListener) {
             this.callbackListener = callbackListener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 
@@ -258,16 +306,27 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     /**
-     * InvestorDepotNotificationListener
+     * InvestorDepotNotificationListener.
+     *
+     * @see OrderNotificationEvent
      */
     public class OrderNotificationListener implements NotificationListener {
 
+        /** The callback listener. */
         private CoordinationListener<ArrayList<OrderEntry>> callbackListener;
 
+        /**
+         * Instantiates a new order notification listener.
+         *
+         * @param callbackListener the callback listener
+         */
         public OrderNotificationListener(CoordinationListener<ArrayList<OrderEntry>> callbackListener) {
             this.callbackListener = callbackListener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 
@@ -280,16 +339,27 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     /**
-     * InvestorDepotNotificationListener
+     * InvestorDepotNotificationListener.
+     *
+     * @see ShareNotificationEvent
      */
     public class ShareNotificationListener implements NotificationListener {
 
+        /** The callback listener. */
         private CoordinationListener<ArrayList<ShareEntry>> callbackListener;
 
+        /**
+         * Instantiates a new share notification listener.
+         *
+         * @param callbackListener the callback listener
+         */
         public ShareNotificationListener(CoordinationListener<ArrayList<ShareEntry>> callbackListener) {
             this.callbackListener = callbackListener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 

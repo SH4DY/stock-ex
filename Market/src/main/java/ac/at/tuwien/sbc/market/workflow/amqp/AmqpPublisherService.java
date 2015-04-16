@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: Auto-generated Javadoc
 /**
  * Like {@link ac.at.tuwien.sbc.market.workflow.space.SpacePublisherService}
  * this layer offers methods to retrieve data from the underlying platform
@@ -24,18 +25,26 @@ import java.util.List;
 @Profile("amqp")
 public class AmqpPublisherService implements IMarketPublisherService {
 
+    /** The routing key. */
     private final String routingKey = "marketRPC";
 
+    /** The template. */
     @Autowired
     private RabbitTemplate template;
 
+    /** The order entry notification listener. */
     private CoordinationListener<OrderEntry> orderEntryNotificationListener;
 
+    /** The transaction entry notification listener. */
     private CoordinationListener<TransactionEntry> transactionEntryNotificationListener;
 
+    /** The share entry notification listener. */
     private CoordinationListener<ShareEntry> shareEntryNotificationListener;
 
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#getShares(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getShares(CoordinationListener listener) {
         RPCMessageRequest request = null;
@@ -47,6 +56,9 @@ public class AmqpPublisherService implements IMarketPublisherService {
         else listener.onResult(new ArrayList<ShareEntry>());
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#getOrders(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getOrders(CoordinationListener listener) {
         RPCMessageRequest request = null;
@@ -58,6 +70,9 @@ public class AmqpPublisherService implements IMarketPublisherService {
         else listener.onResult(new ArrayList<OrderEntry>());
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#getTransactions(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void getTransactions(CoordinationListener listener) {
         RPCMessageRequest request = null;
@@ -69,21 +84,35 @@ public class AmqpPublisherService implements IMarketPublisherService {
         else listener.onResult(new ArrayList<TransactionEntry>());
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#registerShareObserver(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerShareObserver(CoordinationListener<ShareEntry> coordinationListener) {
         this.shareEntryNotificationListener = coordinationListener;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#registerOrderObserver(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerOrderObserver(CoordinationListener<OrderEntry> coordinationListener) {
         this.orderEntryNotificationListener = coordinationListener;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#registerTransactionObserver(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerTransactionObserver(CoordinationListener<TransactionEntry> coordinationListener) {
         this.transactionEntryNotificationListener = coordinationListener;
     }
 
+    /**
+     * On share entry notification.
+     *
+     * @param list the list
+     */
     public void onShareEntryNotification(ArrayList<ShareEntry> list) {
         if (shareEntryNotificationListener != null) {
             for(ShareEntry entry : list) {
@@ -92,6 +121,11 @@ public class AmqpPublisherService implements IMarketPublisherService {
         }
     }
 
+    /**
+     * On order entry notification.
+     *
+     * @param list the list
+     */
     public void onOrderEntryNotification(ArrayList<OrderEntry> list) {
         if (orderEntryNotificationListener != null) {
             for(OrderEntry entry : list) {
@@ -100,6 +134,11 @@ public class AmqpPublisherService implements IMarketPublisherService {
         }
     }
 
+    /**
+     * On transaction entry notification.
+     *
+     * @param list the list
+     */
     public void onTransactionEntryNotification(ArrayList<TransactionEntry> list) {
         if (transactionEntryNotificationListener != null) {
             for(TransactionEntry entry : list) {

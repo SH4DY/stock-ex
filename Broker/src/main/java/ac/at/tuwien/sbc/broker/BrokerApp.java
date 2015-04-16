@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 25/03/15.
  */
@@ -30,6 +31,11 @@ public class BrokerApp {
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(BrokerApp.class);
 
+    /**
+     * The main method.
+     *
+     * @param args the arguments
+     */
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = new SpringApplicationBuilder(BrokerApp.class)
                 .headless(false)

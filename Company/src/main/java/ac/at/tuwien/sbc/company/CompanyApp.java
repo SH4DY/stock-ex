@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Import;
 
 /**
  * Created by dietl_ma on 25/03/15.
+ * Company application
  */
-
 @SpringBootApplication
 @Import({CommonRabbitConfiguration.class, CommonSpaceConfiguration.class})
 public class CompanyApp {
@@ -20,6 +20,11 @@ public class CompanyApp {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(CompanyApp.class);
 
 
+    /**
+     * The main method.
+     *
+     * @param args the arguments
+     */
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = new SpringApplicationBuilder(CompanyApp.class)
                 .headless(true)

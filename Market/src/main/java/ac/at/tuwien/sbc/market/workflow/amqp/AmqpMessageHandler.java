@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+// TODO: Auto-generated Javadoc
 /**
  * The class {@link ac.at.tuwien.sbc.market.configuration.RabbitConfiguration}
  * references this handler for callbacks coming from the underlying AMQP server.
@@ -18,17 +19,33 @@ import java.util.ArrayList;
 @Profile("amqp")
 public class AmqpMessageHandler {
 
+    /** The amqp publisher service. */
     @Autowired
     private AmqpPublisherService amqpPublisherService;
 
+    /**
+     * On share entry notification.
+     *
+     * @param list the list
+     */
     public void onShareEntryNotification(ArrayList<ShareEntry> list) {
         amqpPublisherService.onShareEntryNotification(list);
     }
 
+    /**
+     * On order entry notification.
+     *
+     * @param list the list
+     */
     public void onOrderEntryNotification(ArrayList<OrderEntry> list) {
         amqpPublisherService.onOrderEntryNotification(list);
     }
 
+    /**
+     * On transaction entry notification.
+     *
+     * @param list the list
+     */
     public void onTransactionEntryNotification(ArrayList<TransactionEntry> list) {
         amqpPublisherService.onTransactionEntryNotification(list);
     }

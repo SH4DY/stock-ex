@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import static org.mozartspaces.capi3.Matchmakers.and;
 import static org.mozartspaces.capi3.Matchmakers.or;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 30/03/15.
  */
@@ -26,16 +27,20 @@ import static org.mozartspaces.capi3.Matchmakers.or;
 @Profile("space")
 public class SpaceCoordinationService implements ICoordinationService {
 
+    /** The core. */
     @Autowired
     MzsCore core;
 
+    /** The capi. */
     @Autowired
     Capi capi;
 
+    /** The share container. */
     @Autowired
     @Qualifier("shareContainer")
     ContainerReference shareContainer;
 
+    /** The order container. */
     @Autowired
     @Qualifier("orderContainer")
     ContainerReference orderContainer;
@@ -43,6 +48,9 @@ public class SpaceCoordinationService implements ICoordinationService {
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#getShares()
+     */
     @Override
     public ArrayList<ShareEntry> getShares() {
 
@@ -54,6 +62,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         return entries;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#setShareEntry(ac.at.tuwien.sbc.domain.entry.ShareEntry)
+     */
     @Override
     public void setShareEntry(ShareEntry se) {
         try {
@@ -67,6 +78,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         catch (MzsCoreException e) {}
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#getOrdersByProperties(java.lang.String, ac.at.tuwien.sbc.domain.enums.OrderType)
+     */
     @Override
     public ArrayList<OrderEntry> getOrdersByProperties(String shareId, OrderType type) {
 

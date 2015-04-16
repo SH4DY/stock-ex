@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 01/04/15.
  */
@@ -17,17 +18,33 @@ import java.util.ArrayList;
 @Profile("amqp")
 public class MessageHandler {
 
+    /** The amqp coordination service. */
     @Autowired
     private AmqpCoordinationService amqpCoordinationService;
 
+    /**
+     * On investor entry notification.
+     *
+     * @param list the list
+     */
     public void onInvestorEntryNotification(ArrayList<InvestorDepotEntry> list) {
         amqpCoordinationService.onInvestorEntryNotification(list);
     }
 
+    /**
+     * On share entry notification.
+     *
+     * @param list the list
+     */
     public void onShareEntryNotification(ArrayList<ShareEntry> list) {
         amqpCoordinationService.onShareEntryNotification(list);
     }
 
+    /**
+     * On order entry notification.
+     *
+     * @param list the list
+     */
     public void onOrderEntryNotification(ArrayList<OrderEntry> list) {
         amqpCoordinationService.onOrderEntryNotification(list);
     }

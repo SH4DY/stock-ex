@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 31/03/15.
  */
@@ -17,15 +18,21 @@ import org.springframework.stereotype.Service;
 @Profile("amqp")
 public class AmqpReleaseService implements IReleaseService {
 
+    /** The template. */
     @Autowired
     private RabbitTemplate template;
 
+    /** The rabbit admin. */
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
+    /** The ctx. */
     @Autowired
     private ApplicationContext ctx;
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.company.workflow.IReleaseService#makeRelease(ac.at.tuwien.sbc.domain.entry.ReleaseEntry)
+     */
     @Override
     public void makeRelease(ReleaseEntry rls) {
         //write release entry

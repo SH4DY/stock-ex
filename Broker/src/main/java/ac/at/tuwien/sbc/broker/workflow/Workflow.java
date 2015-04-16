@@ -18,22 +18,30 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 27/03/15.
  */
 @Service
 public class Workflow {
+    
+    /** The broker id. */
     @Value("${id}")
     private Integer brokerId;
 
+    /** The coordination service. */
     @Autowired
     private ICoordinationService coordinationService;
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
+    /** The Constant brokerProvision. */
     public static final Double brokerProvision = 0.03;
 
+    /**
+     * On post construct.
+     */
     @PostConstruct
     private void onPostConstruct() {
 
@@ -44,6 +52,9 @@ public class Workflow {
         initShareNotification();
     }
 
+    /**
+     * Inits the release request handling.
+     */
     private void initReleaseRequestHandling() {
         coordinationService.registerReleaseNotification(new CoordinationListener<ArrayList<ReleaseEntry>>() {
             @Override
@@ -54,6 +65,9 @@ public class Workflow {
         });
     }
 
+    /**
+     * Inits the order request handling.
+     */
     private void initOrderRequestHandling() {
         coordinationService.registerOrderNotification(new CoordinationListener<ArrayList<OrderEntry>>() {
             @Override
@@ -67,6 +81,9 @@ public class Workflow {
         });
     }
 
+    /**
+     * Inits the first order request handling.
+     */
     private void initFirstOrderRequestHandling() {
         ArrayList<ShareEntry> shareList = coordinationService.readShares();
 
@@ -76,6 +93,9 @@ public class Workflow {
         }
     }
 
+    /**
+     * Inits the share notification.
+     */
     private void initShareNotification() {
         coordinationService.registerShareNotification(new CoordinationListener<ArrayList<ShareEntry>>() {
             @Override
@@ -88,6 +108,9 @@ public class Workflow {
         });
     }
 
+    /**
+     * Handle release requests.
+     */
     private void handleReleaseRequests() {
 
         Boolean tryAgain = true;
@@ -140,6 +163,11 @@ public class Workflow {
     }
 
 
+    /**
+     * Handle order requests.
+     *
+     * @param shareId the share id
+     */
     private synchronized void handleOrderRequests(String shareId) {
 
         //create shared transaction
@@ -277,6 +305,17 @@ public class Workflow {
         }
     }
 
+    /**
+     * Do transaction.
+     *
+     * @param sellOrder the sell order
+     * @param buyOrder the buy order
+     * @param seller the seller
+     * @param buyer the buyer
+     * @param shareEntry the share entry
+     * @param sharedTransaction the shared transaction
+     * @throws CoordinationServiceException the coordination service exception
+     */
     private void doTransaction(OrderEntry sellOrder, OrderEntry buyOrder, InvestorDepotEntry seller, InvestorDepotEntry buyer, ShareEntry shareEntry, Object sharedTransaction) throws CoordinationServiceException {
 
         Integer numSharesToTransact = Math.min(sellOrder.getNumTotal() - sellOrder.getNumCompleted(),
@@ -337,6 +376,14 @@ public class Workflow {
         coordinationService.commitTransaction(addOrdersTransaction);
     }
 
+    /**
+     * Do manual rollback.
+     *
+     * @param sellOrder the sell order
+     * @param buyOrder the buy order
+     * @param seller the seller
+     * @param buyer the buyer
+     */
     private void doManualRollback(OrderEntry sellOrder, OrderEntry buyOrder, InvestorDepotEntry seller, InvestorDepotEntry buyer) {
 
         try {

@@ -10,29 +10,39 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by shady on 27/03/15.
  */
 @Service
 public class Workflow {
 
+    /** The company id. */
     @Value("${id}")
     private String companyID;
 
+    /** The num shares. */
     @Value("${numShares}")
     private Integer numShares;
 
+    /** The init price. */
     @Value("${initPrice}")
     private Double initPrice;
 
+    /** The rls service. */
     @Autowired
     IReleaseService rlsService;
 
+    /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
+    /** The template. */
     @Autowired
     RabbitTemplate template;
 
+    /**
+     * On post construct.
+     */
     @PostConstruct
     public void onPostConstruct() {
 

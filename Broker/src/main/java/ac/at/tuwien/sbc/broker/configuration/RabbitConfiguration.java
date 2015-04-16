@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 01/04/15.
  */
@@ -22,14 +23,25 @@ import org.springframework.context.annotation.Profile;
 @Profile("amqp")
 public class RabbitConfiguration {
 
+    /** The application context. */
     @Autowired
     private ApplicationContext applicationContext;
 
+    /** The message handler. */
     @Autowired
     private MessageHandler messageHandler;
 
+    /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(RabbitConfiguration.class);
 
+    /**
+     * Investor entry notification container.
+     *
+     * @param connectionFactory the connection factory
+     * @param amqpTemplate the amqp template
+     * @param messageConverter the message converter
+     * @return the simple message listener container
+     */
     @Bean
     public SimpleMessageListenerContainer investorEntryNotificationContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
@@ -43,6 +55,14 @@ public class RabbitConfiguration {
         return container;
     }
 
+    /**
+     * Share entry notification container.
+     *
+     * @param connectionFactory the connection factory
+     * @param amqpTemplate the amqp template
+     * @param messageConverter the message converter
+     * @return the simple message listener container
+     */
     @Bean
     public SimpleMessageListenerContainer shareEntryNotificationContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
@@ -56,6 +76,14 @@ public class RabbitConfiguration {
         return container;
     }
 
+    /**
+     * Order entry notification container.
+     *
+     * @param connectionFactory the connection factory
+     * @param amqpTemplate the amqp template
+     * @param messageConverter the message converter
+     * @return the simple message listener container
+     */
     @Bean
     public SimpleMessageListenerContainer orderEntryNotificationContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
@@ -69,6 +97,14 @@ public class RabbitConfiguration {
         return container;
     }
 
+    /**
+     * Release entry notifcation container.
+     *
+     * @param connectionFactory the connection factory
+     * @param amqpTemplate the amqp template
+     * @param messageConverter the message converter
+     * @return the simple message listener container
+     */
     @Bean
     public SimpleMessageListenerContainer releaseEntryNotifcationContainer(ConnectionFactory connectionFactory, RabbitTemplate amqpTemplate, MessageConverter messageConverter) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();

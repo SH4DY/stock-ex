@@ -27,6 +27,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 28/03/15.
  */
@@ -34,32 +35,40 @@ import java.util.List;
 @Profile("space")
 public class SpaceCoordinationService implements ICoordinationService {
 
+    /** The core. */
     @Autowired
     MzsCore core;
 
+    /** The capi. */
     @Autowired
     Capi capi;
 
+    /** The release container. */
     @Autowired
     @Qualifier("releaseContainer")
     ContainerReference releaseContainer;
 
+    /** The share container. */
     @Autowired
     @Qualifier("shareContainer")
     ContainerReference shareContainer;
 
+    /** The order container. */
     @Autowired
     @Qualifier("orderContainer")
     ContainerReference orderContainer;
 
+    /** The investor depot container. */
     @Autowired
     @Qualifier("investorDepotContainer")
     ContainerReference investorDepotContainer;
 
+    /** The transaction container. */
     @Autowired
     @Qualifier("transactionContainer")
     ContainerReference transactionContainer;
 
+    /** The notifications. */
     private ArrayList<Notification> notifications = new ArrayList<Notification>();
 
 
@@ -68,6 +77,9 @@ public class SpaceCoordinationService implements ICoordinationService {
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
 
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getInvestor(java.lang.Integer, java.lang.Object)
+     */
     @Override
     public InvestorDepotEntry getInvestor(Integer investorId, Object sharedTransaction) {
         logger.info("Try to read investor with arguments: " + String.valueOf(investorId));
@@ -86,6 +98,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         return entry;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry, java.lang.Object, java.lang.Boolean)
+     */
     @Override
     public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
         logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
@@ -103,6 +118,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#addOrder(ac.at.tuwien.sbc.domain.entry.OrderEntry, java.lang.Object, java.lang.Boolean)
+     */
     @Override
     public void addOrder(OrderEntry oe, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
 
@@ -121,6 +139,9 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getOrderByProperties(java.lang.String, ac.at.tuwien.sbc.domain.enums.OrderType, ac.at.tuwien.sbc.domain.enums.OrderStatus, java.lang.Double, java.lang.Object)
+     */
     @Override
     public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price, Object sharedTransaction) {
         TransactionReference tx = (TransactionReference)sharedTransaction;
@@ -152,6 +173,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         return entry;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#readShares()
+     */
     @Override
     public ArrayList<ShareEntry> readShares() {
 
@@ -165,6 +189,9 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getReleaseEntry(java.lang.Object)
+     */
     @Override
     public ReleaseEntry getReleaseEntry(Object sharedTransaction) {
 
@@ -189,6 +216,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         return re;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getShareEntry(java.lang.String, java.lang.Object)
+     */
     @Override
     public ShareEntry getShareEntry(String shareId, Object sharedTransaction) {
 
@@ -207,6 +237,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         return se;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#setShareEntry(ac.at.tuwien.sbc.domain.entry.ShareEntry, java.lang.Object)
+     */
     @Override
     public void setShareEntry(ShareEntry se, Object sharedTransaction) throws CoordinationServiceException {
 
@@ -226,6 +259,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#registerReleaseNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerReleaseNotification(CoordinationListener cListener) {
         try {
@@ -242,6 +278,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#registerOrderNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerOrderNotification(CoordinationListener cListener) {
         try {
@@ -258,6 +297,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#registerShareNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     */
     @Override
     public void registerShareNotification(CoordinationListener cListener) {
         try {
@@ -274,6 +316,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#addTransaction(ac.at.tuwien.sbc.domain.entry.TransactionEntry, java.lang.Object)
+     */
     @Override
     public void addTransaction(TransactionEntry te, Object sharedTransaction) throws CoordinationServiceException {
         TransactionReference tx = (TransactionReference)sharedTransaction;
@@ -285,6 +330,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#createTransaction(long)
+     */
     @Override
     public Object createTransaction(long timeout) {
 
@@ -298,6 +346,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         return tx;
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#commitTransaction(java.lang.Object)
+     */
     @Override
     public void commitTransaction(Object sharedTransaction) {
 
@@ -313,6 +364,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#rollbackTransaction(java.lang.Object)
+     */
     @Override
     public void rollbackTransaction(Object sharedTransaction) {
         if (sharedTransaction != null) {
@@ -329,16 +383,27 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     /**
-     * InvestorDepotNotificationListener
+     * InvestorDepotNotificationListener.
+     *
+     * @see ReleaseNotificationEvent
      */
     public class ReleaseNotificationListener implements NotificationListener {
 
+        /** The callback listener. */
         private CoordinationListener<ArrayList<ReleaseEntry>> callbackListener;
 
+        /**
+         * Instantiates a new release notification listener.
+         *
+         * @param callbackListener the callback listener
+         */
         public ReleaseNotificationListener(CoordinationListener<ArrayList<ReleaseEntry>> callbackListener) {
             this.callbackListener = callbackListener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 
@@ -351,16 +416,27 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     /**
-     * OrderNotificationListener
+     * OrderNotificationListener.
+     *
+     * @see OrderNotificationEvent
      */
     public class OrderNotificationListener implements NotificationListener {
 
+        /** The callback listener. */
         private CoordinationListener<ArrayList<OrderEntry>> callbackListener;
 
+        /**
+         * Instantiates a new order notification listener.
+         *
+         * @param callbackListener the callback listener
+         */
         public OrderNotificationListener(CoordinationListener<ArrayList<OrderEntry>> callbackListener) {
             this.callbackListener = callbackListener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 
@@ -372,14 +448,34 @@ public class SpaceCoordinationService implements ICoordinationService {
         }
     }
 
+    /**
+     * The listener interface for receiving shareNotification events.
+     * The class that is interested in processing a shareNotification
+     * event implements this interface, and the object created
+     * with that class is registered with a component using the
+     * component's <code>addShareNotificationListener<code> method. When
+     * the shareNotification event occurs, that object's appropriate
+     * method is invoked.
+     *
+     * @see ShareNotificationEvent
+     */
     public class ShareNotificationListener implements NotificationListener {
 
+        /** The callback listener. */
         private CoordinationListener<ArrayList<ShareEntry>> callbackListener;
 
+        /**
+         * Instantiates a new share notification listener.
+         *
+         * @param callbackListener the callback listener
+         */
         public ShareNotificationListener(CoordinationListener<ArrayList<ShareEntry>> callbackListener) {
             this.callbackListener = callbackListener;
         }
 
+        /* (non-Javadoc)
+         * @see org.mozartspaces.notifications.NotificationListener#entryOperationFinished(org.mozartspaces.notifications.Notification, org.mozartspaces.notifications.Operation, java.util.List)
+         */
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 

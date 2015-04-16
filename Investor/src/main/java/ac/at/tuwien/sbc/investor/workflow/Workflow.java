@@ -17,30 +17,39 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 26/03/15.
  */
 @Service
 public class Workflow  {
 
+    /** The investor id. */
     @Value("${id}")
     private Integer investorId;
 
+    /** The budget. */
     @Value("${budget}")
     private Double budget;
 
+    /** The coordination service. */
     @Autowired
     private ICoordinationService coordinationService;
 
+    /** The observer. */
     @Autowired
     private IWorkFlowObserver observer;
 
+    /** The current investor. */
     private InvestorDepotEntry currentInvestor;
 
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
 
+    /**
+     * On post construct.
+     */
     @PostConstruct
     private void onPostConstruct() {
 
@@ -57,6 +66,9 @@ public class Workflow  {
     }
 
 
+    /**
+     * Inits the investor notification.
+     */
     private void initInvestorNotification() {
         coordinationService.registerInvestorNotification(new CoordinationListener<ArrayList<InvestorDepotEntry>>() {
             @Override
@@ -76,6 +88,9 @@ public class Workflow  {
         });
     }
 
+    /**
+     * Inits the order notification.
+     */
     private void initOrderNotification() {
         coordinationService.registerOrderNotification(new CoordinationListener<ArrayList<OrderEntry>>() {
             @Override
@@ -90,6 +105,9 @@ public class Workflow  {
         });
     }
 
+    /**
+     * Inits the share notification.
+     */
     public void initShareNotification() {
         coordinationService.registerShareNotification(new CoordinationListener<ArrayList<ShareEntry>>() {
             @Override
@@ -107,8 +125,9 @@ public class Workflow  {
             }
         });
     }
+    
     /**
-     * Get investor if exists and increase budget by new args
+     * Get investor if exists and increase budget by new args.
      */
     private void initInvestor() {
 
@@ -130,6 +149,9 @@ public class Workflow  {
         });
     }
 
+    /**
+     * Inits the orders.
+     */
     private void initOrders() {
         coordinationService.getOrders(investorId, new CoordinationListener<ArrayList<OrderEntry>>() {
             @Override
@@ -145,6 +167,9 @@ public class Workflow  {
         });
     }
 
+    /**
+     * Inits the shares.
+     */
     private void initShares() {
         if (currentInvestor == null)
             return;
@@ -163,6 +188,12 @@ public class Workflow  {
             }
         });
     }
+    
+    /**
+     * Adds the order.
+     *
+     * @param oe the oe
+     */
     public void addOrder(OrderEntry oe) {
 
         oe.setOrderID(UUID.randomUUID());
@@ -173,6 +204,11 @@ public class Workflow  {
         coordinationService.addOrder(oe);
     }
 
+    /**
+     * Delete order.
+     *
+     * @param orderID the order id
+     */
     public void deleteOrder(UUID orderID) {
         coordinationService.deleteOrder(orderID);
     }

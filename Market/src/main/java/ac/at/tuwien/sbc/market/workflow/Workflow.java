@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+// TODO: Auto-generated Javadoc
 /**
  * This Service acts as the controller layer for the model layer.
  * It enables decoupling from underlying layers (space-based, message-based...)
@@ -18,9 +19,11 @@ import java.util.List;
 @Service
 public class Workflow implements IMarketServiceListener {
 
+    /** The market publisher service. */
     @Autowired
     IMarketPublisherService marketPublisherService;
 
+    /** The observer. */
     @Autowired
     IMarketObserver observer;
 
@@ -40,6 +43,9 @@ public class Workflow implements IMarketServiceListener {
         setupShareNotification();
     }
 
+    /**
+     * Setup order notification.
+     */
     private void setupOrderNotification() {
         marketPublisherService.registerOrderObserver(new CoordinationListener<OrderEntry>(){
 
@@ -52,6 +58,11 @@ public class Workflow implements IMarketServiceListener {
         });
     }
 
+    /**
+     * Gets the all orders.
+     *
+     * @return the all orders
+     */
     private void getAllOrders(){
         marketPublisherService.getOrders(new CoordinationListener<List<OrderEntry>>() {
             @Override
@@ -68,6 +79,9 @@ public class Workflow implements IMarketServiceListener {
     }
 
 
+    /**
+     * Setup transaction notifiction.
+     */
     private void setupTransactionNotifiction(){
         marketPublisherService.registerTransactionObserver(new CoordinationListener<TransactionEntry>() {
             @Override
@@ -79,6 +93,11 @@ public class Workflow implements IMarketServiceListener {
         });
     }
 
+    /**
+     * Gets the all transactions.
+     *
+     * @return the all transactions
+     */
     private void getAllTransactions(){
         marketPublisherService.getTransactions(new CoordinationListener<List<TransactionEntry>>() {
             @Override
@@ -94,6 +113,9 @@ public class Workflow implements IMarketServiceListener {
         });
     }
 
+    /**
+     * Setup share notification.
+     */
     private void setupShareNotification(){
         marketPublisherService.registerShareObserver(new CoordinationListener<ShareEntry>() {
             @Override
@@ -105,6 +127,11 @@ public class Workflow implements IMarketServiceListener {
         });
     }
 
+    /**
+     * Gets the all shares.
+     *
+     * @return the all shares
+     */
     private void getAllShares(){
         marketPublisherService.getShares(new CoordinationListener<List<ShareEntry>>() {
             @Override

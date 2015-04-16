@@ -13,42 +13,99 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+// TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 14/04/15.
  */
 public class MainGUI extends JFrame {
 
+    /** The process lists. */
     ArrayList<ArrayList<Process>> processLists;
 
+    /** The market processes. */
     private ArrayList<Process> marketProcesses;
+    
+    /** The investor processes. */
     private ArrayList<Process> investorProcesses;
+    
+    /** The broker processes. */
     private ArrayList<Process> brokerProcesses;
+    
+    /** The company processes. */
     private ArrayList<Process> companyProcesses;
+    
+    /** The market agent processes. */
     private ArrayList<Process> marketAgentProcesses;
 
+    /** The root panel. */
     private JPanel rootPanel;
+    
+    /** The space radio button. */
     private JRadioButton spaceRadioButton;
+    
+    /** The amqp radio button. */
     private JRadioButton amqpRadioButton;
+    
+    /** The investor id field. */
     private JTextField investorIDField;
+    
+    /** The investor budget field. */
     private JTextField investorBudgetField;
+    
+    /** The run broker button. */
     private JButton runBrokerButton;
+    
+    /** The broker id field. */
     private JTextField brokerIDField;
+    
+    /** The run investor button. */
     private JButton runInvestorButton;
+    
+    /** The run market button. */
     private JButton runMarketButton;
+    
+    /** The company num shares field. */
     private JTextField companyNumSharesField;
+    
+    /** The company price field. */
     private JTextField companyPriceField;
+    
+    /** The run company button. */
     private JButton runCompanyButton;
+    
+    /** The company id field. */
     private JTextField companyIDField;
+    
+    /** The run market agent button. */
     private JButton runMarketAgentButton;
+    
+    /** The num market processes. */
     private JLabel numMarketProcesses;
+    
+    /** The num investor processes. */
     private JLabel numInvestorProcesses;
+    
+    /** The num broker processes. */
     private JLabel numBrokerProcesses;
+    
+    /** The num company processes. */
     private JLabel numCompanyProcesses;
+    
+    /** The num market agent processes. */
     private JLabel numMarketAgentProcesses;
+    
+    /** The close all button. */
     private JButton closeAllButton;
+    
+    /** The implementation button group. */
     private ButtonGroup implementationButtonGroup;
+    
+    /** The run action listener. */
     private RunActionListener runActionListener;
 
+    /**
+     * Instantiates a new main gui.
+     */
     public MainGUI(){
         setSize(850,290);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -91,6 +148,9 @@ public class MainGUI extends JFrame {
 
     }
 
+    /**
+     * Inits the implementation button group.
+     */
     private void initImplementationButtonGroup() {
         implementationButtonGroup = new ButtonGroup();
         spaceRadioButton.setActionCommand("space");
@@ -99,6 +159,9 @@ public class MainGUI extends JFrame {
         implementationButtonGroup.add(amqpRadioButton);
     }
 
+    /**
+     * Inits the run buttons.
+     */
     private void initRunButtons() {
 
         runMarketButton.addActionListener(new RunActionListener());
@@ -108,6 +171,9 @@ public class MainGUI extends JFrame {
         runMarketAgentButton.addActionListener(new RunActionListener());
     }
 
+    /**
+     * Check processes.
+     */
     @Scheduled(fixedDelay = 2000)
     private void checkProcesses() {
         numMarketProcesses.setText(String.valueOf(marketProcesses.size()));
@@ -117,6 +183,9 @@ public class MainGUI extends JFrame {
         numMarketAgentProcesses.setText(String.valueOf(marketAgentProcesses.size()));
     }
 
+    /**
+     * Close all processes.
+     */
     private void closeAllProcesses() {
         for (ArrayList<Process> processes : processLists) {
             for (Process p : processes)
@@ -126,8 +195,22 @@ public class MainGUI extends JFrame {
         }
     }
 
+    /**
+     * The listener interface for receiving runAction events.
+     * The class that is interested in processing a runAction
+     * event implements this interface, and the object created
+     * with that class is registered with a component using the
+     * component's <code>addRunActionListener<code> method. When
+     * the runAction event occurs, that object's appropriate
+     * method is invoked.
+     *
+     * @see RunActionEvent
+     */
     public class RunActionListener implements ActionListener {
 
+        /* (non-Javadoc)
+         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+         */
         @Override
         public void actionPerformed(ActionEvent e) {
 
