@@ -23,7 +23,7 @@ $ java -cp java -cp [project-root]/Server/mozartspaces-dist-2.3-SNAPSHOT-r14098-
 ```sh
 java -jar [project-root]/[application-dir]/target/[application]-1.0-SNAPSHOT.jar --spring.profiles.active=[amqp,space] --[additional_arg]=[value]
 ```
-* ##### Market: [application-dir] = Market, [application] = market
+* Market: [application-dir] = Market, [application] = market
 e.g. 
 ```sh
 $ java -jar Market/target/market-1.0-SNAPSHOT.jar --spring.profiles.active=space
