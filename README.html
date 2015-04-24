@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hello!</title>
+<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body><div class="container"><h1 id="stock-ex">stock-ex</h1>
+
+<p>Stock exchange simulation based on a space based and an alternative middleware solution.</p>
+
+
+
+<h1 id="running-apps-and-prerequisites">Running Apps and prerequisites:</h1>
+
+
+
+<h2 id="1-install-rabbitmq">1. Install RabbitMQ</h2>
+
+<p><a href="https://www.rabbitmq.com/download.html">https://www.rabbitmq.com/download.html</a></p>
+
+
+
+<h2 id="2-run-rabbitmq-broker">2. Run RabbitMQ Broker</h2>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs ruby"><span class="hljs-variable">$ </span>rabbitmq-server</code></pre>
+
+
+
+<h2 id="3-build-projects">3. Build projects</h2>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs ruby"><span class="hljs-variable">$ </span>mvn clean install</code></pre>
+
+
+
+<h2 id="4-run-space-server">4. Run space server:</h2>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs avrasm">$ java -<span class="hljs-keyword">cp</span> java -<span class="hljs-keyword">cp</span> [project-root]/Server/mozartspaces-dist-<span class="hljs-number">2.3</span>-SNAPSHOT-r14098-all-with-dependencies<span class="hljs-preprocessor">.jar</span>:Domain/target/domain-<span class="hljs-number">1.0</span>-SNAPSHOT<span class="hljs-preprocessor">.jar</span> org<span class="hljs-preprocessor">.mozartspaces</span><span class="hljs-preprocessor">.core</span><span class="hljs-preprocessor">.Server</span></code></pre>
+
+
+
+<h2 id="5-run-applications-via-java-jar">5. Run applications (via java -jar)</h2>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs avrasm">java -jar [project-root]/[application-dir]/target/[application]-<span class="hljs-number">1.0</span>-SNAPSHOT<span class="hljs-preprocessor">.jar</span> --spring<span class="hljs-preprocessor">.profiles</span><span class="hljs-preprocessor">.active</span>=[amqp,space] --[additional_arg]=[value]</code></pre>
+
+<ul>
+<li><strong>Market</strong>: [application-dir] = Market, [application] = market</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs avrasm">$ java -jar Market/target/market-<span class="hljs-number">1.0</span>-SNAPSHOT<span class="hljs-preprocessor">.jar</span> --spring<span class="hljs-preprocessor">.profiles</span><span class="hljs-preprocessor">.active</span>=space</code></pre>
+
+<ul>
+<li><strong>MarketAgent</strong>: [application-dir] = MarketAgent, [application] = marketagent</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs avrasm">$ java -jar MarketAgent/target/marketagent-<span class="hljs-number">1.0</span>-SNAPSHOT<span class="hljs-preprocessor">.jar</span> --spring<span class="hljs-preprocessor">.profiles</span><span class="hljs-preprocessor">.active</span>=space</code></pre>
+
+<ul>
+<li><strong>Investor</strong>: [application-dir] = Investor, [application] = investor, arg_id(integer), arg_budget(double)</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs brainfuck"><span class="hljs-comment">$</span> <span class="hljs-comment">java</span> <span class="hljs-literal">-</span><span class="hljs-comment">jar</span> <span class="hljs-comment">Investor/target/investor</span><span class="hljs-literal">-</span><span class="hljs-comment">1</span><span class="hljs-string">.</span><span class="hljs-comment">0</span><span class="hljs-literal">-</span><span class="hljs-comment">SNAPSHOT</span><span class="hljs-string">.</span><span class="hljs-comment">jar</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-comment">spring</span><span class="hljs-string">.</span><span class="hljs-comment">profiles</span><span class="hljs-string">.</span><span class="hljs-comment">active=space</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-comment">id=123</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-comment">budget=10000</span><span class="hljs-string">.</span><span class="hljs-comment">0</span></code></pre>
+
+<ul>
+<li><strong>Broker</strong>: [application-dir] = Broker, [application] = broker, arg_id(integer)</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs avrasm">$ java -jar Broker/target/broker-<span class="hljs-number">1.0</span>-SNAPSHOT<span class="hljs-preprocessor">.jar</span> --spring<span class="hljs-preprocessor">.profiles</span><span class="hljs-preprocessor">.active</span>=space --id=<span class="hljs-number">1</span></code></pre>
+
+<ul>
+<li><strong>Company</strong>: [application-dir] = Company, [application] = broker, arg_id(string), arg_numShares(int), arg_initPrice(double)</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs brainfuck"><span class="hljs-comment">$</span> <span class="hljs-comment">java</span> <span class="hljs-literal">-</span><span class="hljs-comment">jar</span> <span class="hljs-comment">Company/target/company</span><span class="hljs-literal">-</span><span class="hljs-comment">1</span><span class="hljs-string">.</span><span class="hljs-comment">0</span><span class="hljs-literal">-</span><span class="hljs-comment">SNAPSHOT</span><span class="hljs-string">.</span><span class="hljs-comment">jar</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-comment">spring</span><span class="hljs-string">.</span><span class="hljs-comment">profiles</span><span class="hljs-string">.</span><span class="hljs-comment">active=space</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-comment">id=GOO</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-comment">numShares=100</span></code></pre>
+
+
+
+<h2 id="51-run-applications-via-runsh">5.1 Run applications (via run.sh)</h2>
+
+<ul>
+<li><strong>Space or Amqp environment</strong>: ./run.sh env [space,amqp]</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs applescript">$ ./<span class="hljs-command">run</span>.sh env <span class="hljs-constant">space</span></code></pre>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs ruby"><span class="hljs-variable">$ </span>./run.sh env amqp</code></pre>
+
+<ul>
+<li><strong>Market</strong>: ./run.sh market [space,amqp]</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs applescript">$ ./<span class="hljs-command">run</span>.sh market <span class="hljs-constant">space</span></code></pre>
+
+<ul>
+<li><strong>MarketAgent</strong>: ./run.sh marketagent [space,amqp]</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs applescript">$ ./<span class="hljs-command">run</span>.sh marketagent <span class="hljs-constant">space</span></code></pre>
+
+<ul>
+<li><strong>Investor</strong>: ./run.sh investor [space,amqp] [id(int)] [budget(double)]</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs applescript">$ ./<span class="hljs-command">run</span>.sh investor <span class="hljs-constant">space</span> <span class="hljs-number">123</span> <span class="hljs-number">10000.0</span></code></pre>
+
+<ul>
+<li><strong>Broker</strong>: ./run.sh broker [space,amqp] [id(int)]</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs applescript">$ ./<span class="hljs-command">run</span>.sh broker <span class="hljs-constant">space</span> <span class="hljs-number">1</span></code></pre>
+
+<ul>
+<li><strong>Company</strong>: ./run.sh company [space,amqp] [id(string)] [numShares(int)] [initPrice(double)]</li>
+</ul>
+
+<p>e.g. </p>
+
+
+
+<pre class="prettyprint"><code class="language-sh hljs applescript">$ ./<span class="hljs-command">run</span>.sh company <span class="hljs-constant">space</span> GOO <span class="hljs-number">100</span> <span class="hljs-number">10.0</span></code></pre></div></body>
+</html>
