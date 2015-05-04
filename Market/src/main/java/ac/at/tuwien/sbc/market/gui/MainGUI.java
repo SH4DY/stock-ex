@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 
-// TODO: Auto-generated Javadoc
+
 /**Entry point GUI for the Market application.
  * Created by dietl_ma on 25/03/15.
  */
@@ -125,8 +125,27 @@ public class MainGUI extends JFrame implements IMarketObserver{
     public void onOrderAdded(OrderEntry orderEntry) {
         if(orderEntry != null) {
             logger.debug("Main GUI notified of orderEntry");
-            orderTableModel.addRow(orderEntry);
+
+            Integer row = getRowIdInOrderTable(orderEntry);
+            if(row == null){
+                orderTableModel.addRow(orderEntry);
+            }else{
+                orderTableModel.insertRow(orderEntry, row);
+            }
         }
+    }
+
+    private Integer getRowIdInOrderTable(OrderEntry orderEntry) {
+        int rows = orderTable.getRowCount();
+        Integer row = null;
+
+        for(int i = 0; i < rows; i++){
+            if(orderTable.getValueAt(i, 0).equals(orderEntry.getOrderID())){
+                row = i;
+                break; //we found an occurence of this particular order, break and return
+            }
+        }
+        return row;
     }
 
     /* (non-Javadoc)

@@ -82,4 +82,9 @@ public class OrderTableModel extends AbstractTableModel{
         }
         return null;
     }
+
+    public void insertRow(OrderEntry oe, int rowIndex){
+        content.set(rowIndex, oe);
+        fireTableDataChanged();
+    }
 }
