@@ -89,7 +89,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     @Override
     public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Boolean prioritized, Double price, Object sharedTransaction) {
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_ORDER_BY_PROPERTIES,
-                                                          new Object[]{shareId, type, status, price});
+                                                          new Object[]{shareId, type, status, prioritized, price});
         ArrayList<OrderEntry> entries = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
         OrderEntry entry = null;
 

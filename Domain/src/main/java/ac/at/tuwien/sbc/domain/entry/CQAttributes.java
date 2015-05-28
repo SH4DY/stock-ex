@@ -50,6 +50,11 @@ public class CQAttributes {
         public Double getValue(OrderEntry orderEntry) { return orderEntry.getLimit(); }
     };
 
+    /** The Constant ORDER_LIMIT. */
+    public static final Attribute<OrderEntry, Boolean> ORDER_PRIORITIZED = new SimpleAttribute<OrderEntry, Boolean>("prioritized") {
+        public Boolean getValue(OrderEntry orderEntry) { return orderEntry.getPrioritized(); }
+    };
+
     //CQEngine attribute for ShareEntry
     /** The Constant SHARE_SHARE_ID. */
     public static final Attribute<ShareEntry, String> SHARE_SHARE_ID = new SimpleAttribute<ShareEntry, String>("shareID") {

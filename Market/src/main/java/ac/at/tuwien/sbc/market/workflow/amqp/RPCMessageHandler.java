@@ -94,7 +94,7 @@ public class RPCMessageHandler {
                 break;
             case TAKE_ORDER_BY_PROPERTIES:
                 Object[] args = request.getArgs();
-                result = doTakeOrderByProperties((String)args[0], (OrderType)args[1], (OrderStatus)args[2], (Double)args[3]);
+                result = doTakeOrderByProperties((String)args[0], (OrderType)args[1], (OrderStatus)args[2], (Boolean)args[3] , (Double)args[4]);
                 break;
             case READ_ORDER_BY_PROPERTIES:
                 Object[] args_read = request.getArgs();
@@ -231,10 +231,11 @@ public class RPCMessageHandler {
      * @param shareId the share id
      * @param type the type
      * @param status the status
+     * @param prioritized the prioritized
      * @param price the price
      * @return the array list
      */
-    private ArrayList<SuperEntry> doTakeOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price) {
+    private ArrayList<SuperEntry> doTakeOrderByProperties(String shareId, OrderType type, OrderStatus status, Boolean prioritized, Double price) {
 
         SimpleQuery subQuery = lessThanOrEqualTo(CQAttributes.ORDER_LIMIT, price);
         if (type.equals(OrderType.BUY)) {
@@ -244,6 +245,7 @@ public class RPCMessageHandler {
         Query<OrderEntry> q = and(equal(CQAttributes.ORDER_SHARE_ID, shareId),
                 equal(CQAttributes.ORDER_TYPE, type),
                 equal(CQAttributes.ORDER_STATUS, status),
+                equal(CQAttributes.ORDER_PRIORITIZED, prioritized),
                 subQuery);
 
         ArrayList<SuperEntry> result = store.retrieve(OrderEntry.class, q, true, 1);
