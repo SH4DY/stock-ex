@@ -1,8 +1,5 @@
 package ac.at.tuwien.sbc.domain.entry;
 
-import com.googlecode.cqengine.attribute.Attribute;
-import com.googlecode.cqengine.attribute.SimpleAttribute;
-
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -13,7 +10,7 @@ import java.util.HashMap;
 public class DepotEntry extends SuperEntry implements Serializable{
 
     /** The investor id. */
-    private Integer investorID;
+    private String id;
 
     /** The budget. */
     private Double budget;
@@ -30,12 +27,12 @@ public class DepotEntry extends SuperEntry implements Serializable{
     /**
      * Instantiates a new investor depot entry.
      *
-     * @param investorID the investor id
+     * @param id the investor id
      * @param budget the budget
      * @param shareDepot the share depot
      */
-    public DepotEntry(Integer investorID, Double budget, HashMap<String, Integer> shareDepot) {
-        this.investorID = investorID;
+    public DepotEntry(String id, Double budget, HashMap<String, Integer> shareDepot) {
+        this.id = id;
         this.budget = budget;
         this.shareDepot = shareDepot;
     }
@@ -81,17 +78,17 @@ public class DepotEntry extends SuperEntry implements Serializable{
      *
      * @return the investor id
      */
-    public Integer getInvestorID() {
-        return investorID;
+    public String getId() {
+        return id;
     }
 
     /**
      * Sets the investor id.
      *
-     * @param investorID the new investor id
+     * @param id the new investor id
      */
-    public void setInvestorID(Integer investorID) {
-        this.investorID = investorID;
+    public void setId(String id) {
+        this.id = id;
     }
 
 

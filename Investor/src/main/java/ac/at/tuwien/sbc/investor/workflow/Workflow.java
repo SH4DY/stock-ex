@@ -25,7 +25,7 @@ public class Workflow  {
 
     /** The investor depotId. */
     @Value("${id}")
-    private Integer depotId;
+    private String depotId;
 
     /** The budget. */
     @Value("${budget}")
@@ -73,7 +73,7 @@ public class Workflow  {
             @Override
             public void onResult(ArrayList<DepotEntry> ideList) {
                 for (DepotEntry ide : ideList) {
-                    if (ide.getInvestorID().equals(depotId)) {
+                    if (ide.getId().equals(depotId)) {
 
                         currentInvestor = ide;
                         if (observer != null)
@@ -139,7 +139,7 @@ public class Workflow  {
                     ide = new DepotEntry(depotId, budget, new HashMap<String, Integer>());
                 }
                 else {
-                    logger.info("Got InvestorDepotEntry: " + ide.getInvestorID() + "/" + ide.getBudget());
+                    logger.info("Got InvestorDepotEntry: " + ide.getId() + "/" + ide.getBudget());
                     //increase budget if already exists
                     ide.setBudget(ide.getBudget()+budget);
                 }

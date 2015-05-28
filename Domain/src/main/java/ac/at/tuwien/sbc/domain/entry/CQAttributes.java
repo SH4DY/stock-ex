@@ -14,8 +14,8 @@ import java.util.UUID;
 public class CQAttributes {
     //CQEngine attribute for InvestorDepotEntry
     /** The Constant DEPOT_ID. */
-    public static final Attribute<DepotEntry, Integer> DEPOT_ID = new SimpleAttribute<DepotEntry, Integer>("investorID") {
-        public Integer getValue(DepotEntry depotEntry) { return depotEntry.getInvestorID(); }
+    public static final Attribute<DepotEntry, String> DEPOT_ID = new SimpleAttribute<DepotEntry, String>("investorID") {
+        public String getValue(DepotEntry depotEntry) { return depotEntry.getId(); }
     };
 
     //CQEngine attribute for OrderEntry
@@ -31,8 +31,8 @@ public class CQAttributes {
     };
 
     /** The Constant ORDER_INVESTOR_ID. */
-    public static final Attribute<OrderEntry, Integer> ORDER_INVESTOR_ID = new SimpleAttribute<OrderEntry, Integer>("investorID") {
-        public Integer getValue(OrderEntry orderEntry) { return orderEntry.getInvestorID(); }
+    public static final Attribute<OrderEntry, String> ORDER_INVESTOR_ID = new SimpleAttribute<OrderEntry, String>("investorID") {
+        public String getValue(OrderEntry orderEntry) { return orderEntry.getInvestorID(); }
     };
 
     /** The Constant ORDER_TYPE. */

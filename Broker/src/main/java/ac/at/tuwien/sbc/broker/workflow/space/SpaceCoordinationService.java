@@ -80,7 +80,7 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getInvestor(java.lang.Integer, java.lang.Object)
      */
     @Override
-    public DepotEntry getInvestor(Integer investorId, Object sharedTransaction) {
+    public DepotEntry getInvestor(String investorId, Object sharedTransaction) {
         logger.info("Try to read investor with arguments: " + String.valueOf(investorId));
         TransactionReference tx = (TransactionReference)sharedTransaction;
         ArrayList<DepotEntry> entries = null;
@@ -106,10 +106,10 @@ public class SpaceCoordinationService implements ICoordinationService {
         TransactionReference tx = (TransactionReference)sharedTransaction;
         try {
             try {
-                capi.take(depotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+                capi.take(depotContainer, KeyCoordinator.newSelector(ide.getId().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
             }
             catch (MzsCoreException e1) {}
-            Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getInvestorID().toString()));
+            Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getId().toString()));
             capi.write(depotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
         }
         catch (MzsCoreException e) {

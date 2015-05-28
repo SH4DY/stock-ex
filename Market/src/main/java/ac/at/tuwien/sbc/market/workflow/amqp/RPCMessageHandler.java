@@ -69,13 +69,13 @@ public class RPCMessageHandler {
         List<SuperEntry> notification = new ArrayList<SuperEntry>();
         switch (request.getMethod()) {
             case GET_INVESTOR_DEPOT_ENTRY_BY_ID:
-                result = doGetInvestorDepotEntry((Integer)request.getArgs()[0]);
+                result = doGetInvestorDepotEntry((String)request.getArgs()[0]);
                 break;
             case TAKE_INVESTOR_DEPOT_ENTRY_BY_ID:
-                result = doTakeInvestorDepotEntry((Integer)request.getArgs()[0]);
+                result = doTakeInvestorDepotEntry((String)request.getArgs()[0]);
                 break;
             case DELETE_INVESTOR_DEPOT_ENTRY_BY_ID:
-                doDeleteInvestorDepotEntry((Integer)request.getArgs()[0]);
+                doDeleteInvestorDepotEntry((String)request.getArgs()[0]);
                 break;
             case WRITE_INVESTOR_DEPOT_ENTRY:
                 doWriteInvestorDepotEntry(request.getEntry());
@@ -90,7 +90,7 @@ public class RPCMessageHandler {
             case TAKE_ORDER_BY_ORDER_ID:
                 return doTakeOrderByOrderId((UUID)request.getArgs()[0]);
             case GET_ORDER_ENTRIES_BY_INVESTOR_ID:
-                result = doGetOrdersByInvestorId((Integer)request.getArgs()[0]);
+                result = doGetOrdersByInvestorId((String)request.getArgs()[0]);
                 break;
             case TAKE_ORDER_BY_PROPERTIES:
                 Object[] args = request.getArgs();
@@ -158,7 +158,7 @@ public class RPCMessageHandler {
      * @param investorId the investor id
      * @return the array list
      */
-    private ArrayList<SuperEntry> doGetInvestorDepotEntry(Integer investorId) {
+    private ArrayList<SuperEntry> doGetInvestorDepotEntry(String investorId) {
         Query<DepotEntry> q = equal(CQAttributes.DEPOT_ID, investorId);
         return store.retrieve(DepotEntry.class, q, null, 1);
     }
@@ -169,11 +169,11 @@ public class RPCMessageHandler {
      * @param investorId the investor id
      * @return the array list
      */
-    private ArrayList<SuperEntry> doTakeInvestorDepotEntry(Integer investorId) {
+    private ArrayList<SuperEntry> doTakeInvestorDepotEntry(String investorId) {
 
         ArrayList<SuperEntry> result = doGetInvestorDepotEntry(investorId);
         if (!result.isEmpty())
-            doDeleteInvestorDepotEntry(((DepotEntry)result.get(0)).getInvestorID());
+            doDeleteInvestorDepotEntry(((DepotEntry)result.get(0)).getId());
 
         return result;
     }
@@ -183,7 +183,7 @@ public class RPCMessageHandler {
      *
      * @param investorId the investor id
      */
-    private void doDeleteInvestorDepotEntry(Integer investorId) {
+    private void doDeleteInvestorDepotEntry(String investorId) {
         Query<DepotEntry> q = equal(CQAttributes.DEPOT_ID, investorId);
         ArrayList<SuperEntry> result = store.retrieve(DepotEntry.class, q, null, 1);
 
@@ -279,7 +279,7 @@ public class RPCMessageHandler {
      * @param investorId the investor id
      * @return the array list
      */
-    private ArrayList<SuperEntry> doGetOrdersByInvestorId(Integer investorId) {
+    private ArrayList<SuperEntry> doGetOrdersByInvestorId(String investorId) {
         Query<OrderEntry> q = equal(CQAttributes.ORDER_INVESTOR_ID, investorId);
         return store.retrieve(OrderEntry.class, q, null, Integer.MAX_VALUE);
     };

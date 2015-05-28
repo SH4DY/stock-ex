@@ -2,8 +2,6 @@ package ac.at.tuwien.sbc.domain.entry;
 
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
-import com.googlecode.cqengine.attribute.Attribute;
-import com.googlecode.cqengine.attribute.SimpleAttribute;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -19,7 +17,7 @@ public class OrderEntry extends SuperEntry implements Serializable {
     private UUID orderID;
     //is null if reseller it is IPO
     /** The investor id. */
-    private Integer investorID;
+    private String investorID;
 
     /** The share id. */
     private String shareID;
@@ -58,7 +56,7 @@ public class OrderEntry extends SuperEntry implements Serializable {
      * @param numCompleted the num completed
      * @param status the status
      */
-    public OrderEntry(UUID orderID, Integer investorID, String shareID, OrderType type, Double limit, Integer numTotal, Integer numCompleted, OrderStatus status, Boolean prioritized) {
+    public OrderEntry(UUID orderID, String investorID, String shareID, OrderType type, Double limit, Integer numTotal, Integer numCompleted, OrderStatus status, Boolean prioritized) {
         this.orderID = orderID;
         this.investorID = investorID;
         this.shareID = shareID;
@@ -93,7 +91,7 @@ public class OrderEntry extends SuperEntry implements Serializable {
      *
      * @return the investor id
      */
-    public Integer getInvestorID() {
+    public String getInvestorID() {
         return investorID;
     }
 
@@ -102,7 +100,7 @@ public class OrderEntry extends SuperEntry implements Serializable {
      *
      * @param investorID the new investor id
      */
-    public void setInvestorID(Integer investorID) {
+    public void setInvestorID(String investorID) {
         this.investorID = investorID;
     }
 

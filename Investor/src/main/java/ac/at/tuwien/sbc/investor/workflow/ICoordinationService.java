@@ -20,7 +20,7 @@ public interface ICoordinationService {
      * @param cListener the c listener
      * @return the investor
      */
-    public void getInvestor(Integer investorId, CoordinationListener cListener);
+    public void getInvestor(String investorId, CoordinationListener cListener);
 
     /**
      * Gets the shares.
@@ -73,7 +73,7 @@ public interface ICoordinationService {
      * @param cListener the c listener
      * @return the orders
      */
-    public void getOrders(Integer investorId, CoordinationListener cListener);
+    public void getOrders(String investorId, CoordinationListener cListener);
 
     /**
      * Delete order.

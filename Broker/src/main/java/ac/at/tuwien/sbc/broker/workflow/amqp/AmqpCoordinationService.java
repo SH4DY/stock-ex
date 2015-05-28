@@ -43,7 +43,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getInvestor(java.lang.Integer, java.lang.Object)
      */
     @Override
-    public DepotEntry getInvestor(Integer investorId, Object sharedTransaction) {
+    public DepotEntry getInvestor(String investorId, Object sharedTransaction) {
 
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{investorId});
         ArrayList<DepotEntry> entries = (ArrayList<DepotEntry>)template.convertSendAndReceive("marketRPC", request);
@@ -65,7 +65,7 @@ public class AmqpCoordinationService implements ICoordinationService {
             return;
 
         //delete investor
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getInvestorID()});
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getId()});
         template.convertAndSend("marketRPC", request);
 
         //write investor

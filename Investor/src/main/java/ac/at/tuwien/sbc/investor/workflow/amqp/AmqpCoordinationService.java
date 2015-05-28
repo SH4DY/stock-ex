@@ -44,7 +44,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getInvestor(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getInvestor(Integer investorId, CoordinationListener cListener) {
+    public void getInvestor(String investorId, CoordinationListener cListener) {
 
         DepotEntry entry = null;
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{investorId});
@@ -105,7 +105,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void setInvestor(DepotEntry ide) {
 
         //delete investor
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getInvestorID()});
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getId()});
         template.convertAndSend("marketRPC", request);
 
         //write investor
@@ -127,7 +127,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getOrders(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getOrders(Integer investorId, CoordinationListener cListener) {
+    public void getOrders(String investorId, CoordinationListener cListener) {
 
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_ORDER_ENTRIES_BY_INVESTOR_ID, new Object[]{investorId});
         ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);

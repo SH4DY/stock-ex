@@ -138,7 +138,7 @@ public class Workflow {
                 }
 
                 OrderEntry oe = new OrderEntry(UUID.randomUUID(),
-                        0,
+                        null,
                         releaseEntry.getCompanyID(),
                         OrderType.SELL,
                         0.0,
@@ -225,16 +225,16 @@ public class Workflow {
 
         //get seller if seller is not a company
         DepotEntry seller = null;
-        if (sellOrder.getInvestorID() != 0) {
+        if (sellOrder.getInvestorID() != null) {
            seller = coordinationService.getInvestor(sellOrder.getInvestorID(), sharedOrderRequestTransaction);
         }
         //get buyer
         DepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedOrderRequestTransaction);
 
         if (seller != null && buyer != null)
-            logger.info("seller:" + seller.getInvestorID() + ", buyer:" + buyer.getInvestorID());
+            logger.info("seller:" + seller.getId() + ", buyer:" + buyer.getId());
 
-        if (buyer == null || (sellOrder.getInvestorID() != 0 && seller == null)) {
+        if (buyer == null || (sellOrder.getInvestorID() != null && seller == null)) {
 
             if (sharedOrderRequestTransaction == null)
                 doManualRollback(sellOrder, buyOrder, seller, buyer);
@@ -341,8 +341,8 @@ public class Workflow {
         TransactionEntry transactionEntry = new TransactionEntry();
         transactionEntry.setTransactionID(UUID.randomUUID().toString());
         transactionEntry.setBrokerID(brokerId);
-        transactionEntry.setSellerID(seller != null ? seller.getInvestorID() : 0);
-        transactionEntry.setBuyerID(buyer.getInvestorID());
+        transactionEntry.setSellerID(seller != null ? seller.getId() : null);
+        transactionEntry.setBuyerID(buyer.getId());
         transactionEntry.setSellOrderID(sellOrder.getOrderID());
         transactionEntry.setBuyOrderID(buyOrder.getOrderID());
         transactionEntry.setShareID(shareEntry.getShareID());

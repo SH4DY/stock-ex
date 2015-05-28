@@ -1,7 +1,5 @@
 package ac.at.tuwien.sbc.domain.entry;
 
-import org.springframework.scheduling.annotation.Scheduled;
-
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -19,10 +17,10 @@ public class TransactionEntry extends SuperEntry implements Serializable {
     private Integer brokerID;
 
     /** The buyer id. */
-    private Integer buyerID;
+    private String buyerID;
 
     /** The seller id. */
-    private Integer sellerID;
+    private String sellerID;
 
     /** The share id. */
     private String shareID;
@@ -65,7 +63,7 @@ public class TransactionEntry extends SuperEntry implements Serializable {
      * @param sumPrice the sum price
      * @param provision the provision
      */
-    public TransactionEntry(String transactionID, Integer brokerID, Integer buyerID, Integer sellerID, String shareID, UUID sellOrderID, UUID buyOrderID, Double price, Integer numShares, Double sumPrice, Double provision) {
+    public TransactionEntry(String transactionID, Integer brokerID, String buyerID, String sellerID, String shareID, UUID sellOrderID, UUID buyOrderID, Double price, Integer numShares, Double sumPrice, Double provision) {
         this.transactionID = transactionID;
         this.brokerID = brokerID;
         this.buyerID = buyerID;
@@ -120,7 +118,7 @@ public class TransactionEntry extends SuperEntry implements Serializable {
      *
      * @return the buyer id
      */
-    public Integer getBuyerID() {
+    public String getBuyerID() {
         return buyerID;
     }
 
@@ -129,7 +127,7 @@ public class TransactionEntry extends SuperEntry implements Serializable {
      *
      * @param buyerID the new buyer id
      */
-    public void setBuyerID(Integer buyerID) {
+    public void setBuyerID(String buyerID) {
         this.buyerID = buyerID;
     }
 
@@ -138,7 +136,7 @@ public class TransactionEntry extends SuperEntry implements Serializable {
      *
      * @return the seller id
      */
-    public Integer getSellerID() {
+    public String getSellerID() {
         return sellerID;
     }
 
@@ -147,7 +145,7 @@ public class TransactionEntry extends SuperEntry implements Serializable {
      *
      * @param sellerID the new seller id
      */
-    public void setSellerID(Integer sellerID) {
+    public void setSellerID(String sellerID) {
         this.sellerID = sellerID;
     }
 

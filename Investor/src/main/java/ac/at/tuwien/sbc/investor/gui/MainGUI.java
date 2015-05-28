@@ -197,8 +197,8 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     public void onInvestorDepotEntryNotification(DepotEntry ide) {
 
         //set title and label
-        investorLabel.setText("Investor: " + ide.getInvestorID().toString() + " Budget: " + ide.getBudget().toString());
-        setTitle("Investor App - " + ide.getInvestorID().toString());
+        investorLabel.setText("Investor: " + ide.getId().toString() + " Budget: " + ide.getBudget().toString());
+        setTitle("Investor App - " + ide.getId().toString());
 
         //update share table
         DefaultTableModel model = ((DefaultTableModel) shareTable.getModel());

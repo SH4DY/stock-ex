@@ -67,7 +67,7 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getInvestor(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getInvestor(Integer id, CoordinationListener cListener) {
+    public void getInvestor(String id, CoordinationListener cListener) {
         logger.info("Try to read investor with arguments: " + String.valueOf(id));
 
         ArrayList<DepotEntry> entries = null;
@@ -182,11 +182,11 @@ public class SpaceCoordinationService implements ICoordinationService {
             tx = capi.createTransaction(1000, depotContainer.getSpace());
 
             try {
-                capi.take(depotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+                capi.take(depotContainer, KeyCoordinator.newSelector(ide.getId().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
             }
             catch (MzsCoreException e) {}
 
-            Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getInvestorID().toString()));
+            Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getId().toString()));
             capi.write(depotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
 
             capi.commitTransaction(tx);
@@ -218,7 +218,7 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getOrders(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getOrders(Integer investorId, CoordinationListener cListener) {
+    public void getOrders(String investorId, CoordinationListener cListener) {
 
         logger.info("Try to read orders by template");
         OrderEntry template = new OrderEntry(null, investorId, null, null, null, null, null, null, null);

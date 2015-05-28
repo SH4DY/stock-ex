@@ -21,7 +21,7 @@ public interface ICoordinationService {
      * @param sharedTransaction the shared transaction
      * @return the investor
      */
-    public DepotEntry getInvestor(Integer investorId, Object sharedTransaction);
+    public DepotEntry getInvestor(String investorId, Object sharedTransaction);
 
     /**
      * Set/add investor.
