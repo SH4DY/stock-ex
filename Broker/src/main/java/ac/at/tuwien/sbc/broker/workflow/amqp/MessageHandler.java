@@ -1,6 +1,6 @@
 package ac.at.tuwien.sbc.broker.workflow.amqp;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
@@ -27,7 +27,7 @@ public class MessageHandler {
      *
      * @param list the list
      */
-    public void onInvestorEntryNotification(ArrayList<InvestorDepotEntry> list) {
+    public void onInvestorEntryNotification(ArrayList<DepotEntry> list) {
         amqpCoordinationService.onInvestorEntryNotification(list);
     }
 

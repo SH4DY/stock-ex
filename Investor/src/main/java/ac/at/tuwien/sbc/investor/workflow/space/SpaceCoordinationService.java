@@ -1,6 +1,6 @@
 package ac.at.tuwien.sbc.investor.workflow.space;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
@@ -44,8 +44,8 @@ public class SpaceCoordinationService implements ICoordinationService {
 
     /** The investor depot container. */
     @Autowired
-    @Qualifier("investorDepotContainer")
-    ContainerReference investorDepotContainer;
+    @Qualifier("depotContainer")
+    ContainerReference depotContainer;
 
     /** The order container. */
     @Autowired
@@ -70,9 +70,9 @@ public class SpaceCoordinationService implements ICoordinationService {
     public void getInvestor(Integer id, CoordinationListener cListener) {
         logger.info("Try to read investor with arguments: " + String.valueOf(id));
 
-        ArrayList<InvestorDepotEntry> entries = null;
+        ArrayList<DepotEntry> entries = null;
         try {
-            entries = capi.read(investorDepotContainer, KeyCoordinator.newSelector(id.toString()), MzsConstants.RequestTimeout.ZERO, null);
+            entries = capi.read(depotContainer, KeyCoordinator.newSelector(id.toString()), MzsConstants.RequestTimeout.ZERO, null);
         } catch (MzsCoreException e) {
             logger.info("Investor depot not found for: " + id);
         }
@@ -107,15 +107,15 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerInvestorNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerDepotNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void registerInvestorNotification(CoordinationListener cListener) {
+    public void registerDepotNotification(CoordinationListener cListener) {
 
         try {
             NotificationManager notificationManager = new NotificationManager(core);
 
-            Notification notification = notificationManager.createNotification(investorDepotContainer,
+            Notification notification = notificationManager.createNotification(depotContainer,
                     new InvestorDepotNotificationListener(cListener),
                     Operation.WRITE);
 
@@ -174,20 +174,20 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void setInvestor(InvestorDepotEntry ide) {
+    public void setInvestor(DepotEntry ide) {
 
         logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
         TransactionReference tx = null;
         try {
-            tx = capi.createTransaction(1000, investorDepotContainer.getSpace());
+            tx = capi.createTransaction(1000, depotContainer.getSpace());
 
             try {
-                capi.take(investorDepotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+                capi.take(depotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
             }
             catch (MzsCoreException e) {}
 
             Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getInvestorID().toString()));
-            capi.write(investorDepotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
+            capi.write(depotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
 
             capi.commitTransaction(tx);
         }
@@ -279,14 +279,14 @@ public class SpaceCoordinationService implements ICoordinationService {
     public class InvestorDepotNotificationListener implements NotificationListener {
 
         /** The callback listener. */
-        private CoordinationListener<ArrayList<InvestorDepotEntry>> callbackListener;
+        private CoordinationListener<ArrayList<DepotEntry>> callbackListener;
 
         /**
          * Instantiates a new investor depot notification listener.
          *
          * @param callbackListener the callback listener
          */
-        public InvestorDepotNotificationListener(CoordinationListener<ArrayList<InvestorDepotEntry>> callbackListener) {
+        public InvestorDepotNotificationListener(CoordinationListener<ArrayList<DepotEntry>> callbackListener) {
             this.callbackListener = callbackListener;
         }
 
@@ -296,9 +296,9 @@ public class SpaceCoordinationService implements ICoordinationService {
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 
-            ArrayList<InvestorDepotEntry> investorDeptEntries = new ArrayList<InvestorDepotEntry>();
+            ArrayList<DepotEntry> investorDeptEntries = new ArrayList<DepotEntry>();
             for (Serializable entry : entries) {
-                investorDeptEntries.add((InvestorDepotEntry)((Entry)entry).getValue());
+                investorDeptEntries.add((DepotEntry)((Entry)entry).getValue());
 
             }
             callbackListener.onResult(investorDeptEntries);

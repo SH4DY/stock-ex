@@ -50,12 +50,12 @@ public class CommonSpaceConfiguration {
      * @throws URISyntaxException the URI syntax exception
      * @throws MzsCoreException the mzs core exception
      */
-    @Bean(name = "investorDepotContainer")
-    public ContainerReference investorDepotContainer(Capi capi) throws URISyntaxException, MzsCoreException {
+    @Bean(name = "depotContainer")
+    public ContainerReference depotContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         URI uri = new URI(SPACE_URI);
         ArrayList<Coordinator> coordinators= new ArrayList<Coordinator>();
         coordinators.add(new KeyCoordinator());
-        return SpaceUtils.getOrCreateNamedContainer(uri, "investorDepotContainer", capi, coordinators);
+        return SpaceUtils.getOrCreateNamedContainer(uri, "depotContainer", capi, coordinators);
     }
 
     /**

@@ -10,7 +10,7 @@ import java.util.HashMap;
 /**
  * Created by dietl_ma on 25/03/15.
  */
-public class InvestorDepotEntry extends SuperEntry implements Serializable{
+public class DepotEntry extends SuperEntry implements Serializable{
 
     /** The investor id. */
     private Integer investorID;
@@ -25,7 +25,7 @@ public class InvestorDepotEntry extends SuperEntry implements Serializable{
     /**
      * Instantiates a new investor depot entry.
      */
-    public InvestorDepotEntry() {}
+    public DepotEntry() {}
 
     /**
      * Instantiates a new investor depot entry.
@@ -34,7 +34,7 @@ public class InvestorDepotEntry extends SuperEntry implements Serializable{
      * @param budget the budget
      * @param shareDepot the share depot
      */
-    public InvestorDepotEntry(Integer investorID, Double budget, HashMap<String, Integer> shareDepot) {
+    public DepotEntry(Integer investorID, Double budget, HashMap<String, Integer> shareDepot) {
         this.investorID = investorID;
         this.budget = budget;
         this.shareDepot = shareDepot;

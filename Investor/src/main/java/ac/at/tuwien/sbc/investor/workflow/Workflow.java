@@ -1,11 +1,10 @@
 package ac.at.tuwien.sbc.investor.workflow;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
-import ac.at.tuwien.sbc.investor.workflow.space.SpaceCoordinationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +23,9 @@ import java.util.UUID;
 @Service
 public class Workflow  {
 
-    /** The investor id. */
+    /** The investor depotId. */
     @Value("${id}")
-    private Integer investorId;
+    private Integer depotId;
 
     /** The budget. */
     @Value("${budget}")
@@ -41,7 +40,7 @@ public class Workflow  {
     private IWorkFlowObserver observer;
 
     /** The current investor. */
-    private InvestorDepotEntry currentInvestor;
+    private DepotEntry currentInvestor;
 
 
     /** The Constant logger. */
@@ -54,11 +53,11 @@ public class Workflow  {
     private void onPostConstruct() {
 
         //init notifications
-        initInvestorNotification();
+        initDepotNotification();
         initOrderNotification();
         initShareNotification();
         //init investor
-        initInvestor();
+        initDepot();
         //init orders
         initOrders();
         //init shares
@@ -69,12 +68,12 @@ public class Workflow  {
     /**
      * Inits the investor notification.
      */
-    private void initInvestorNotification() {
-        coordinationService.registerInvestorNotification(new CoordinationListener<ArrayList<InvestorDepotEntry>>() {
+    private void initDepotNotification() {
+        coordinationService.registerDepotNotification(new CoordinationListener<ArrayList<DepotEntry>>() {
             @Override
-            public void onResult(ArrayList<InvestorDepotEntry> ideList) {
-                for (InvestorDepotEntry ide : ideList) {
-                    if (ide.getInvestorID().equals(investorId)) {
+            public void onResult(ArrayList<DepotEntry> ideList) {
+                for (DepotEntry ide : ideList) {
+                    if (ide.getInvestorID().equals(depotId)) {
 
                         currentInvestor = ide;
                         if (observer != null)
@@ -96,7 +95,7 @@ public class Workflow  {
             @Override
             public void onResult(ArrayList<OrderEntry> oeList) {
                 for (OrderEntry oe : oeList) {
-                    if (oe.getInvestorID().equals(investorId)) {
+                    if (oe.getInvestorID().equals(depotId)) {
                         if (observer != null)
                             observer.onOrderEntryNotification(oe);
                     }
@@ -129,15 +128,15 @@ public class Workflow  {
     /**
      * Get investor if exists and increase budget by new args.
      */
-    private void initInvestor() {
+    private void initDepot() {
 
-        coordinationService.getInvestor(investorId, new CoordinationListener<InvestorDepotEntry>() {
+        coordinationService.getInvestor(depotId, new CoordinationListener<DepotEntry>() {
             @Override
-            public void onResult(InvestorDepotEntry ide) {
+            public void onResult(DepotEntry ide) {
                 if (ide == null) {
                     logger.info("Got InvestorDepotEntry is null");
                     //new entry
-                    ide = new InvestorDepotEntry(investorId, budget, new HashMap<String, Integer>());
+                    ide = new DepotEntry(depotId, budget, new HashMap<String, Integer>());
                 }
                 else {
                     logger.info("Got InvestorDepotEntry: " + ide.getInvestorID() + "/" + ide.getBudget());
@@ -153,7 +152,7 @@ public class Workflow  {
      * Inits the orders.
      */
     private void initOrders() {
-        coordinationService.getOrders(investorId, new CoordinationListener<ArrayList<OrderEntry>>() {
+        coordinationService.getOrders(depotId, new CoordinationListener<ArrayList<OrderEntry>>() {
             @Override
             public void onResult(ArrayList<OrderEntry> entries) {
 
@@ -197,7 +196,7 @@ public class Workflow  {
     public void addOrder(OrderEntry oe) {
 
         oe.setOrderID(UUID.randomUUID());
-        oe.setInvestorID(investorId);
+        oe.setInvestorID(depotId);
         oe.setStatus(OrderStatus.OPEN);
         oe.setNumCompleted(0);
 
@@ -207,7 +206,7 @@ public class Workflow  {
     /**
      * Delete order.
      *
-     * @param orderID the order id
+     * @param orderID the order depotId
      */
     public void deleteOrder(UUID orderID) {
         coordinationService.deleteOrder(orderID);

@@ -9,14 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -226,12 +224,12 @@ public class Workflow {
         }
 
         //get seller if seller is not a company
-        InvestorDepotEntry seller = null;
+        DepotEntry seller = null;
         if (sellOrder.getInvestorID() != 0) {
            seller = coordinationService.getInvestor(sellOrder.getInvestorID(), sharedOrderRequestTransaction);
         }
         //get buyer
-        InvestorDepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedOrderRequestTransaction);
+        DepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedOrderRequestTransaction);
 
         if (seller != null && buyer != null)
             logger.info("seller:" + seller.getInvestorID() + ", buyer:" + buyer.getInvestorID());
@@ -266,9 +264,9 @@ public class Workflow {
                 coordinationService.addOrder(buyOrder, sharedOrderRequestTransaction, false);
                 //write buyer and seller back
                 if (seller != null)
-                    coordinationService.setInvestor(seller, sharedOrderRequestTransaction, false);
+                    coordinationService.setDepot(seller, sharedOrderRequestTransaction, false);
 
-                coordinationService.setInvestor(buyer, sharedOrderRequestTransaction, false);
+                coordinationService.setDepot(buyer, sharedOrderRequestTransaction, false);
             } catch (CoordinationServiceException e) {
 
                 if (sharedOrderRequestTransaction == null)
@@ -306,7 +304,7 @@ public class Workflow {
      * @param sharedTransaction the shared transaction
      * @throws CoordinationServiceException the coordination service exception
      */
-    private void doTransaction(OrderEntry sellOrder, OrderEntry buyOrder, InvestorDepotEntry seller, InvestorDepotEntry buyer, ShareEntry shareEntry, Object sharedTransaction) throws CoordinationServiceException {
+    private void doTransaction(OrderEntry sellOrder, OrderEntry buyOrder, DepotEntry seller, DepotEntry buyer, ShareEntry shareEntry, Object sharedTransaction) throws CoordinationServiceException {
 
         Integer numSharesToTransact = Math.min(sellOrder.getNumTotal() - sellOrder.getNumCompleted(),
                 buyOrder.getNumTotal() - buyOrder.getNumCompleted());
@@ -356,9 +354,9 @@ public class Workflow {
 
         //update investors
         if (seller != null)
-            coordinationService.setInvestor(seller, sharedTransaction, false);
+            coordinationService.setDepot(seller, sharedTransaction, false);
 
-        coordinationService.setInvestor(buyer, sharedTransaction, false);
+        coordinationService.setDepot(buyer, sharedTransaction, false);
         //add transaction
         coordinationService.addTransaction(transactionEntry, sharedTransaction);
 
@@ -379,7 +377,7 @@ public class Workflow {
      * @param seller the seller
      * @param buyer the buyer
      */
-    private void doManualRollback(OrderEntry sellOrder, OrderEntry buyOrder, InvestorDepotEntry seller, InvestorDepotEntry buyer) {
+    private void doManualRollback(OrderEntry sellOrder, OrderEntry buyOrder, DepotEntry seller, DepotEntry buyer) {
 
         try {
             if (sellOrder != null)
@@ -387,9 +385,9 @@ public class Workflow {
             if (buyOrder != null)
                 coordinationService.addOrder(buyOrder, null, true);
             if (seller != null)
-                coordinationService.setInvestor(seller, null, true);
+                coordinationService.setDepot(seller, null, true);
             if (buyer != null)
-                coordinationService.setInvestor(buyer, null, true);
+                coordinationService.setDepot(buyer, null, true);
         } catch (CoordinationServiceException e) {e.printStackTrace();}
     }
 

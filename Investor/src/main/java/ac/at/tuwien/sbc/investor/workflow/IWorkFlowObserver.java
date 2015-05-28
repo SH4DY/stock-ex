@@ -1,6 +1,6 @@
 package ac.at.tuwien.sbc.investor.workflow;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 
@@ -17,7 +17,7 @@ public interface IWorkFlowObserver {
      *
      * @param ide the ide
      */
-    public void onInvestorDepotEntryNotification(InvestorDepotEntry ide);
+    public void onInvestorDepotEntryNotification(DepotEntry ide);
     
     /**
      * This method is called when information about an IWorkFlow

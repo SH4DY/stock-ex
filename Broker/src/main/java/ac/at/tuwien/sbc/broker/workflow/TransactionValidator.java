@@ -1,10 +1,8 @@
 package ac.at.tuwien.sbc.broker.workflow;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
-import ac.at.tuwien.sbc.domain.enums.OrderStatus;
-import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
 
 import java.util.HashMap;
 
@@ -25,7 +23,7 @@ public class TransactionValidator {
      * @param brokerProvision the broker provision
      * @return the hash map
      */
-    public static HashMap<OrderEntry, Boolean> validate(OrderEntry sellOrder, OrderEntry buyOrder, InvestorDepotEntry seller, InvestorDepotEntry buyer, ShareEntry shareEntry, Double brokerProvision) {
+    public static HashMap<OrderEntry, Boolean> validate(OrderEntry sellOrder, OrderEntry buyOrder, DepotEntry seller, DepotEntry buyer, ShareEntry shareEntry, Double brokerProvision) {
 
         HashMap<OrderEntry, Boolean> result = new HashMap<OrderEntry, Boolean>();
         Integer numSharesToTransact = Math.min(sellOrder.getNumTotal() - sellOrder.getNumCompleted(),

@@ -1,9 +1,8 @@
 package ac.at.tuwien.sbc.investor.workflow;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
-import org.mozartspaces.core.MzsCoreException;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -37,7 +36,7 @@ public interface ICoordinationService {
      *
      * @param cListener the c listener
      */
-    public void registerInvestorNotification(CoordinationListener cListener);
+    public void registerDepotNotification(CoordinationListener cListener);
 
     /**
      * Register order notification.
@@ -58,7 +57,7 @@ public interface ICoordinationService {
      *
      * @param ide the new investor
      */
-    public void setInvestor(InvestorDepotEntry ide);
+    public void setInvestor(DepotEntry ide);
 
     /**
      * Adds the order.

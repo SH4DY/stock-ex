@@ -23,7 +23,7 @@ import java.util.ArrayList;
 public class AmqpCoordinationService implements ICoordinationService {
 
     /** The investor entry notification listener. */
-    private CoordinationListener<ArrayList<InvestorDepotEntry>> investorEntryNotificationListener;
+    private CoordinationListener<ArrayList<DepotEntry>> investorEntryNotificationListener;
     
     /** The share entry notification listener. */
     private CoordinationListener<ArrayList<ShareEntry>> shareEntryNotificationListener;
@@ -43,11 +43,11 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getInvestor(java.lang.Integer, java.lang.Object)
      */
     @Override
-    public InvestorDepotEntry getInvestor(Integer investorId, Object sharedTransaction) {
+    public DepotEntry getInvestor(Integer investorId, Object sharedTransaction) {
 
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{investorId});
-        ArrayList<InvestorDepotEntry> entries = (ArrayList<InvestorDepotEntry>)template.convertSendAndReceive("marketRPC", request);
-        InvestorDepotEntry entry = null;
+        ArrayList<DepotEntry> entries = (ArrayList<DepotEntry>)template.convertSendAndReceive("marketRPC", request);
+        DepotEntry entry = null;
 
         if (entries != null && !entries.isEmpty())
             entry = entries.get(0);
@@ -56,10 +56,10 @@ public class AmqpCoordinationService implements ICoordinationService {
     }
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry, java.lang.Object, java.lang.Boolean)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#setDepot(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry, java.lang.Object, java.lang.Boolean)
      */
     @Override
-    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
+    public void setDepot(DepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
 
         if (ide == null)
             return;
@@ -217,7 +217,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      *
      * @param list the list
      */
-    public void onInvestorEntryNotification(ArrayList<InvestorDepotEntry> list) {
+    public void onInvestorEntryNotification(ArrayList<DepotEntry> list) {
         if (investorEntryNotificationListener != null)
             investorEntryNotificationListener.onResult(list);
     }

@@ -50,7 +50,7 @@ public class RPCMessageHandler {
      * Instantiates a new RPC message handler.
      */
     public RPCMessageHandler() {
-        topicMap.put(InvestorDepotEntry.class, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC);
+        topicMap.put(DepotEntry.class, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC);
         topicMap.put(ShareEntry.class, CommonRabbitConfiguration.SHARE_ENTRY_TOPIC);
         topicMap.put(OrderEntry.class, CommonRabbitConfiguration.ORDER_ENTRY_TOPIC);
         topicMap.put(TransactionEntry.class, CommonRabbitConfiguration.TRANSACTION_ENTRY_TOPIC);
@@ -159,8 +159,8 @@ public class RPCMessageHandler {
      * @return the array list
      */
     private ArrayList<SuperEntry> doGetInvestorDepotEntry(Integer investorId) {
-        Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
-        return store.retrieve(InvestorDepotEntry.class, q, null, 1);
+        Query<DepotEntry> q = equal(CQAttributes.DEPOT_ID, investorId);
+        return store.retrieve(DepotEntry.class, q, null, 1);
     }
 
     /**
@@ -173,7 +173,7 @@ public class RPCMessageHandler {
 
         ArrayList<SuperEntry> result = doGetInvestorDepotEntry(investorId);
         if (!result.isEmpty())
-            doDeleteInvestorDepotEntry(((InvestorDepotEntry)result.get(0)).getInvestorID());
+            doDeleteInvestorDepotEntry(((DepotEntry)result.get(0)).getInvestorID());
 
         return result;
     }
@@ -184,11 +184,11 @@ public class RPCMessageHandler {
      * @param investorId the investor id
      */
     private void doDeleteInvestorDepotEntry(Integer investorId) {
-        Query<InvestorDepotEntry> q = equal(CQAttributes.INVESTOR_INVESTOR_ID, investorId);
-        ArrayList<SuperEntry> result = store.retrieve(InvestorDepotEntry.class, q, null, 1);
+        Query<DepotEntry> q = equal(CQAttributes.DEPOT_ID, investorId);
+        ArrayList<SuperEntry> result = store.retrieve(DepotEntry.class, q, null, 1);
 
         for (Object object : result)
-            store.delete(InvestorDepotEntry.class, object);
+            store.delete(DepotEntry.class, object);
     }
 
     /**
@@ -197,7 +197,7 @@ public class RPCMessageHandler {
      * @param investorDepotEntry the investor depot entry
      */
     private void doWriteInvestorDepotEntry(SuperEntry investorDepotEntry) {
-        store.add(InvestorDepotEntry.class, investorDepotEntry);
+        store.add(DepotEntry.class, investorDepotEntry);
     }
 
     /**

@@ -1,9 +1,8 @@
 package ac.at.tuwien.sbc.investor.workflow.amqp;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
-import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ public class MessageHandler {
      *
      * @param list the list
      */
-    public void onInvestorEntryNotification(ArrayList<InvestorDepotEntry> list) {
+    public void onInvestorEntryNotification(ArrayList<DepotEntry> list) {
         amqpCoordinationService.onInvestorEntryNotification(list);
     }
 

@@ -25,7 +25,7 @@ import java.util.HashMap;
 public class MarketStore {
 
     /** The investor depot entries. */
-    private IndexedCollection<InvestorDepotEntry> investorDepotEntries;
+    private IndexedCollection<DepotEntry> depotEntries;
     
     /** The order entries. */
     private IndexedCollection<OrderEntry> orderEntries;
@@ -58,21 +58,21 @@ public class MarketStore {
      */
     private void initCollections() {
         //initialize query-able collection
-        investorDepotEntries = CQEngine.newInstance();
+        depotEntries = CQEngine.newInstance();
         orderEntries = CQEngine.newInstance();
         shareEntries = CQEngine.newInstance();
         transactionEntries = CQEngine.newInstance();
         releaseEntries = CQEngine.newInstance();
 
         //build indexes on attributes...
-        investorDepotEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.INVESTOR_INVESTOR_ID));
+        depotEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.DEPOT_ID));
         orderEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.ORDER_SHARE_ID));
         orderEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.ORDER_TYPE));
         orderEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.ORDER_STATUS));
         orderEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.ORDER_LIMIT));
         shareEntries.addIndex(NavigableIndex.onAttribute(CQAttributes.SHARE_SHARE_ID));
 
-        collectionMap.put(InvestorDepotEntry.class, investorDepotEntries);
+        collectionMap.put(DepotEntry.class, depotEntries);
         collectionMap.put(OrderEntry.class, orderEntries);
         collectionMap.put(ShareEntry.class, shareEntries);
         collectionMap.put(TransactionEntry.class, transactionEntries);

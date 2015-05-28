@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import static org.mozartspaces.capi3.Matchmakers.*;
 
@@ -60,8 +59,8 @@ public class SpaceCoordinationService implements ICoordinationService {
 
     /** The investor depot container. */
     @Autowired
-    @Qualifier("investorDepotContainer")
-    ContainerReference investorDepotContainer;
+    @Qualifier("depotContainer")
+    ContainerReference depotContainer;
 
     /** The transaction container. */
     @Autowired
@@ -81,13 +80,13 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getInvestor(java.lang.Integer, java.lang.Object)
      */
     @Override
-    public InvestorDepotEntry getInvestor(Integer investorId, Object sharedTransaction) {
+    public DepotEntry getInvestor(Integer investorId, Object sharedTransaction) {
         logger.info("Try to read investor with arguments: " + String.valueOf(investorId));
         TransactionReference tx = (TransactionReference)sharedTransaction;
-        ArrayList<InvestorDepotEntry> entries = null;
-        InvestorDepotEntry entry = null;
+        ArrayList<DepotEntry> entries = null;
+        DepotEntry entry = null;
         try {
-            entries = capi.take(investorDepotContainer, KeyCoordinator.newSelector(investorId.toString()), MzsConstants.RequestTimeout.ZERO, tx);
+            entries = capi.take(depotContainer, KeyCoordinator.newSelector(investorId.toString()), MzsConstants.RequestTimeout.ZERO, tx);
         } catch (MzsCoreException e) {
             logger.info("Investor depot not found for: " + investorId);
         }
@@ -99,19 +98,19 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry, java.lang.Object, java.lang.Boolean)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#setDepot(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry, java.lang.Object, java.lang.Boolean)
      */
     @Override
-    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
+    public void setDepot(DepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
         logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
         TransactionReference tx = (TransactionReference)sharedTransaction;
         try {
             try {
-                capi.take(investorDepotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+                capi.take(depotContainer, KeyCoordinator.newSelector(ide.getInvestorID().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
             }
             catch (MzsCoreException e1) {}
             Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getInvestorID().toString()));
-            capi.write(investorDepotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
+            capi.write(depotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
         }
         catch (MzsCoreException e) {
             throw new CoordinationServiceException("Could not update InvestorDepotEntry");

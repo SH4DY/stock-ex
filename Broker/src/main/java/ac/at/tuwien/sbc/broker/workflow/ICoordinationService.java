@@ -21,7 +21,7 @@ public interface ICoordinationService {
      * @param sharedTransaction the shared transaction
      * @return the investor
      */
-    public InvestorDepotEntry getInvestor(Integer investorId, Object sharedTransaction);
+    public DepotEntry getInvestor(Integer investorId, Object sharedTransaction);
 
     /**
      * Set/add investor.
@@ -31,7 +31,7 @@ public interface ICoordinationService {
      * @param isRollbackAction the is rollback action
      * @throws CoordinationServiceException the coordination service exception
      */
-    public void setInvestor(InvestorDepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException;
+    public void setDepot(DepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException;
 
     /**
      * Add order.

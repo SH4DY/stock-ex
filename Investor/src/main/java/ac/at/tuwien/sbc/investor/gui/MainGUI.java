@@ -1,6 +1,6 @@
 package ac.at.tuwien.sbc.investor.gui;
 
-import ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
@@ -194,7 +194,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
      * @see ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver#onInvestorDepotEntryNotification(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void onInvestorDepotEntryNotification(InvestorDepotEntry ide) {
+    public void onInvestorDepotEntryNotification(DepotEntry ide) {
 
         //set title and label
         investorLabel.setText("Investor: " + ide.getInvestorID().toString() + " Budget: " + ide.getBudget().toString());

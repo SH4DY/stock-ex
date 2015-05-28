@@ -5,10 +5,6 @@ import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import ac.at.tuwien.sbc.investor.workflow.ICoordinationService;
-import com.googlecode.cqengine.query.Query;
-import org.mozartspaces.capi3.KeyCoordinator;
-import org.mozartspaces.core.MzsConstants;
-import org.mozartspaces.core.MzsCoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -16,12 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.UUID;
-
-import static com.googlecode.cqengine.query.QueryFactory.*;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -32,7 +24,7 @@ import static com.googlecode.cqengine.query.QueryFactory.*;
 public class AmqpCoordinationService implements ICoordinationService {
 
     /** The investor entry notification listener. */
-    private CoordinationListener<ArrayList<InvestorDepotEntry>> investorEntryNotificationListener;
+    private CoordinationListener<ArrayList<DepotEntry>> investorEntryNotificationListener;
     
     /** The share entry notification listener. */
     private CoordinationListener<ArrayList<ShareEntry>> shareEntryNotificationListener;
@@ -54,11 +46,11 @@ public class AmqpCoordinationService implements ICoordinationService {
     @Override
     public void getInvestor(Integer investorId, CoordinationListener cListener) {
 
-        InvestorDepotEntry entry = null;
+        DepotEntry entry = null;
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{investorId});
-        ArrayList<InvestorDepotEntry> result = (ArrayList<InvestorDepotEntry>)template.convertSendAndReceive("marketRPC", request);
+        ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)template.convertSendAndReceive("marketRPC", request);
         if (result != null && !result.isEmpty())
-            entry = (InvestorDepotEntry)result.toArray()[0];
+            entry = (DepotEntry)result.toArray()[0];
 
         cListener.onResult(entry);
     }
@@ -83,10 +75,10 @@ public class AmqpCoordinationService implements ICoordinationService {
     }
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerInvestorNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerDepotNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void registerInvestorNotification(CoordinationListener cListener) {
+    public void registerDepotNotification(CoordinationListener cListener) {
         investorEntryNotificationListener = cListener;
     }
 
@@ -110,7 +102,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void setInvestor(InvestorDepotEntry ide) {
+    public void setInvestor(DepotEntry ide) {
 
         //delete investor
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getInvestorID()});
@@ -164,7 +156,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      *
      * @param list the list
      */
-    public void onInvestorEntryNotification(ArrayList<InvestorDepotEntry> list) {
+    public void onInvestorEntryNotification(ArrayList<DepotEntry> list) {
         if (investorEntryNotificationListener != null)
             investorEntryNotificationListener.onResult(list);
     }
