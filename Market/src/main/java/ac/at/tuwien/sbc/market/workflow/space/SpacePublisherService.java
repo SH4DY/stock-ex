@@ -98,7 +98,7 @@ public class SpacePublisherService implements IMarketPublisherService {
     @Override
     public void getOrders(CoordinationListener listener){
         List<OrderEntry> readEntries = null;
-        OrderEntry template = new OrderEntry(null, null, null, null, null, null, null, null);
+        OrderEntry template = new OrderEntry(null, null, null, null, null, null, null, null, null);
         try {
             readEntries = capi.read(orderContainer, LindaCoordinator.newSelector(template,MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.DEFAULT, null);
         } catch (MzsCoreException e) {

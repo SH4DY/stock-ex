@@ -109,6 +109,15 @@
               <preferredSize width="50" height="28"/>
             </properties>
           </component>
+          <hspacer id="b47b5">
+            <constraints/>
+          </hspacer>
+          <component id="8c479" class="javax.swing.JCheckBox" binding="prioritizedCheckBox">
+            <constraints/>
+            <properties>
+              <text value="prioritized"/>
+            </properties>
+          </component>
           <component id="ecc18" class="javax.swing.JButton" binding="addButton" default-binding="true">
             <constraints/>
             <properties>

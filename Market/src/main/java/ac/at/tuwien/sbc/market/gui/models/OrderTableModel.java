@@ -13,7 +13,7 @@ import java.util.List;
 public class OrderTableModel extends AbstractTableModel{
 
     /** The column names. */
-    String[] columnNames = {"OrderID", "InvestorID", "ShareID", "Type", "Limit", "Total", "Completed", "Status"};
+    String[] columnNames = {"OrderID", "InvestorID", "ShareID", "Type", "Prioritized", "Limit", "Total", "Completed", "Status"};
 
     /** The content. */
     List<OrderEntry> content = new ArrayList<>();
@@ -75,10 +75,11 @@ public class OrderTableModel extends AbstractTableModel{
             case 1: return content.get(rowIndex).getInvestorID();
             case 2: return content.get(rowIndex).getShareID();
             case 3: return content.get(rowIndex).getType();
-            case 4: return content.get(rowIndex).getLimit();
-            case 5: return content.get(rowIndex).getNumTotal();
-            case 6: return content.get(rowIndex).getNumCompleted();
-            case 7: return content.get(rowIndex).getStatus();
+            case 4: return content.get(rowIndex).getPrioritized() ? "Yes" : "No";
+            case 5: return content.get(rowIndex).getLimit();
+            case 6: return content.get(rowIndex).getNumTotal();
+            case 7: return content.get(rowIndex).getNumCompleted();
+            case 8: return content.get(rowIndex).getStatus();
         }
         return null;
     }

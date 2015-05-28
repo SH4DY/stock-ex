@@ -56,6 +56,8 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     /** The share text field. */
     private JTextField shareTextField;
 
+    private JCheckBox prioritizedCheckBox;
+
     /** The workflow. */
     @Autowired
     Workflow workflow;
@@ -87,7 +89,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
      * Inits the frame.
      */
     private void initFrame() {
-        setSize(600, 600);
+        setSize(650, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
         setVisible(true);
@@ -117,6 +119,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         model.addColumn("Order ID");
         model.addColumn("Type");
         model.addColumn("Share");
+        model.addColumn("Prioritized");
         model.addColumn("Limit");
         model.addColumn("Status");
         model.addColumn("Pending");
@@ -132,7 +135,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
                 int row = orderTable.rowAtPoint(e.getPoint());
                 int column = orderTable.columnAtPoint(e.getPoint());
 
-                if (column == 6) {
+                if (column == 7) {
                     UUID orderId = UUID.fromString(((DefaultTableModel)(orderTable.getModel())).getValueAt(row, 0).toString());
                     workflow.deleteOrder(orderId);
                 }
@@ -161,7 +164,8 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
                             OrderType.valueOf(typeComboBox.getSelectedItem().toString()),
                             Double.valueOf(limitTextField.getText()),
                             Integer.valueOf(numSharesTextField.getText()),
-                            null, null);
+                            null, null,
+                            prioritizedCheckBox.isSelected());
 
                     workflow.addOrder(oe);
                 }
@@ -251,6 +255,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
                 oe.getOrderID().toString(),
                 oe.getType().toString(),
                 oe.getShareID(),
+                oe.getPrioritized() ? "Yes" : "No",
                 oe.getLimit().toString(),
                 oe.getStatus().toString(),
                 String.valueOf(oe.getNumTotal() - oe.getNumCompleted()),

@@ -146,7 +146,8 @@ public class Workflow {
                         0.0,
                         releaseEntry.getNumShares(),
                         0,
-                        OrderStatus.OPEN);
+                        OrderStatus.OPEN,
+                        false);
 
                 try {
                     coordinationService.addOrder(oe, sharedTransaction, false);
@@ -173,7 +174,6 @@ public class Workflow {
         //create shared transaction
         Object sharedOrderRequestTransaction = coordinationService.createTransaction(1000L);
 
-
         //get share entry
         ShareEntry shareEntry = coordinationService.getShareEntry(shareId, sharedOrderRequestTransaction);
 
@@ -184,14 +184,9 @@ public class Workflow {
             return;
         }
 
-        //take partial sell orders first
-        OrderEntry sellOrder = null;
 
-        sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedOrderRequestTransaction);
-        //try with open sell orders
-        if (sellOrder == null)
-            sellOrder = coordinationService.getOrderByProperties(shareId, OrderType.SELL, OrderStatus.OPEN, shareEntry.getPrice(), sharedOrderRequestTransaction);
 
+        OrderEntry sellOrder = getOrderEntryByShareEntry(shareEntry, OrderType.SELL, sharedOrderRequestTransaction);
 
         //return and rollback if no buy order exists
         if (sellOrder == null) {
@@ -202,13 +197,7 @@ public class Workflow {
         }
 
         //find corresponding buy order
-        OrderEntry buyOrder = null;
-
-        buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.PARTIAL, shareEntry.getPrice(), sharedOrderRequestTransaction);
-        //try with opm sell order
-        if (buyOrder == null) {
-            buyOrder = coordinationService.getOrderByProperties(shareId, OrderType.BUY, OrderStatus.OPEN, shareEntry.getPrice(), sharedOrderRequestTransaction);
-        }
+        OrderEntry buyOrder = getOrderEntryByShareEntry(shareEntry, OrderType.BUY, sharedOrderRequestTransaction);
 
         //return and rollback if no corresponding sell order exists
         if (buyOrder == null) {
@@ -222,6 +211,7 @@ public class Workflow {
             return;
         }
         logger.info("Buy order found: " + buyOrder.getOrderID().toString());
+
         //check limits
         if (sellOrder.getLimit() > shareEntry.getPrice() ||
                 buyOrder.getLimit() < shareEntry.getPrice()) {
@@ -331,15 +321,20 @@ public class Workflow {
         if (buyOrder.getNumCompleted() >= buyOrder.getNumTotal())
             buyOrder.setStatus(OrderStatus.COMPLETED);
 
+
         //skip if seller is a company
+        Double brokerProvisionSeller = 0.0;
         if (seller != null) {
+
+            brokerProvisionSeller = (sellOrder.getPrioritized() ? brokerProvision*2 : brokerProvision);
             //set new budget
-            seller.setBudget(seller.getBudget() + (shareEntry.getPrice() * numSharesToTransact * (1 - brokerProvision)));
+            seller.setBudget(seller.getBudget() + (shareEntry.getPrice() * numSharesToTransact * (1 - brokerProvisionSeller)));
             //decrease num shares
             seller.getShareDepot().put(shareEntry.getShareID(), seller.getShareDepot().get(shareEntry.getShareID()) - numSharesToTransact);
         }
 
-        buyer.setBudget(buyer.getBudget() - (shareEntry.getPrice() * numSharesToTransact * (1 + brokerProvision)));
+        Double brokerProvisionBuyer = (buyOrder.getPrioritized() ? brokerProvision*2 : brokerProvision);
+        buyer.setBudget(buyer.getBudget() - (shareEntry.getPrice() * numSharesToTransact * (1 + brokerProvisionBuyer)));
 
         Integer currentNumShare = buyer.getShareDepot().containsKey(shareEntry.getShareID()) ? buyer.getShareDepot().get(shareEntry.getShareID()) : 0;
         buyer.getShareDepot().put(shareEntry.getShareID(), currentNumShare + numSharesToTransact);
@@ -356,7 +351,7 @@ public class Workflow {
         transactionEntry.setPrice(shareEntry.getPrice());
         transactionEntry.setNumShares(numSharesToTransact);
         transactionEntry.setSumPrice(numSharesToTransact * shareEntry.getPrice());
-        transactionEntry.setProvision((shareEntry.getPrice() * numSharesToTransact * 2 * brokerProvision));
+        transactionEntry.setProvision((shareEntry.getPrice() * numSharesToTransact * (brokerProvisionSeller+brokerProvisionBuyer)));
 
 
         //update investors
@@ -396,6 +391,31 @@ public class Workflow {
             if (buyer != null)
                 coordinationService.setInvestor(buyer, null, true);
         } catch (CoordinationServiceException e) {e.printStackTrace();}
+    }
+
+    /**
+     * Get order entry by share entry
+     * @param shareEntry
+     * @param orderType
+     * @param sharedTransaction
+     * @return
+     */
+    private OrderEntry getOrderEntryByShareEntry(ShareEntry shareEntry, OrderType orderType, Object sharedTransaction) {
+
+        OrderEntry order = null;
+
+        order = coordinationService.getOrderByProperties(shareEntry.getShareID(), orderType, OrderStatus.PARTIAL, true, shareEntry.getPrice(), sharedTransaction);
+        //try with open sell orders
+        if (order == null)
+            order = coordinationService.getOrderByProperties(shareEntry.getShareID(), orderType, OrderStatus.OPEN, true, shareEntry.getPrice(), sharedTransaction);
+
+        if (order == null)
+            order = coordinationService.getOrderByProperties(shareEntry.getShareID(), orderType, OrderStatus.PARTIAL, false, shareEntry.getPrice(), sharedTransaction);
+
+        if (order == null)
+            order = coordinationService.getOrderByProperties(shareEntry.getShareID(), orderType, OrderStatus.OPEN, false, shareEntry.getPrice(), sharedTransaction);
+
+        return order;
     }
 }
 

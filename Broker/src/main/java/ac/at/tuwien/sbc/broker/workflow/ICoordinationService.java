@@ -63,7 +63,7 @@ public interface ICoordinationService {
      * @param sharedTransaction
      * @return
      */
-    public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price, Object sharedTransaction);
+    public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Boolean prioritized, Double price, Object sharedTransaction);
 
     /**
      * Read/get all shares.

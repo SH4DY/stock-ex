@@ -39,6 +39,8 @@ public class OrderEntry extends SuperEntry implements Serializable {
     /** The status. */
     private OrderStatus status;
 
+    private Boolean prioritized;
+
     /**
      * Instantiates a new order entry.
      */
@@ -56,7 +58,7 @@ public class OrderEntry extends SuperEntry implements Serializable {
      * @param numCompleted the num completed
      * @param status the status
      */
-    public OrderEntry(UUID orderID, Integer investorID, String shareID, OrderType type, Double limit, Integer numTotal, Integer numCompleted, OrderStatus status) {
+    public OrderEntry(UUID orderID, Integer investorID, String shareID, OrderType type, Double limit, Integer numTotal, Integer numCompleted, OrderStatus status, Boolean prioritized) {
         this.orderID = orderID;
         this.investorID = investorID;
         this.shareID = shareID;
@@ -65,6 +67,7 @@ public class OrderEntry extends SuperEntry implements Serializable {
         this.numTotal = numTotal;
         this.numCompleted = numCompleted;
         this.status = status;
+        this.prioritized = prioritized;
     }
 
     /**
@@ -211,5 +214,11 @@ public class OrderEntry extends SuperEntry implements Serializable {
         this.status = status;
     }
 
+    public Boolean getPrioritized() {
+        return prioritized;
+    }
 
+    public void setPrioritized(Boolean prioritized) {
+        this.prioritized = prioritized;
+    }
 }

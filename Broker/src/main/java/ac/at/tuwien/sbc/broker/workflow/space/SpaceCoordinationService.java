@@ -129,7 +129,7 @@ public class SpaceCoordinationService implements ICoordinationService {
              tx = (TransactionReference)sharedTransaction;
 
         try {
-            logger.info("Try to write OerderEntry: " + oe.getShareID());
+            logger.info("Try to write OrderEntry: " + oe.getShareID());
             //QueryCoordinator.newCoordinationData())
             capi.write(new Entry(oe), orderContainer, MzsConstants.RequestTimeout.ZERO, tx);
         } catch (MzsCoreException e) {
@@ -143,18 +143,19 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getOrderByProperties(java.lang.String, ac.at.tuwien.sbc.domain.enums.OrderType, ac.at.tuwien.sbc.domain.enums.OrderStatus, java.lang.Double, java.lang.Object)
      */
     @Override
-    public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price, Object sharedTransaction) {
+    public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Boolean prioritized, Double price, Object sharedTransaction) {
         TransactionReference tx = (TransactionReference)sharedTransaction;
         ArrayList<OrderEntry> entries = null;
 
         Matchmaker mShareId = Property.forName("shareID").equalTo(shareId);
         Matchmaker mType = Property.forName("type").equalTo(type);
         Matchmaker mStatus = Property.forName("status").equalTo(status);
+        Matchmaker mPrioritized = Property.forName("prioritized").equalTo(prioritized);
         Matchmaker mLimit = ComparableProperty.forName("limit").lessThanOrEqualTo(price);
         if (type.equals(OrderType.BUY))
             mLimit = ComparableProperty.forName("limit").greaterThanOrEqualTo(price);
 
-        Query q = new Query().filter(and(mShareId, mType, mStatus, mLimit)).cnt(1);
+        Query q = new Query().filter(and(mShareId, mType, mStatus,mPrioritized, mLimit)).cnt(1);
         OrderEntry entry = null;
         try {
 
@@ -385,7 +386,7 @@ public class SpaceCoordinationService implements ICoordinationService {
     /**
      * InvestorDepotNotificationListener.
      *
-     * @see ReleaseNotificationEvent
+     *
      */
     public class ReleaseNotificationListener implements NotificationListener {
 
@@ -418,7 +419,7 @@ public class SpaceCoordinationService implements ICoordinationService {
     /**
      * OrderNotificationListener.
      *
-     * @see OrderNotificationEvent
+     *
      */
     public class OrderNotificationListener implements NotificationListener {
 
@@ -457,7 +458,7 @@ public class SpaceCoordinationService implements ICoordinationService {
      * the shareNotification event occurs, that object's appropriate
      * method is invoked.
      *
-     * @see ShareNotificationEvent
+     *
      */
     public class ShareNotificationListener implements NotificationListener {
 

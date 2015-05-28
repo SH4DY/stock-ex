@@ -87,7 +87,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getOrderByProperties(java.lang.String, ac.at.tuwien.sbc.domain.enums.OrderType, ac.at.tuwien.sbc.domain.enums.OrderStatus, java.lang.Double, java.lang.Object)
      */
     @Override
-    public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Double price, Object sharedTransaction) {
+    public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Boolean prioritized, Double price, Object sharedTransaction) {
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_ORDER_BY_PROPERTIES,
                                                           new Object[]{shareId, type, status, price});
         ArrayList<OrderEntry> entries = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);

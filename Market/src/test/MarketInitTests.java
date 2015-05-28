@@ -51,9 +51,9 @@ public class MarketInitTests {
         }
 
         //Write new orders to orderContainer
-        OrderEntry order1 = new OrderEntry(UUID.randomUUID(),110, "GOOG", OrderType.BUY, 150.00, 10,10, OrderStatus.OPEN);
-        OrderEntry order2 = new OrderEntry(UUID.randomUUID(),249, "MSFT", OrderType.BUY, 150.00, 10,10, OrderStatus.OPEN);
-        OrderEntry order3 = new OrderEntry(UUID.randomUUID(),330, "YAHO", OrderType.BUY, 150.00, 10,10, OrderStatus.OPEN);
+        OrderEntry order1 = new OrderEntry(UUID.randomUUID(),110, "GOOG", OrderType.BUY, 150.00, 10,10, OrderStatus.OPEN, false);
+        OrderEntry order2 = new OrderEntry(UUID.randomUUID(),249, "MSFT", OrderType.BUY, 150.00, 10,10, OrderStatus.OPEN, false);
+        OrderEntry order3 = new OrderEntry(UUID.randomUUID(),330, "YAHO", OrderType.BUY, 150.00, 10,10, OrderStatus.OPEN, false);
 
         Entry[] entries = {new Entry(order1, FifoCoordinator.newCoordinationData()),
                 new Entry(order2, FifoCoordinator.newCoordinationData()),
