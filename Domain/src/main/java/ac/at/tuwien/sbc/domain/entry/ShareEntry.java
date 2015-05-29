@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.domain.entry;
 
+import ac.at.tuwien.sbc.domain.enums.ShareType;
 import com.googlecode.cqengine.attribute.Attribute;
 import com.googlecode.cqengine.attribute.SimpleAttribute;
 
@@ -24,6 +25,8 @@ public  class ShareEntry extends SuperEntry implements Serializable {
     /** The price. */
     private  Double price;
 
+    private ShareType shareType;
+
     /**
      * Instantiates a new share entry.
      */
@@ -36,10 +39,11 @@ public  class ShareEntry extends SuperEntry implements Serializable {
      * @param numShares the num shares
      * @param price the price
      */
-    public ShareEntry(String  shareID,  Integer numShares,  Double price) {
+    public ShareEntry(String  shareID,  Integer numShares,  Double price, ShareType shareType) {
         this.numShares = numShares;
         this.price = price;
         this.shareID = shareID;
+        this.shareType = shareType;
     }
 
     /**
@@ -94,6 +98,14 @@ public  class ShareEntry extends SuperEntry implements Serializable {
      */
     public Double getPrice() {
         return price;
+    }
+
+    public ShareType getShareType() {
+        return shareType;
+    }
+
+    public void setShareType(ShareType shareType) {
+        this.shareType = shareType;
     }
 
     //We override equality and hashes because

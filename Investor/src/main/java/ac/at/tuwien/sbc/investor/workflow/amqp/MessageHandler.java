@@ -26,8 +26,8 @@ public class MessageHandler {
      *
      * @param list the list
      */
-    public void onInvestorEntryNotification(ArrayList<DepotEntry> list) {
-        amqpCoordinationService.onInvestorEntryNotification(list);
+    public void onDepotEntryNotification(ArrayList<DepotEntry> list) {
+        amqpCoordinationService.onDepotEntryNotification(list);
     }
 
     /**

@@ -77,18 +77,18 @@ public class SpaceCoordinationService implements ICoordinationService {
 
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getInvestor(java.lang.Integer, java.lang.Object)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getDepot(java.lang.Integer, java.lang.Object)
      */
     @Override
-    public DepotEntry getInvestor(String investorId, Object sharedTransaction) {
-        logger.info("Try to read investor with arguments: " + String.valueOf(investorId));
+    public DepotEntry getDepot(String depotId, Object sharedTransaction) {
+        logger.info("Try to read investor with arguments: " + String.valueOf(depotId));
         TransactionReference tx = (TransactionReference)sharedTransaction;
         ArrayList<DepotEntry> entries = null;
         DepotEntry entry = null;
         try {
-            entries = capi.take(depotContainer, KeyCoordinator.newSelector(investorId.toString()), MzsConstants.RequestTimeout.ZERO, tx);
+            entries = capi.take(depotContainer, KeyCoordinator.newSelector(depotId.toString()), MzsConstants.RequestTimeout.ZERO, tx);
         } catch (MzsCoreException e) {
-            logger.info("Investor depot not found for: " + investorId);
+            logger.info("Investor depot not found for: " + depotId);
         }
 
         if (entries != null && !entries.isEmpty())
@@ -101,15 +101,15 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#setDepot(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry, java.lang.Object, java.lang.Boolean)
      */
     @Override
-    public void setDepot(DepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
-        logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
+    public void setDepot(DepotEntry de, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
+        logger.info("Try to write InvestorDepotEntry: " + de.getBudget().toString());
         TransactionReference tx = (TransactionReference)sharedTransaction;
         try {
             try {
-                capi.take(depotContainer, KeyCoordinator.newSelector(ide.getId().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+                capi.take(depotContainer, KeyCoordinator.newSelector(de.getId().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
             }
             catch (MzsCoreException e1) {}
-            Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getId().toString()));
+            Entry entryToUpdate = new Entry(de, KeyCoordinator.newCoordinationData(de.getId().toString()));
             capi.write(depotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
         }
         catch (MzsCoreException e) {
@@ -258,6 +258,8 @@ public class SpaceCoordinationService implements ICoordinationService {
             throw new CoordinationServiceException("Something went wrong writing a ShareEntry");
         }
     }
+
+
 
     /* (non-Javadoc)
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#registerReleaseNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)

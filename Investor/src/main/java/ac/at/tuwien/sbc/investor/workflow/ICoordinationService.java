@@ -2,6 +2,7 @@ package ac.at.tuwien.sbc.investor.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 
 import java.util.ArrayList;
@@ -16,11 +17,11 @@ public interface ICoordinationService {
     /**
      * Gets the investor.
      *
-     * @param investorId the investor id
+     * @param depotId the investor id
      * @param cListener the c listener
      * @return the investor
      */
-    public void getInvestor(String investorId, CoordinationListener cListener);
+    public void getDepot(String depotId, CoordinationListener cListener);
 
     /**
      * Gets the shares.
@@ -57,7 +58,7 @@ public interface ICoordinationService {
      *
      * @param ide the new investor
      */
-    public void setInvestor(DepotEntry ide);
+    public void setDepot(DepotEntry ide);
 
     /**
      * Adds the order.
@@ -69,11 +70,11 @@ public interface ICoordinationService {
     /**
      * Gets the orders.
      *
-     * @param investorId the investor id
+     * @param depotId the investor id
      * @param cListener the c listener
      * @return the orders
      */
-    public void getOrders(String investorId, CoordinationListener cListener);
+    public void getOrders(String depotId, CoordinationListener cListener);
 
     /**
      * Delete order.
@@ -81,4 +82,6 @@ public interface ICoordinationService {
      * @param orderID the order id
      */
     public void deleteOrder(UUID orderID);
+
+    public void makeRelease(ReleaseEntry re);
 }

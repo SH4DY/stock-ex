@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.marketagent.workflow.amqp;
 
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
@@ -66,5 +67,16 @@ public class AmqpCoordinationService implements ICoordinationService {
                 new Object[]{shareId, type, OrderStatus.PARTIAL});
         entries.addAll((ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request));
         return entries;
+    }
+
+    @Override
+    public DepotEntry getDepot(String depotId) {
+        DepotEntry entry = null;
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_DEPOT_ENTRY_BY_ID, new Object[]{depotId});
+        ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)template.convertSendAndReceive("marketRPC", request);
+        if (result != null && !result.isEmpty())
+            entry = (DepotEntry)result.toArray()[0];
+
+        return entry;
     }
 }

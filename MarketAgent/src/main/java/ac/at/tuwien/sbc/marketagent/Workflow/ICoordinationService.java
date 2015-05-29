@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.marketagent.workflow;
 
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
@@ -34,4 +35,6 @@ public interface ICoordinationService {
      * @return the orders by properties
      */
     public ArrayList<OrderEntry> getOrdersByProperties(String shareId, OrderType type);
+
+    public DepotEntry getDepot(String depotId);
 }

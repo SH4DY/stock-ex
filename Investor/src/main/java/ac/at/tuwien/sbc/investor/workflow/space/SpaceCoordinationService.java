@@ -2,6 +2,7 @@ package ac.at.tuwien.sbc.investor.workflow.space;
 
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
@@ -57,6 +58,10 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Qualifier("shareContainer")
     ContainerReference shareContainer;
 
+    @Autowired
+    @Qualifier("releaseContainer")
+    ContainerReference releaseContainer;
+
     /** The notifications. */
     private ArrayList<Notification> notifications = new ArrayList<Notification>();
 
@@ -64,17 +69,17 @@ public class SpaceCoordinationService implements ICoordinationService {
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getInvestor(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getDepot(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getInvestor(String id, CoordinationListener cListener) {
-        logger.info("Try to read investor with arguments: " + String.valueOf(id));
+    public void getDepot(String depotId, CoordinationListener cListener) {
+        logger.info("Try to read investor with arguments: " + String.valueOf(depotId));
 
         ArrayList<DepotEntry> entries = null;
         try {
-            entries = capi.read(depotContainer, KeyCoordinator.newSelector(id.toString()), MzsConstants.RequestTimeout.ZERO, null);
+            entries = capi.read(depotContainer, KeyCoordinator.newSelector(depotId.toString()), MzsConstants.RequestTimeout.ZERO, null);
         } catch (MzsCoreException e) {
-            logger.info("Investor depot not found for: " + id);
+            logger.info("Investor depot not found for: " + depotId);
         }
 
         if (entries != null && !entries.isEmpty())
@@ -116,7 +121,7 @@ public class SpaceCoordinationService implements ICoordinationService {
             NotificationManager notificationManager = new NotificationManager(core);
 
             Notification notification = notificationManager.createNotification(depotContainer,
-                    new InvestorDepotNotificationListener(cListener),
+                    new DepotNotificationListener(cListener),
                     Operation.WRITE);
 
             notifications.add(notification);
@@ -171,10 +176,10 @@ public class SpaceCoordinationService implements ICoordinationService {
     }
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setDepot(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void setInvestor(DepotEntry ide) {
+    public void setDepot(DepotEntry ide) {
 
         logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
         TransactionReference tx = null;
@@ -218,10 +223,10 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getOrders(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getOrders(String investorId, CoordinationListener cListener) {
+    public void getOrders(String depotId, CoordinationListener cListener) {
 
         logger.info("Try to read orders by template");
-        OrderEntry template = new OrderEntry(null, investorId, null, null, null, null, null, null, null);
+        OrderEntry template = new OrderEntry(null, depotId, null, null, null, null, null, null, null);
         ArrayList<OrderEntry> entries = null;
         try {
             entries = capi.read(orderContainer, LindaCoordinator.newSelector(template, MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.DEFAULT, null);
@@ -255,6 +260,16 @@ public class SpaceCoordinationService implements ICoordinationService {
         catch (MzsCoreException e) {logger.info("Not able to delete order:" + e.getMessage());}
     }
 
+    @Override
+    public void makeRelease(ReleaseEntry re) {
+        Entry entry = new Entry(re);
+        try {
+            capi.write(releaseContainer, MzsConstants.RequestTimeout.TRY_ONCE,null,entry);
+        } catch (MzsCoreException e) {
+            logger.error("Exception occurred while trying to write ReleaseEntry to container");
+        }
+    }
+
     /**
      * On pre destroy.
      */
@@ -274,9 +289,9 @@ public class SpaceCoordinationService implements ICoordinationService {
     /**
      * InvestorDepotNotificationListener.
      *
-     * @see InvestorDepotNotificationEvent
+     * @see
      */
-    public class InvestorDepotNotificationListener implements NotificationListener {
+    public class DepotNotificationListener implements NotificationListener {
 
         /** The callback listener. */
         private CoordinationListener<ArrayList<DepotEntry>> callbackListener;
@@ -286,7 +301,7 @@ public class SpaceCoordinationService implements ICoordinationService {
          *
          * @param callbackListener the callback listener
          */
-        public InvestorDepotNotificationListener(CoordinationListener<ArrayList<DepotEntry>> callbackListener) {
+        public DepotNotificationListener(CoordinationListener<ArrayList<DepotEntry>> callbackListener) {
             this.callbackListener = callbackListener;
         }
 
@@ -296,19 +311,19 @@ public class SpaceCoordinationService implements ICoordinationService {
         @Override
         public void entryOperationFinished(Notification notification, Operation operation, List<? extends Serializable> entries) {
 
-            ArrayList<DepotEntry> investorDeptEntries = new ArrayList<DepotEntry>();
+            ArrayList<DepotEntry> depotEntries = new ArrayList<DepotEntry>();
             for (Serializable entry : entries) {
-                investorDeptEntries.add((DepotEntry)((Entry)entry).getValue());
+                depotEntries.add((DepotEntry)((Entry)entry).getValue());
 
             }
-            callbackListener.onResult(investorDeptEntries);
+            callbackListener.onResult(depotEntries);
         }
     }
 
     /**
      * InvestorDepotNotificationListener.
      *
-     * @see OrderNotificationEvent
+     * @see
      */
     public class OrderNotificationListener implements NotificationListener {
 
@@ -341,7 +356,7 @@ public class SpaceCoordinationService implements ICoordinationService {
     /**
      * InvestorDepotNotificationListener.
      *
-     * @see ShareNotificationEvent
+     * @see
      */
     public class ShareNotificationListener implements NotificationListener {
 

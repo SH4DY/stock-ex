@@ -1,5 +1,7 @@
 package ac.at.tuwien.sbc.domain.entry;
 
+import ac.at.tuwien.sbc.domain.enums.ShareType;
+
 import java.io.Serializable;
 
 // TODO: Auto-generated Javadoc
@@ -17,6 +19,8 @@ public class ReleaseEntry extends SuperEntry implements Serializable {
     /** The price. */
     private Double price;
 
+    private ShareType shareType;
+
     /**
      * Instantiates a new release entry.
      */
@@ -30,10 +34,11 @@ public class ReleaseEntry extends SuperEntry implements Serializable {
      * @param numShares the num shares
      * @param price the price
      */
-    public ReleaseEntry(String companyID, Integer numShares, Double price){
+    public ReleaseEntry(String companyID, Integer numShares, Double price, ShareType shareType){
         this.companyID = companyID;
         this.numShares = numShares;
         this.price = price;
+        this.shareType = shareType;
     }
 
     /**
@@ -88,5 +93,13 @@ public class ReleaseEntry extends SuperEntry implements Serializable {
      */
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public ShareType getShareType() {
+        return shareType;
+    }
+
+    public void setShareType(ShareType shareType) {
+        this.shareType = shareType;
     }
 }

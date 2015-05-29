@@ -24,7 +24,7 @@ import java.util.UUID;
 public class AmqpCoordinationService implements ICoordinationService {
 
     /** The investor entry notification listener. */
-    private CoordinationListener<ArrayList<DepotEntry>> investorEntryNotificationListener;
+    private CoordinationListener<ArrayList<DepotEntry>> depotEntryNotificationListener;
     
     /** The share entry notification listener. */
     private CoordinationListener<ArrayList<ShareEntry>> shareEntryNotificationListener;
@@ -41,13 +41,13 @@ public class AmqpCoordinationService implements ICoordinationService {
 
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getInvestor(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getDepot(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getInvestor(String investorId, CoordinationListener cListener) {
+    public void getDepot(String depotId, CoordinationListener cListener) {
 
         DepotEntry entry = null;
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{investorId});
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_DEPOT_ENTRY_BY_ID, new Object[]{depotId});
         ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)template.convertSendAndReceive("marketRPC", request);
         if (result != null && !result.isEmpty())
             entry = (DepotEntry)result.toArray()[0];
@@ -79,7 +79,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      */
     @Override
     public void registerDepotNotification(CoordinationListener cListener) {
-        investorEntryNotificationListener = cListener;
+        depotEntryNotificationListener = cListener;
     }
 
     /* (non-Javadoc)
@@ -99,17 +99,17 @@ public class AmqpCoordinationService implements ICoordinationService {
     }
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setInvestor(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
+     * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setDepot(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void setInvestor(DepotEntry ide) {
+    public void setDepot(DepotEntry ide) {
 
         //delete investor
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getId()});
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_DEPOT_ENTRY_BY_ID, new Object[]{ide.getId()});
         template.convertAndSend("marketRPC", request);
 
         //write investor
-        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_INVESTOR_DEPOT_ENTRY, null, ide);
+        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_DEPOT_ENTRY, null, ide);
         template.convertAndSend("marketRPC", request);
     }
 
@@ -127,9 +127,9 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getOrders(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getOrders(String investorId, CoordinationListener cListener) {
+    public void getOrders(String depotId, CoordinationListener cListener) {
 
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_ORDER_ENTRIES_BY_INVESTOR_ID, new Object[]{investorId});
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_ORDER_ENTRIES_BY_DEPOT_ID, new Object[]{depotId});
         ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
         cListener.onResult(result);
     }
@@ -151,14 +151,21 @@ public class AmqpCoordinationService implements ICoordinationService {
 
     }
 
+    @Override
+    public void makeRelease(ReleaseEntry re) {
+        //write release entry
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_RELEASE_ENTRY, null, re);
+        template.convertAndSend("marketRPC", request);
+    }
+
     /**
      * On investor entry notification.
      *
      * @param list the list
      */
-    public void onInvestorEntryNotification(ArrayList<DepotEntry> list) {
-        if (investorEntryNotificationListener != null)
-            investorEntryNotificationListener.onResult(list);
+    public void onDepotEntryNotification(ArrayList<DepotEntry> list) {
+        if (depotEntryNotificationListener != null)
+            depotEntryNotificationListener.onResult(list);
     }
 
     /**

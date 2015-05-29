@@ -14,7 +14,7 @@ import java.util.*;
 public class ShareTableModel extends AbstractTableModel{
     
     /** The column names. */
-    String[] columnNames = {"Share ID", "Volume", "Stockprice"};
+    String[] columnNames = {"Share ID", "Type", "Volume", "Stockprice"};
 
     /** The content. */
     LinkedHashSet<ShareEntry> content = new LinkedHashSet<>();
@@ -80,8 +80,9 @@ public class ShareTableModel extends AbstractTableModel{
 
         switch (columnIndex) {
             case 0: return entry.getShareID();
-            case 1: return entry.getNumShares();
-            case 2: return entry.getPrice();
+            case 1: return entry.getShareType().toString();
+            case 2: return entry.getNumShares();
+            case 3: return entry.getPrice();
         }
         return null;
     }

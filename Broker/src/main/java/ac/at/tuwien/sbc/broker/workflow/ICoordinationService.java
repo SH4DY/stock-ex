@@ -17,21 +17,21 @@ public interface ICoordinationService {
     /**
      * Get investor by id.
      *
-     * @param investorId the investor id
+     * @param depotId the investor id
      * @param sharedTransaction the shared transaction
      * @return the investor
      */
-    public DepotEntry getInvestor(String investorId, Object sharedTransaction);
+    public DepotEntry getDepot(String depotId, Object sharedTransaction);
 
     /**
      * Set/add investor.
      *
-     * @param ide the ide
+     * @param de the de
      * @param sharedTransaction the shared transaction
      * @param isRollbackAction the is rollback action
      * @throws CoordinationServiceException the coordination service exception
      */
-    public void setDepot(DepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException;
+    public void setDepot(DepotEntry de, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException;
 
     /**
      * Add order.

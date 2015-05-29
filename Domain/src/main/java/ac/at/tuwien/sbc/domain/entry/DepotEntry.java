@@ -1,5 +1,7 @@
 package ac.at.tuwien.sbc.domain.entry;
 
+import ac.at.tuwien.sbc.domain.enums.DepotType;
+
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -14,6 +16,8 @@ public class DepotEntry extends SuperEntry implements Serializable{
 
     /** The budget. */
     private Double budget;
+
+    private DepotType depotType;
 
     /** The share depot. */
     private HashMap<String, Integer> shareDepot;
@@ -31,9 +35,10 @@ public class DepotEntry extends SuperEntry implements Serializable{
      * @param budget the budget
      * @param shareDepot the share depot
      */
-    public DepotEntry(String id, Double budget, HashMap<String, Integer> shareDepot) {
+    public DepotEntry(String id, Double budget, DepotType depotType, HashMap<String, Integer> shareDepot) {
         this.id = id;
         this.budget = budget;
+        this.depotType = depotType;
         this.shareDepot = shareDepot;
     }
 
@@ -92,4 +97,11 @@ public class DepotEntry extends SuperEntry implements Serializable{
     }
 
 
+    public DepotType getDepotType() {
+        return depotType;
+    }
+
+    public void setDepotType(DepotType depotType) {
+        this.depotType = depotType;
+    }
 }

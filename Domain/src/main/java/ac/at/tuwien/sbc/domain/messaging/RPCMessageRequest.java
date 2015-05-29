@@ -16,16 +16,16 @@ public class RPCMessageRequest {
      * The Enum Method.
      */
     public static enum Method {/** The get investor depot entry by id. */
-GET_INVESTOR_DEPOT_ENTRY_BY_ID,
+        GET_DEPOT_ENTRY_BY_ID,
         
         /** The take investor depot entry by id. */
-        TAKE_INVESTOR_DEPOT_ENTRY_BY_ID,
+        TAKE_DEPOT_ENTRY_BY_ID,
         
         /** The delete investor depot entry by id. */
-        DELETE_INVESTOR_DEPOT_ENTRY_BY_ID,
+        DELETE_DEPOT_ENTRY_BY_ID,
         
         /** The write investor depot entry. */
-        WRITE_INVESTOR_DEPOT_ENTRY,
+        WRITE_DEPOT_ENTRY,
         
         /** The take order by order id. */
         TAKE_ORDER_BY_ORDER_ID,
@@ -37,7 +37,7 @@ GET_INVESTOR_DEPOT_ENTRY_BY_ID,
         READ_ORDER_BY_PROPERTIES,
         
         /** The get order entries by investor id. */
-        GET_ORDER_ENTRIES_BY_INVESTOR_ID,
+        GET_ORDER_ENTRIES_BY_DEPOT_ID,
         
         /** The write order entry. */
         WRITE_ORDER_ENTRY,

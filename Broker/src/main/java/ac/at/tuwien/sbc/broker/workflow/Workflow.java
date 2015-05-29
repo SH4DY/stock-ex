@@ -3,6 +3,7 @@ package ac.at.tuwien.sbc.broker.workflow;
 import ac.at.tuwien.sbc.domain.entry.*;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
+import ac.at.tuwien.sbc.domain.enums.ShareType;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
 import org.slf4j.Logger;
@@ -36,6 +37,10 @@ public class Workflow {
 
     /** The Constant brokerProvision. */
     public static final Double brokerProvision = 0.03;
+
+    /** The Constant brokerProvision. */
+    public static final Double fondFee = 0.02;
+
 
     /**
      * On post construct.
@@ -123,7 +128,7 @@ public class Workflow {
                 ShareEntry shareEntry = coordinationService.getShareEntry(releaseEntry.getCompanyID(), sharedTransaction);
 
                 if (shareEntry == null) {
-                    shareEntry = new ShareEntry(releaseEntry.getCompanyID(), releaseEntry.getNumShares(), releaseEntry.getPrice());
+                    shareEntry = new ShareEntry(releaseEntry.getCompanyID(), releaseEntry.getNumShares(), releaseEntry.getPrice(), releaseEntry.getShareType());
                     logger.info("INIT SHARE: " + shareEntry.getShareID() + " / " + shareEntry.getNumShares() + "/" + shareEntry.getPrice());
                 } else {
                     shareEntry.setNumShares(shareEntry.getNumShares() + releaseEntry.getNumShares());
@@ -183,7 +188,6 @@ public class Workflow {
         }
 
 
-
         OrderEntry sellOrder = getOrderEntryByShareEntry(shareEntry, OrderType.SELL, sharedOrderRequestTransaction);
 
         //return and rollback if no buy order exists
@@ -226,10 +230,10 @@ public class Workflow {
         //get seller if seller is not a company
         DepotEntry seller = null;
         if (sellOrder.getInvestorID() != null) {
-           seller = coordinationService.getInvestor(sellOrder.getInvestorID(), sharedOrderRequestTransaction);
+           seller = coordinationService.getDepot(sellOrder.getInvestorID(), sharedOrderRequestTransaction);
         }
         //get buyer
-        DepotEntry buyer = coordinationService.getInvestor(buyOrder.getInvestorID(), sharedOrderRequestTransaction);
+        DepotEntry buyer = coordinationService.getDepot(buyOrder.getInvestorID(), sharedOrderRequestTransaction);
 
         if (seller != null && buyer != null)
             logger.info("seller:" + seller.getId() + ", buyer:" + buyer.getId());
@@ -246,7 +250,7 @@ public class Workflow {
 
         //check if transaction is valid
         HashMap<OrderEntry, Boolean> validationResult =
-                TransactionValidator.validate(sellOrder, buyOrder, seller, buyer, shareEntry, brokerProvision);
+                TransactionValidator.validate(sellOrder, buyOrder, seller, buyer, shareEntry, brokerProvision, fondFee);
 
         if (!validationResult.get(sellOrder) || !validationResult.get(buyOrder)) {
             logger.info("Transaction is invalid");
@@ -320,19 +324,33 @@ public class Workflow {
             buyOrder.setStatus(OrderStatus.COMPLETED);
 
 
+        double currentFondFee = shareEntry.getShareType().equals(ShareType.FOND) ? fondFee : 0.0;
         //skip if seller is a company
         Double brokerProvisionSeller = 0.0;
+
         if (seller != null) {
 
             brokerProvisionSeller = (sellOrder.getPrioritized() ? brokerProvision*2 : brokerProvision);
             //set new budget
-            seller.setBudget(seller.getBudget() + (shareEntry.getPrice() * numSharesToTransact * (1 - brokerProvisionSeller)));
+            seller.setBudget(seller.getBudget() + (shareEntry.getPrice() * numSharesToTransact * (1 - brokerProvisionSeller - currentFondFee)));
             //decrease num shares
             seller.getShareDepot().put(shareEntry.getShareID(), seller.getShareDepot().get(shareEntry.getShareID()) - numSharesToTransact);
         }
 
         Double brokerProvisionBuyer = (buyOrder.getPrioritized() ? brokerProvision*2 : brokerProvision);
-        buyer.setBudget(buyer.getBudget() - (shareEntry.getPrice() * numSharesToTransact * (1 + brokerProvisionBuyer)));
+        buyer.setBudget(buyer.getBudget() - (shareEntry.getPrice() * numSharesToTransact * (1 + brokerProvisionBuyer + currentFondFee)));
+
+
+        //add fee to fond budget
+        if (shareEntry.getShareType().equals(ShareType.FOND)) {
+            //get fond manager depot and add fee to budget
+            DepotEntry fondDepot = coordinationService.getDepot(shareEntry.getShareID(), sharedTransaction);
+            if (fondDepot != null) {
+                Double sumFees = (seller != null) ? 2*currentFondFee : currentFondFee;
+                fondDepot.setBudget(fondDepot.getBudget() + (shareEntry.getPrice() * numSharesToTransact) * sumFees);
+                coordinationService.setDepot(fondDepot, sharedTransaction, false);
+            }
+        }
 
         Integer currentNumShare = buyer.getShareDepot().containsKey(shareEntry.getShareID()) ? buyer.getShareDepot().get(shareEntry.getShareID()) : 0;
         buyer.getShareDepot().put(shareEntry.getShareID(), currentNumShare + numSharesToTransact);

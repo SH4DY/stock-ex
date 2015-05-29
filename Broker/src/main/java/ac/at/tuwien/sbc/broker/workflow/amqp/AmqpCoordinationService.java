@@ -40,12 +40,12 @@ public class AmqpCoordinationService implements ICoordinationService {
 
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getInvestor(java.lang.Integer, java.lang.Object)
+     * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getDepot(java.lang.Integer, java.lang.Object)
      */
     @Override
-    public DepotEntry getInvestor(String investorId, Object sharedTransaction) {
+    public DepotEntry getDepot(String depotId, Object sharedTransaction) {
 
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{investorId});
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_DEPOT_ENTRY_BY_ID, new Object[]{depotId});
         ArrayList<DepotEntry> entries = (ArrayList<DepotEntry>)template.convertSendAndReceive("marketRPC", request);
         DepotEntry entry = null;
 
@@ -59,17 +59,17 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#setDepot(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry, java.lang.Object, java.lang.Boolean)
      */
     @Override
-    public void setDepot(DepotEntry ide, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
+    public void setDepot(DepotEntry de, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
 
-        if (ide == null)
+        if (de == null)
             return;
 
         //delete investor
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_INVESTOR_DEPOT_ENTRY_BY_ID, new Object[]{ide.getId()});
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_DEPOT_ENTRY_BY_ID, new Object[]{de.getId()});
         template.convertAndSend("marketRPC", request);
 
         //write investor
-        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_INVESTOR_DEPOT_ENTRY, null, ide, isRollbackAction);
+        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_DEPOT_ENTRY, null, de, isRollbackAction);
         template.convertAndSend("marketRPC", request);
     }
 

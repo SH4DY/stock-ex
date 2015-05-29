@@ -1,6 +1,7 @@
 package ac.at.tuwien.sbc.company.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
+import ac.at.tuwien.sbc.domain.enums.ShareType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -54,6 +55,7 @@ public class Workflow {
         releaseEntry.setCompanyID(companyID);
         releaseEntry.setNumShares(numShares);
         releaseEntry.setPrice(initPrice);
+        releaseEntry.setShareType(ShareType.SHARE);
 
         rlsService.makeRelease(releaseEntry);
     }

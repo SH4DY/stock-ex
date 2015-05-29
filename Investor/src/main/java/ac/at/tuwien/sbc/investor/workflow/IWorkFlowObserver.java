@@ -17,7 +17,7 @@ public interface IWorkFlowObserver {
      *
      * @param ide the ide
      */
-    public void onInvestorDepotEntryNotification(DepotEntry ide);
+    public void onDepotEntryNotification(DepotEntry ide);
     
     /**
      * This method is called when information about an IWorkFlow

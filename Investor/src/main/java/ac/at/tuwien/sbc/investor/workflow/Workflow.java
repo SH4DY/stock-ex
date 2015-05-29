@@ -2,8 +2,11 @@ package ac.at.tuwien.sbc.investor.workflow;
 
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
+import ac.at.tuwien.sbc.domain.enums.DepotType;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
+import ac.at.tuwien.sbc.domain.enums.ShareType;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +34,11 @@ public class Workflow  {
     @Value("${budget}")
     private Double budget;
 
+    @Value("${type:INVESTOR}")
+    private DepotType depotType;
+
+    @Value("${numShares:0}")
+    private Integer numShares;
     /** The coordination service. */
     @Autowired
     private ICoordinationService coordinationService;
@@ -40,7 +48,7 @@ public class Workflow  {
     private IWorkFlowObserver observer;
 
     /** The current investor. */
-    private DepotEntry currentInvestor;
+    private DepotEntry currentDepot;
 
 
     /** The Constant logger. */
@@ -75,9 +83,9 @@ public class Workflow  {
                 for (DepotEntry ide : ideList) {
                     if (ide.getId().equals(depotId)) {
 
-                        currentInvestor = ide;
+                        currentDepot = ide;
                         if (observer != null)
-                            observer.onInvestorDepotEntryNotification(ide);
+                            observer.onDepotEntryNotification(ide);
 
                         //re-init shares
                         initShares();
@@ -95,7 +103,7 @@ public class Workflow  {
             @Override
             public void onResult(ArrayList<OrderEntry> oeList) {
                 for (OrderEntry oe : oeList) {
-                    if (oe.getInvestorID().equals(depotId)) {
+                    if (oe.getInvestorID() != null && oe.getInvestorID().equals(depotId)) {
                         if (observer != null)
                             observer.onOrderEntryNotification(oe);
                     }
@@ -112,11 +120,11 @@ public class Workflow  {
             @Override
             public void onResult(ArrayList<ShareEntry> sList) {
 
-                if (currentInvestor == null)
+                if (currentDepot == null)
                     return;
 
                 for (ShareEntry s : sList) {
-                    if (currentInvestor.getShareDepot().containsKey(s.getShareID())) {
+                    if (currentDepot.getShareDepot().containsKey(s.getShareID())) {
                         if (observer != null)
                             observer.onShareEntryNotification(s);
                     }
@@ -130,20 +138,26 @@ public class Workflow  {
      */
     private void initDepot() {
 
-        coordinationService.getInvestor(depotId, new CoordinationListener<DepotEntry>() {
+        coordinationService.getDepot(depotId, new CoordinationListener<DepotEntry>() {
             @Override
-            public void onResult(DepotEntry ide) {
-                if (ide == null) {
-                    logger.info("Got InvestorDepotEntry is null");
+            public void onResult(DepotEntry de) {
+                if (de == null) {
+                    logger.info("Got DepotEntry is null");
                     //new entry
-                    ide = new DepotEntry(depotId, budget, new HashMap<String, Integer>());
+                    de = new DepotEntry(depotId, budget, depotType, new HashMap<String, Integer>());
+                    //handle release request once if fond manager is new
+                    if (de.getDepotType().equals(DepotType.FOND_MANAGER))
+                        initReleaseRequest(de);
+
+
+                } else {
+                    logger.info("Got DepotEntry: " + de.getId() + "/" + de.getBudget());
+
+                    //increase budget if already exists and is a investor
+                    if (de.getDepotType().equals(DepotType.INVESTOR))
+                        de.setBudget(de.getBudget() + budget);
                 }
-                else {
-                    logger.info("Got InvestorDepotEntry: " + ide.getId() + "/" + ide.getBudget());
-                    //increase budget if already exists
-                    ide.setBudget(ide.getBudget()+budget);
-                }
-                coordinationService.setInvestor(ide);
+                coordinationService.setDepot(de);
             }
         });
     }
@@ -170,11 +184,11 @@ public class Workflow  {
      * Inits the shares.
      */
     private void initShares() {
-        if (currentInvestor == null)
+        if (currentDepot == null)
             return;
-        //get shares for investor
+        //get shares for depot
         ArrayList<String> shareIds = new ArrayList<String>();
-        shareIds.addAll(currentInvestor.getShareDepot().keySet());
+        shareIds.addAll(currentDepot.getShareDepot().keySet());
 
         coordinationService.getShares(shareIds, new CoordinationListener<ArrayList<ShareEntry>>() {
             @Override
@@ -186,6 +200,17 @@ public class Workflow  {
                 }
             }
         });
+    }
+
+    private void initReleaseRequest(DepotEntry de) {
+
+        ReleaseEntry releaseEntry = new ReleaseEntry();
+        releaseEntry.setCompanyID(de.getId());
+        releaseEntry.setNumShares(numShares);
+        releaseEntry.setPrice(budget/numShares);
+        releaseEntry.setShareType(ShareType.FOND);
+
+        coordinationService.makeRelease(releaseEntry);
     }
     
     /**

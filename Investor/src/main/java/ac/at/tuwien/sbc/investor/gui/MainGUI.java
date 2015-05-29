@@ -3,6 +3,7 @@ package ac.at.tuwien.sbc.investor.gui;
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
+import ac.at.tuwien.sbc.domain.enums.DepotType;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
 import ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver;
@@ -191,20 +192,22 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     }
 
     /* (non-Javadoc)
-     * @see ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver#onInvestorDepotEntryNotification(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
+     * @see ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver#onDepotEntryNotification(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void onInvestorDepotEntryNotification(DepotEntry ide) {
+    public void onDepotEntryNotification(DepotEntry de) {
 
         //set title and label
-        investorLabel.setText("Investor: " + ide.getId().toString() + " Budget: " + ide.getBudget().toString());
-        setTitle("Investor App - " + ide.getId().toString());
+        String depotType = de.getDepotType().equals(DepotType.FOND_MANAGER) ? "Fond Manager" : "Investor";
+
+        investorLabel.setText(depotType + ": " + de.getId().toString() + " Budget: " + de.getBudget().toString());
+        setTitle(depotType + " App - " + de.getId().toString());
 
         //update share table
         DefaultTableModel model = ((DefaultTableModel) shareTable.getModel());
-        for (String shareId : ide.getShareDepot().keySet()) {
+        for (String shareId : de.getShareDepot().keySet()) {
 
-            Integer numShares = ide.getShareDepot().get(shareId);
+            Integer numShares = de.getShareDepot().get(shareId);
             Integer rowIndex = getTableRowIndexByID(shareTable, 0, shareId);
 
             if (rowIndex == null) {

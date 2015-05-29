@@ -49,7 +49,7 @@ public class RabbitConfiguration {
         container.setMessageConverter(messageConverter);
         container.setQueues((Queue)applicationContext.getBean("investorEntryNotificationQueue"));
 
-        MessageListenerAdapter adapter = new MessageListenerAdapter(messageHandler, "onInvestorEntryNotification");
+        MessageListenerAdapter adapter = new MessageListenerAdapter(messageHandler, "onDepotEntryNotification");
         adapter.setMessageConverter(messageConverter);
         container.setMessageListener(adapter);
         return container;

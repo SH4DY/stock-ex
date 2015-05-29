@@ -68,16 +68,16 @@ public class RPCMessageHandler {
         List<SuperEntry> result = null;
         List<SuperEntry> notification = new ArrayList<SuperEntry>();
         switch (request.getMethod()) {
-            case GET_INVESTOR_DEPOT_ENTRY_BY_ID:
+            case GET_DEPOT_ENTRY_BY_ID:
                 result = doGetInvestorDepotEntry((String)request.getArgs()[0]);
                 break;
-            case TAKE_INVESTOR_DEPOT_ENTRY_BY_ID:
+            case TAKE_DEPOT_ENTRY_BY_ID:
                 result = doTakeInvestorDepotEntry((String)request.getArgs()[0]);
                 break;
-            case DELETE_INVESTOR_DEPOT_ENTRY_BY_ID:
+            case DELETE_DEPOT_ENTRY_BY_ID:
                 doDeleteInvestorDepotEntry((String)request.getArgs()[0]);
                 break;
-            case WRITE_INVESTOR_DEPOT_ENTRY:
+            case WRITE_DEPOT_ENTRY:
                 doWriteInvestorDepotEntry(request.getEntry());
                 if (!request.getIsRollBackAction()) {
                     notification.add(request.getEntry());
@@ -89,7 +89,7 @@ public class RPCMessageHandler {
                 break;
             case TAKE_ORDER_BY_ORDER_ID:
                 return doTakeOrderByOrderId((UUID)request.getArgs()[0]);
-            case GET_ORDER_ENTRIES_BY_INVESTOR_ID:
+            case GET_ORDER_ENTRIES_BY_DEPOT_ID:
                 result = doGetOrdersByInvestorId((String)request.getArgs()[0]);
                 break;
             case TAKE_ORDER_BY_PROPERTIES:

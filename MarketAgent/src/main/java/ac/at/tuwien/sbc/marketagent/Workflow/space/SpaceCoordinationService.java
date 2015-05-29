@@ -1,9 +1,11 @@
 package ac.at.tuwien.sbc.marketagent.workflow.space;
 
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
+import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService;
 import org.mozartspaces.capi3.*;
 import org.mozartspaces.core.*;
@@ -44,6 +46,10 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Autowired
     @Qualifier("orderContainer")
     ContainerReference orderContainer;
+
+    @Autowired
+    @Qualifier("depotContainer")
+    ContainerReference depotContainer;
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
@@ -100,5 +106,22 @@ public class SpaceCoordinationService implements ICoordinationService {
         } catch (MzsCoreException e) {logger.info("Try to get order by properties FAILED:" + e.getMessage());}
 
         return entries;
+    }
+
+    @Override
+    public DepotEntry getDepot(String depotId) {
+        ArrayList<DepotEntry> entries = null;
+        DepotEntry entry = null;
+        try {
+            entries = capi.read(depotContainer, KeyCoordinator.newSelector(depotId.toString()), MzsConstants.RequestTimeout.ZERO, null);
+        } catch (MzsCoreException e) {
+            logger.info("Depot not found for: " + depotId);
+        }
+
+        if (entries != null && !entries.isEmpty())
+            entry = entries.get(0);
+
+        return  entry;
+
     }
 }

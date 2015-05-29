@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.marketagent.workflow;
 
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
@@ -10,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -35,34 +37,82 @@ public class Workflow {
 
         ArrayList<ShareEntry> shares = coordinationService.getShares();
 
+        //create share HashMap
+        HashMap<String, ShareEntry> shareMap = new HashMap<String, ShareEntry>();
+
+        for (ShareEntry se : shares) {
+            shareMap.put(se.getShareID(), se);
+        }
+
         for (ShareEntry se : shares) {
 
-            ArrayList<OrderEntry> sellOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.SELL);
-            ArrayList<OrderEntry> buyOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.BUY);
-
-            if (sellOrders == null || buyOrders == null) continue;
-
-            Double numSellOrders = 0.0;
-            for (OrderEntry oe : sellOrders) numSellOrders += oe.getNumTotal()-oe.getNumCompleted();
-
-            Double numBuyOrders = 0.0;
-            for (OrderEntry oe : buyOrders) numBuyOrders += oe.getNumTotal()-oe.getNumCompleted();
-
-            Double currentPrice = se.getPrice();
-
-            Double newPrice = Math.max(1, currentPrice * (1.0 + ((numBuyOrders-numSellOrders)/(Math.max(1,numBuyOrders+numSellOrders)) * 1/16)));
-
-            if (counter % 3 == 0) {
-                newPrice = Math.max(1, newPrice * (0.97 + Math.random()*0.06));
+            switch (se.getShareType()) {
+                case SHARE:
+                    manipulateShare(se);
+                    break;
+                case FOND:
+                    manipulateFonds(se, shareMap);
             }
-
-            //logger.info("Manipulation:" + numBuyOrders + "/" + numSellOrders);
-            logger.info("Manipulation:" + se.getShareID() + "/" + currentPrice + "->" + newPrice);
-
-            se.setPrice(newPrice);
-            coordinationService.setShareEntry(se);
         }
 
         counter++;
+    }
+
+    /**
+     * Manipulate share
+     * @param se
+     */
+    public void manipulateShare(ShareEntry se) {
+        ArrayList<OrderEntry> sellOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.SELL);
+        ArrayList<OrderEntry> buyOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.BUY);
+
+        if (sellOrders == null || buyOrders == null) return;
+
+        Double numSellOrders = 0.0;
+        for (OrderEntry oe : sellOrders) numSellOrders += oe.getNumTotal()-oe.getNumCompleted();
+
+        Double numBuyOrders = 0.0;
+        for (OrderEntry oe : buyOrders) numBuyOrders += oe.getNumTotal()-oe.getNumCompleted();
+
+        Double currentPrice = se.getPrice();
+
+        Double newPrice = Math.max(1, currentPrice * (1.0 + ((numBuyOrders-numSellOrders)/(Math.max(1,numBuyOrders+numSellOrders)) * 1/16)));
+
+        if (counter % 3 == 0) {
+            newPrice = Math.max(1, newPrice * (0.97 + Math.random()*0.06));
+        }
+
+        //logger.info("Manipulation:" + numBuyOrders + "/" + numSellOrders);
+        logger.info("Share Manipulation:" + se.getShareID() + "/" + currentPrice + "->" + newPrice);
+
+        se.setPrice(newPrice);
+        coordinationService.setShareEntry(se);
+    }
+
+    /**
+     * Manipulate fond
+     * @param se
+     * @param shareMap
+     */
+    public void manipulateFonds(ShareEntry se, HashMap<String, ShareEntry> shareMap) {
+
+        DepotEntry de = coordinationService.getDepot(se.getShareID());
+
+        if (de == null) return;
+
+        //get shares for depot
+        ArrayList<String> shareIds = new ArrayList<String>();
+        shareIds.addAll(de.getShareDepot().keySet());
+
+        Double sumShareAsset = 0.0;
+        for (String shareId : shareIds) {
+            if (shareMap.containsKey(shareId)) {
+                Integer numShares = de.getShareDepot().get(shareId);
+                sumShareAsset += numShares * shareMap.get(shareId).getPrice();
+            }
+        }
+
+        se.setPrice((de.getBudget() + sumShareAsset) / se.getNumShares());
+        coordinationService.setShareEntry(se);
     }
 }
