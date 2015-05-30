@@ -6,6 +6,7 @@ import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import javax.annotation.PostConstruct;
 import java.util.List;
 

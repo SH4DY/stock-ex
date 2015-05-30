@@ -19,12 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import static org.mozartspaces.capi3.Matchmakers.*;
 
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mozartspaces.capi3.Matchmakers.and;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -336,12 +337,12 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#createTransaction(long)
      */
     @Override
-    public Object createTransaction(long timeout) {
+    public Object createTransaction(long timeout, String market) {
 
 
         TransactionReference tx = null;
         try {
-            tx = capi.createTransaction(timeout, new URI(CommonSpaceConfiguration.SPACE_URI));
+            tx = capi.createTransaction(timeout, new URI(CommonSpaceConfiguration.SPACE_URI_PREFIX + market));
         } catch (Exception e) {
             e.printStackTrace();
         }

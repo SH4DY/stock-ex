@@ -132,9 +132,10 @@ public interface ICoordinationService {
      * Create coordination transaction.
      *
      * @param timeout the timeout
+     * @param market
      * @return the object
      */
-    public Object createTransaction(long timeout);
+    public Object createTransaction(long timeout, String market);
 
     /**
      * Commit coordination transaction.

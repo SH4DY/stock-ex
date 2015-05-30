@@ -1,10 +1,6 @@
 package ac.at.tuwien.sbc.domain.messaging;
 
 import ac.at.tuwien.sbc.domain.entry.SuperEntry;
-import com.googlecode.cqengine.query.Query;
-import org.mozartspaces.core.MzsCoreException;
-
-import java.util.ArrayList;
 
 // TODO: Auto-generated Javadoc
 /**

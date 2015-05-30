@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.investor.gui;
 
+import ac.at.tuwien.sbc.domain.configuration.MarketArgsConfiguration;
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
@@ -19,6 +20,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 // TODO: Auto-generated Javadoc
@@ -59,9 +62,19 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
 
     private JCheckBox prioritizedCheckBox;
 
+    private JTextArea depotInfosTextArea;
+
+    private JComboBox marketComboBox;
+
+
+    private HashMap<String, String> depotInfos = new HashMap<>();
+
     /** The workflow. */
     @Autowired
     Workflow workflow;
+
+    @Autowired
+    private MarketArgsConfiguration marketArgs;
 
     /**
      * The Constant logger.
@@ -90,7 +103,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
      * Inits the frame.
      */
     private void initFrame() {
-        setSize(650, 600);
+        setSize(1000, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
         setVisible(true);
@@ -151,6 +164,9 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         typeComboBox.addItem(OrderType.BUY.toString());
         typeComboBox.addItem(OrderType.SELL.toString());
 
+        for (String market : (ArrayList<String>) marketArgs.getMarkets())
+            marketComboBox.addItem(market);
+
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -168,7 +184,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
                             null, null,
                             prioritizedCheckBox.isSelected());
 
-                    workflow.addOrder(oe);
+                    workflow.addOrder(oe, marketComboBox.getSelectedItem().toString());
                 }
             }
         });
@@ -195,13 +211,22 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
      * @see ac.at.tuwien.sbc.investor.workflow.IWorkFlowObserver#onDepotEntryNotification(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void onDepotEntryNotification(DepotEntry de) {
+    public void onDepotEntryNotification(DepotEntry de, String market) {
 
         //set title and label
         String depotType = de.getDepotType().equals(DepotType.FOND_MANAGER) ? "Fond Manager" : "Investor";
+        setTitle(depotType + " App - " + de.getId().toString() );
 
-        investorLabel.setText(depotType + ": " + de.getId().toString() + " Budget: " + de.getBudget().toString());
-        setTitle(depotType + " App - " + de.getId().toString());
+        //update depot info labels
+        investorLabel.setText(depotType + ": " + de.getId().toString());
+
+        depotInfos.put(market, "Market: " + market + " Budget: " + de.getBudget().toString() + "\n");
+        String info = "";
+        for (String subInfo : depotInfos.values()) {
+            info += subInfo;
+        }
+        depotInfosTextArea.setText(info);
+
 
         //update share table
         DefaultTableModel model = ((DefaultTableModel) shareTable.getModel());

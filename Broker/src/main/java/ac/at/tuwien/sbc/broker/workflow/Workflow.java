@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.broker.workflow;
 
+import ac.at.tuwien.sbc.domain.configuration.MarketArgsConfiguration;
 import ac.at.tuwien.sbc.domain.entry.*;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
@@ -40,6 +41,9 @@ public class Workflow {
 
     /** The Constant brokerProvision. */
     public static final Double fondFee = 0.02;
+
+    @Autowired
+    private MarketArgsConfiguration marketArgs;
 
 
     /**
@@ -119,7 +123,7 @@ public class Workflow {
         Boolean tryAgain = true;
         while (tryAgain) {
 
-            Object sharedTransaction = coordinationService.createTransaction(1000L);
+            Object sharedTransaction = coordinationService.createTransaction(1000L, (String) marketArgs.getMarkets().get(0));
             ReleaseEntry releaseEntry = coordinationService.getReleaseEntry(sharedTransaction);
 
             if (releaseEntry != null) {
@@ -175,7 +179,7 @@ public class Workflow {
     private synchronized void handleOrderRequests(String shareId) {
 
         //create shared transaction
-        Object sharedOrderRequestTransaction = coordinationService.createTransaction(1000L);
+        Object sharedOrderRequestTransaction = coordinationService.createTransaction(1000L, (String) marketArgs.getMarkets().get(0));
 
         //get share entry
         ShareEntry shareEntry = coordinationService.getShareEntry(shareId, sharedOrderRequestTransaction);
@@ -381,7 +385,7 @@ public class Workflow {
         coordinationService.commitTransaction(sharedTransaction);
         sharedTransaction = null;
         //update orders
-        Object addOrdersTransaction = coordinationService.createTransaction(1000L);
+        Object addOrdersTransaction = coordinationService.createTransaction(1000L, (String) marketArgs.getMarkets().get(0));
         coordinationService.addOrder(sellOrder, addOrdersTransaction, false);
         coordinationService.addOrder(buyOrder, addOrdersTransaction, false);
         coordinationService.commitTransaction(addOrdersTransaction);

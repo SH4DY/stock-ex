@@ -26,10 +26,10 @@ public class SpaceReleaseService implements ac.at.tuwien.sbc.company.workflow.IR
     @Autowired
     Capi capi;
 
-    /** The cref. */
+    /** The releaseContainer. */
     @Autowired
     @Qualifier("releaseContainer")
-    ContainerReference cref;
+    ContainerReference releaseContainer;
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceReleaseService.class);
@@ -41,7 +41,7 @@ public class SpaceReleaseService implements ac.at.tuwien.sbc.company.workflow.IR
     public void makeRelease(ReleaseEntry rls) {
         Entry entry = new Entry(rls);
         try {
-            capi.write(cref, MzsConstants.RequestTimeout.TRY_ONCE,null,entry);
+            capi.write(releaseContainer, MzsConstants.RequestTimeout.TRY_ONCE,null,entry);
         } catch (MzsCoreException e) {
             logger.error("Exception occurred while trying to write ReleaseEntry to container");
         }

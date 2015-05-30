@@ -17,71 +17,75 @@ public interface ICoordinationService {
     /**
      * Gets the investor.
      *
-     * @param depotId the investor id
      * @param cListener the c listener
-     * @return the investor
+     * @param market
+     *@param depotId the investor id  @return the investor
      */
-    public void getDepot(String depotId, CoordinationListener cListener);
+    public void getDepot(CoordinationListener cListener, String market, String depotId);
 
     /**
      * Gets the shares.
      *
      * @param shareIds the share ids
-     * @param cListener the c listener
-     * @return the shares
+     * @param market
+     *@param cListener the c listener  @return the shares
      */
-    public void getShares(ArrayList<String> shareIds, CoordinationListener cListener);
+    public void getShares(ArrayList<String> shareIds, String market, CoordinationListener cListener);
 
     /**
      * Register investor notification.
      *
      * @param cListener the c listener
+     * @param market
      */
-    public void registerDepotNotification(CoordinationListener cListener);
+    public void registerDepotNotification(CoordinationListener cListener, String market);
 
     /**
      * Register order notification.
      *
      * @param cListener the c listener
+     * @param market
      */
-    public void registerOrderNotification(CoordinationListener cListener);
+    public void registerOrderNotification(CoordinationListener cListener, String market);
 
     /**
      * Register share notification.
      *
      * @param cListener the c listener
+     * @param market
      */
-    public void registerShareNotification(CoordinationListener cListener);
+    public void registerShareNotification(CoordinationListener cListener, String market);
 
     /**
      * Sets the investor.
-     *
-     * @param ide the new investor
+     *  @param de the new investor
+     * @param market
      */
-    public void setDepot(DepotEntry ide);
+    public void setDepot(DepotEntry de, String market);
 
     /**
      * Adds the order.
      *
      * @param oe the oe
+     * @param market
      */
-    public void addOrder(OrderEntry oe);
+    public void addOrder(OrderEntry oe, String market);
 
     /**
      * Gets the orders.
-     *
-     * @param depotId the investor id
-     * @param cListener the c listener
-     * @return the orders
+     *  @param depotId the investor id
+     * @param market
+     * @param cListener the c listener  @return the orders
      */
-    public void getOrders(String depotId, CoordinationListener cListener);
+    public void getOrders(String depotId, String market, CoordinationListener cListener);
 
     /**
      * Delete order.
      *
      * @param orderID the order id
+     * @param market
      */
-    public void deleteOrder(UUID orderID);
+    public void deleteOrder(UUID orderID, String market);
 
-    public void makeRelease(ReleaseEntry re);
+    public void makeRelease(ReleaseEntry re, String market);
 }

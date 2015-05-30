@@ -1,12 +1,10 @@
 package ac.at.tuwien.sbc.market;
 
-import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
-import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -14,7 +12,7 @@ import org.springframework.context.annotation.Import;
  */
 
 @SpringBootApplication
-@Import({CommonRabbitConfiguration.class, CommonSpaceConfiguration.class})
+@ComponentScan({"ac.at.tuwien.sbc.domain.configuration", "ac.at.tuwien.sbc.market"})
 public class MarketApp {
 
     /** The Constant logger. */

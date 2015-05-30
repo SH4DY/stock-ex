@@ -1,5 +1,7 @@
 package ac.at.tuwien.sbc.company.workflow;
 
+import ac.at.tuwien.sbc.company.configuration.MarketArgsMapper;
+import ac.at.tuwien.sbc.domain.configuration.MarketArgsConfiguration;
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 import ac.at.tuwien.sbc.domain.enums.ShareType;
 import org.slf4j.Logger;
@@ -22,17 +24,14 @@ public class Workflow {
     @Value("${id}")
     private String companyID;
 
-    /** The num shares. */
-    @Value("${numShares}")
-    private Integer numShares;
-
-    /** The init price. */
-    @Value("${initPrice}")
-    private Double initPrice;
+    @Autowired
+    private MarketArgsConfiguration<MarketArgsMapper.MarketArgs> marketArgs;
 
     /** The rls service. */
     @Autowired
     IReleaseService rlsService;
+
+
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
@@ -47,6 +46,8 @@ public class Workflow {
     @PostConstruct
     public void onPostConstruct() {
 
+        Integer numShares = marketArgs.getArgsByMarket(marketArgs.getMarkets().get(0)).getNumShares();
+        Double initPrice  = marketArgs.getArgsByMarket(marketArgs.getMarkets().get(0)).getInitPrice();
         logger.info("Company " + companyID + " entered , wants to release "
                 + numShares + " with initial price of " +
                 initPrice + " per share");

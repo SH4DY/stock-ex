@@ -1,8 +1,6 @@
 package ac.at.tuwien.sbc.domain.entry;
 
 import ac.at.tuwien.sbc.domain.enums.ShareType;
-import com.googlecode.cqengine.attribute.Attribute;
-import com.googlecode.cqengine.attribute.SimpleAttribute;
 
 import java.io.Serializable;
 

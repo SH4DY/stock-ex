@@ -1,19 +1,17 @@
 package ac.at.tuwien.sbc.company;
 
-import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
-import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Created by dietl_ma on 25/03/15.
  * Company application
  */
 @SpringBootApplication
-@Import({CommonRabbitConfiguration.class, CommonSpaceConfiguration.class})
+@ComponentScan({"ac.at.tuwien.sbc.domain.configuration", "ac.at.tuwien.sbc.company"})
 public class CompanyApp {
 
     /** The Constant logger. */

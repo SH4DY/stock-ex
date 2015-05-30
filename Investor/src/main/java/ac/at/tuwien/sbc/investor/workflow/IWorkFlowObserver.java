@@ -15,9 +15,10 @@ public interface IWorkFlowObserver {
      * which was previously requested using an asynchronous
      * interface becomes available.
      *
-     * @param ide the ide
+     * @param de the ide
+     * @param market
      */
-    public void onDepotEntryNotification(DepotEntry ide);
+    public void onDepotEntryNotification(DepotEntry de, String market);
     
     /**
      * This method is called when information about an IWorkFlow

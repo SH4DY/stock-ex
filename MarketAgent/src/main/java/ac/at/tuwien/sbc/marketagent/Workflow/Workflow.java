@@ -40,6 +40,8 @@ public class Workflow {
         //create share HashMap
         HashMap<String, ShareEntry> shareMap = new HashMap<String, ShareEntry>();
 
+        if (shares.isEmpty()) return;
+
         for (ShareEntry se : shares) {
             shareMap.put(se.getShareID(), se);
         }
@@ -54,7 +56,6 @@ public class Workflow {
                     manipulateFonds(se, shareMap);
             }
         }
-
         counter++;
     }
 
@@ -104,6 +105,7 @@ public class Workflow {
         ArrayList<String> shareIds = new ArrayList<String>();
         shareIds.addAll(de.getShareDepot().keySet());
 
+        //calculate sum of share assets
         Double sumShareAsset = 0.0;
         for (String shareId : shareIds) {
             if (shareMap.containsKey(shareId)) {

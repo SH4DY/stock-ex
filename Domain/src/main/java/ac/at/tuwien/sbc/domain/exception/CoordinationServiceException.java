@@ -1,7 +1,5 @@
 package ac.at.tuwien.sbc.domain.exception;
 
-import ac.at.tuwien.sbc.domain.event.CoordinationListener;
-
 // TODO: Auto-generated Javadoc
 /**
  * Created by dietl_ma on 29/03/15.

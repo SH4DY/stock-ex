@@ -3,7 +3,9 @@ package ac.at.tuwien.sbc.market.gui.models;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 // TODO: Auto-generated Javadoc
 /**

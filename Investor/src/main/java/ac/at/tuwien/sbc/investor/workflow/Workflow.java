@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.investor.workflow;
 
+import ac.at.tuwien.sbc.domain.configuration.MarketArgsConfiguration;
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
@@ -8,6 +9,7 @@ import ac.at.tuwien.sbc.domain.enums.DepotType;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.ShareType;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
+import ac.at.tuwien.sbc.investor.configuration.MarketArgsMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,15 +32,10 @@ public class Workflow  {
     @Value("${id}")
     private String depotId;
 
-    /** The budget. */
-    @Value("${budget}")
-    private Double budget;
-
     @Value("${type:INVESTOR}")
     private DepotType depotType;
 
-    @Value("${numShares:0}")
-    private Integer numShares;
+
     /** The coordination service. */
     @Autowired
     private ICoordinationService coordinationService;
@@ -47,8 +44,11 @@ public class Workflow  {
     @Autowired
     private IWorkFlowObserver observer;
 
+    @Autowired
+    private MarketArgsConfiguration<MarketArgsMapper.MarketArgs> marketArgs;
+
     /** The current investor. */
-    private DepotEntry currentDepot;
+    private HashMap<String, DepotEntry> currentDepot;
 
 
     /** The Constant logger. */
@@ -60,6 +60,7 @@ public class Workflow  {
     @PostConstruct
     private void onPostConstruct() {
 
+        currentDepot = new HashMap<>();
         //init notifications
         initDepotNotification();
         initOrderNotification();
@@ -70,67 +71,81 @@ public class Workflow  {
         initOrders();
         //init shares
         initShares();
+
     }
+
 
 
     /**
      * Inits the investor notification.
      */
     private void initDepotNotification() {
-        coordinationService.registerDepotNotification(new CoordinationListener<ArrayList<DepotEntry>>() {
-            @Override
-            public void onResult(ArrayList<DepotEntry> ideList) {
-                for (DepotEntry ide : ideList) {
-                    if (ide.getId().equals(depotId)) {
+        for (final String market : marketArgs.getMarkets()) {
+            coordinationService.registerDepotNotification(new CoordinationListener<ArrayList<DepotEntry>>() {
+                @Override
+                public void onResult(ArrayList<DepotEntry> ideList) {
+                    for (DepotEntry de : ideList) {
+                        if (de.getId().equals(depotId)) {
 
-                        currentDepot = ide;
-                        if (observer != null)
-                            observer.onDepotEntryNotification(ide);
+                            currentDepot.put(market, de);
+                            if (observer != null)
+                                observer.onDepotEntryNotification(de, market);
 
-                        //re-init shares
-                        initShares();
+                            //re-init shares
+                            initShares();
+                        }
                     }
                 }
-            }
-        });
+            }, market);
+        }
     }
 
     /**
      * Inits the order notification.
      */
     private void initOrderNotification() {
-        coordinationService.registerOrderNotification(new CoordinationListener<ArrayList<OrderEntry>>() {
-            @Override
-            public void onResult(ArrayList<OrderEntry> oeList) {
-                for (OrderEntry oe : oeList) {
-                    if (oe.getInvestorID() != null && oe.getInvestorID().equals(depotId)) {
-                        if (observer != null)
-                            observer.onOrderEntryNotification(oe);
+        for (String market : marketArgs.getMarkets()) {
+            coordinationService.registerOrderNotification(new CoordinationListener<ArrayList<OrderEntry>>() {
+                @Override
+                public void onResult(ArrayList<OrderEntry> oeList) {
+                    for (OrderEntry oe : oeList) {
+                        if (oe.getInvestorID() != null && oe.getInvestorID().equals(depotId)) {
+                            if (observer != null)
+                                observer.onOrderEntryNotification(oe);
+                        }
                     }
                 }
-            }
-        });
+            }, market);
+        }
     }
 
     /**
      * Inits the share notification.
      */
-    public void initShareNotification() {
-        coordinationService.registerShareNotification(new CoordinationListener<ArrayList<ShareEntry>>() {
-            @Override
-            public void onResult(ArrayList<ShareEntry> sList) {
+    private void initShareNotification() {
+        for (String market : marketArgs.getMarkets()) {
+            coordinationService.registerShareNotification(new CoordinationListener<ArrayList<ShareEntry>>() {
+                @Override
+                public void onResult(ArrayList<ShareEntry> sList) {
 
-                if (currentDepot == null)
-                    return;
 
-                for (ShareEntry s : sList) {
-                    if (currentDepot.getShareDepot().containsKey(s.getShareID())) {
-                        if (observer != null)
-                            observer.onShareEntryNotification(s);
+                    if (currentDepot.isEmpty())
+                        return;
+
+                    HashMap<String, Integer> shares = new HashMap<String, Integer>();
+                    for (String market : marketArgs.getMarkets()) {
+                        shares.putAll(currentDepot.get(market).getShareDepot());
+                    }
+
+                    for (ShareEntry s : sList) {
+                        if (shares.containsKey(s.getShareID())) {
+                            if (observer != null)
+                                observer.onShareEntryNotification(s);
+                        }
                     }
                 }
-            }
-        });
+            }, market);
+        }
     }
     
     /**
@@ -138,102 +153,128 @@ public class Workflow  {
      */
     private void initDepot() {
 
-        coordinationService.getDepot(depotId, new CoordinationListener<DepotEntry>() {
-            @Override
-            public void onResult(DepotEntry de) {
-                if (de == null) {
-                    logger.info("Got DepotEntry is null");
-                    //new entry
-                    de = new DepotEntry(depotId, budget, depotType, new HashMap<String, Integer>());
-                    //handle release request once if fond manager is new
-                    if (de.getDepotType().equals(DepotType.FOND_MANAGER))
-                        initReleaseRequest(de);
+        for (final String market : marketArgs.getMarkets()) {
 
 
-                } else {
-                    logger.info("Got DepotEntry: " + de.getId() + "/" + de.getBudget());
 
-                    //increase budget if already exists and is a investor
-                    if (de.getDepotType().equals(DepotType.INVESTOR))
-                        de.setBudget(de.getBudget() + budget);
+            coordinationService.getDepot(new CoordinationListener<DepotEntry>() {
+                @Override
+                public void onResult(DepotEntry de) {
+
+                    if (de == null) {
+                        logger.info("Got DepotEntry is null");
+                        //new entry
+                        de = new DepotEntry(depotId, marketArgs.getArgsByMarket(market).getBudget(), depotType, new HashMap<String, Integer>());
+                        //handle release request once if fond manager is new
+                        if (de.getDepotType().equals(DepotType.FOND_MANAGER))
+                            initReleaseRequest(de);
+
+
+                    } else {
+                        logger.info("Got DepotEntry: " + de.getId() + "/" + de.getBudget());
+
+                        //increase budget if already exists and is a investor
+                        if (de.getDepotType().equals(DepotType.INVESTOR))
+                            de.setBudget(de.getBudget() + marketArgs.getArgsByMarket(market).getBudget());
+                    }
+                    coordinationService.setDepot(de, market);
+
                 }
-                coordinationService.setDepot(de);
-            }
-        });
+            }, market, depotId);
+        }
     }
 
     /**
      * Inits the orders.
      */
     private void initOrders() {
-        coordinationService.getOrders(depotId, new CoordinationListener<ArrayList<OrderEntry>>() {
-            @Override
-            public void onResult(ArrayList<OrderEntry> entries) {
+        for (String market : marketArgs.getMarkets()) {
+            coordinationService.getOrders(depotId, market , new CoordinationListener<ArrayList<OrderEntry>>() {
+                @Override
+                public void onResult(ArrayList<OrderEntry> entries) {
 
-                if (entries != null) {
-                    for (OrderEntry oe : entries) {
-                        if (observer != null)
-                            observer.onOrderEntryNotification(oe);
+                    if (entries != null) {
+                        for (OrderEntry oe : entries) {
+                            if (observer != null)
+                                observer.onOrderEntryNotification(oe);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
      * Inits the shares.
      */
     private void initShares() {
-        if (currentDepot == null)
+        if (currentDepot.isEmpty())
             return;
+
         //get shares for depot
-        ArrayList<String> shareIds = new ArrayList<String>();
-        shareIds.addAll(currentDepot.getShareDepot().keySet());
 
-        coordinationService.getShares(shareIds, new CoordinationListener<ArrayList<ShareEntry>>() {
-            @Override
-            public void onResult(ArrayList<ShareEntry> seList) {
-                for (ShareEntry s : seList) {
-                    if (observer != null)
-                        observer.onShareEntryNotification(s);
+        for (String market : marketArgs.getMarkets()) {
+            ArrayList<String> shareIds = new ArrayList<String>();
 
+            if (!currentDepot.containsKey(market))
+                continue;
+
+            shareIds.addAll(currentDepot.get(market).getShareDepot().keySet());
+
+
+
+            coordinationService.getShares(shareIds, market , new CoordinationListener<ArrayList<ShareEntry>>() {
+                @Override
+                public void onResult(ArrayList<ShareEntry> seList) {
+                    for (ShareEntry s : seList) {
+                        if (observer != null)
+                            observer.onShareEntryNotification(s);
+
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void initReleaseRequest(DepotEntry de) {
 
+        Double initPrice = marketArgs.getArgsByMarket(marketArgs.getMarkets().get(0)).getBudget() /
+                           marketArgs.getArgsByMarket(marketArgs.getMarkets().get(0)).getNumShares();
         ReleaseEntry releaseEntry = new ReleaseEntry();
         releaseEntry.setCompanyID(de.getId());
-        releaseEntry.setNumShares(numShares);
-        releaseEntry.setPrice(budget/numShares);
+        releaseEntry.setNumShares(marketArgs.getArgsByMarket(marketArgs.getMarkets().get(0)).getNumShares());
+        releaseEntry.setPrice(initPrice);
         releaseEntry.setShareType(ShareType.FOND);
 
-        coordinationService.makeRelease(releaseEntry);
+        //only make releases on the first given market
+        coordinationService.makeRelease(releaseEntry, marketArgs.getMarkets().get(0));
     }
     
     /**
      * Adds the order.
      *
      * @param oe the oe
+     * @param market
      */
-    public void addOrder(OrderEntry oe) {
+    public void addOrder(OrderEntry oe, String market) {
 
         oe.setOrderID(UUID.randomUUID());
         oe.setInvestorID(depotId);
         oe.setStatus(OrderStatus.OPEN);
         oe.setNumCompleted(0);
 
-        coordinationService.addOrder(oe);
+        coordinationService.addOrder(oe, market);
     }
 
     /**
      * Delete order.
+     *  @param orderID the order depotId
      *
-     * @param orderID the order depotId
      */
     public void deleteOrder(UUID orderID) {
-        coordinationService.deleteOrder(orderID);
+
+        for (String market : marketArgs.getMarkets()) {
+            coordinationService.deleteOrder(orderID, market);
+        }
     }
 }

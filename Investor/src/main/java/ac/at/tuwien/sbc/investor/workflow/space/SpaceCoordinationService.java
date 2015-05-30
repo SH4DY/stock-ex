@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PreDestroy;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,22 +46,22 @@ public class SpaceCoordinationService implements ICoordinationService {
 
     /** The investor depot container. */
     @Autowired
-    @Qualifier("depotContainer")
-    ContainerReference depotContainer;
+    @Qualifier("depotContainerMap")
+    HashMap<String, ContainerReference> depotContainer;
 
     /** The order container. */
     @Autowired
-    @Qualifier("orderContainer")
-    ContainerReference orderContainer;
+    @Qualifier("orderContainerMap")
+    HashMap<String, ContainerReference> orderContainer;
 
     /** The share container. */
     @Autowired
-    @Qualifier("shareContainer")
-    ContainerReference shareContainer;
+    @Qualifier("shareContainerMap")
+    HashMap<String, ContainerReference> shareContainer;
 
     @Autowired
-    @Qualifier("releaseContainer")
-    ContainerReference releaseContainer;
+    @Qualifier("releaseContainerMap")
+    HashMap<String, ContainerReference> releaseContainer;
 
     /** The notifications. */
     private ArrayList<Notification> notifications = new ArrayList<Notification>();
@@ -72,12 +73,12 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getDepot(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getDepot(String depotId, CoordinationListener cListener) {
+    public void getDepot(CoordinationListener cListener, String market, String depotId) {
         logger.info("Try to read investor with arguments: " + String.valueOf(depotId));
 
         ArrayList<DepotEntry> entries = null;
         try {
-            entries = capi.read(depotContainer, KeyCoordinator.newSelector(depotId.toString()), MzsConstants.RequestTimeout.ZERO, null);
+            entries = capi.read(depotContainer.get(market), KeyCoordinator.newSelector(depotId.toString()), MzsConstants.RequestTimeout.ZERO, null);
         } catch (MzsCoreException e) {
             logger.info("Investor depot not found for: " + depotId);
         }
@@ -95,12 +96,12 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getShares(java.util.ArrayList, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getShares(ArrayList<String> shareIds, CoordinationListener cListener) {
+    public void getShares(ArrayList<String> shareIds, String market, CoordinationListener cListener) {
 
         ArrayList<ShareEntry> entries = new ArrayList<ShareEntry>();
         for (String shareId : shareIds) {
             try {
-                ArrayList<ShareEntry> currentEntries = capi.read(shareContainer, KeyCoordinator.newSelector(shareId), MzsConstants.RequestTimeout.ZERO, null);
+                ArrayList<ShareEntry> currentEntries = capi.read(shareContainer.get(market), KeyCoordinator.newSelector(shareId), MzsConstants.RequestTimeout.ZERO, null);
 
                 if (currentEntries != null && !currentEntries.isEmpty())
                     entries.add(currentEntries.get(0));
@@ -115,12 +116,12 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerDepotNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void registerDepotNotification(CoordinationListener cListener) {
+    public void registerDepotNotification(CoordinationListener cListener, String market) {
 
         try {
             NotificationManager notificationManager = new NotificationManager(core);
 
-            Notification notification = notificationManager.createNotification(depotContainer,
+            Notification notification = notificationManager.createNotification(depotContainer.get(market),
                     new DepotNotificationListener(cListener),
                     Operation.WRITE);
 
@@ -137,11 +138,11 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerOrderNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void registerOrderNotification(CoordinationListener clistener) {
+    public void registerOrderNotification(CoordinationListener clistener, String market) {
         try {
             NotificationManager notificationManager = new NotificationManager(core);
 
-            Notification notification = notificationManager.createNotification(orderContainer,
+            Notification notification = notificationManager.createNotification(orderContainer.get(market),
                     new OrderNotificationListener(clistener),
                     Operation.WRITE);
 
@@ -158,11 +159,11 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerShareNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void registerShareNotification(CoordinationListener clistener) {
+    public void registerShareNotification(CoordinationListener clistener, String market) {
         try {
             NotificationManager notificationManager = new NotificationManager(core);
 
-            Notification notification = notificationManager.createNotification(shareContainer,
+            Notification notification = notificationManager.createNotification(shareContainer.get(market),
                     new ShareNotificationListener(clistener),
                     Operation.WRITE);
 
@@ -179,20 +180,20 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setDepot(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void setDepot(DepotEntry ide) {
+    public void setDepot(DepotEntry de, String market) {
 
-        logger.info("Try to write InvestorDepotEntry: " + ide.getBudget().toString());
+        logger.info("Try to write InvestorDepotEntry: " + de.getBudget().toString());
         TransactionReference tx = null;
         try {
-            tx = capi.createTransaction(1000, depotContainer.getSpace());
+            tx = capi.createTransaction(1000, depotContainer.get(market).getSpace());
 
             try {
-                capi.take(depotContainer, KeyCoordinator.newSelector(ide.getId().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
+                capi.take(depotContainer.get(market), KeyCoordinator.newSelector(de.getId().toString()), MzsConstants.RequestTimeout.TRY_ONCE, tx);
             }
             catch (MzsCoreException e) {}
 
-            Entry entryToUpdate = new Entry(ide, KeyCoordinator.newCoordinationData(ide.getId().toString()));
-            capi.write(depotContainer, MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
+            Entry entryToUpdate = new Entry(de, KeyCoordinator.newCoordinationData(de.getId().toString()));
+            capi.write(depotContainer.get(market), MzsConstants.RequestTimeout.ZERO, tx, entryToUpdate);
 
             capi.commitTransaction(tx);
         }
@@ -211,9 +212,9 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#addOrder(ac.at.tuwien.sbc.domain.entry.OrderEntry)
      */
     @Override
-    public void addOrder(OrderEntry oe) {
+    public void addOrder(OrderEntry oe, String market) {
         try {
-            capi.write(new Entry(oe), orderContainer, MzsConstants.RequestTimeout.ZERO, null);
+            capi.write(new Entry(oe), orderContainer.get(market), MzsConstants.RequestTimeout.ZERO, null);
         } catch (MzsCoreException e) {
             logger.info("Something went wrong writing an order");
         }
@@ -223,13 +224,13 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getOrders(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getOrders(String depotId, CoordinationListener cListener) {
+    public void getOrders(String depotId, String market, CoordinationListener cListener) {
 
         logger.info("Try to read orders by template");
         OrderEntry template = new OrderEntry(null, depotId, null, null, null, null, null, null, null);
         ArrayList<OrderEntry> entries = null;
         try {
-            entries = capi.read(orderContainer, LindaCoordinator.newSelector(template, MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.DEFAULT, null);
+            entries = capi.read(orderContainer.get(market), LindaCoordinator.newSelector(template, MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.DEFAULT, null);
         } catch (MzsCoreException e) {
         }
 
@@ -245,29 +246,37 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#deleteOrder(java.util.UUID)
      */
     @Override
-    public void deleteOrder(UUID orderID) {
+    public void deleteOrder(UUID orderID, String market) {
 
         OrderEntry template = new OrderEntry(orderID, null, null, null, null, null, null, null, null);
         try {
             logger.info("Try to delete order:" + orderID.toString());
-            ArrayList<OrderEntry> orderEntries = capi.take(orderContainer, LindaCoordinator.newSelector(template, 1), MzsConstants.RequestTimeout.TRY_ONCE, null);
+            ArrayList<OrderEntry> orderEntries = capi.take(orderContainer.get(market), LindaCoordinator.newSelector(template, 1), MzsConstants.RequestTimeout.TRY_ONCE, null);
 
             if (orderEntries != null && !orderEntries.isEmpty()) {
                 orderEntries.get(0).setStatus(OrderStatus.DELETED);
-                capi.write(new Entry(orderEntries.get(0)), orderContainer, MzsConstants.RequestTimeout.ZERO, null);
+                capi.write(new Entry(orderEntries.get(0)), orderContainer.get(market), MzsConstants.RequestTimeout.ZERO, null);
             }
         }
         catch (MzsCoreException e) {logger.info("Not able to delete order:" + e.getMessage());}
     }
 
     @Override
-    public void makeRelease(ReleaseEntry re) {
+    public void makeRelease(ReleaseEntry re, String market) {
         Entry entry = new Entry(re);
         try {
-            capi.write(releaseContainer, MzsConstants.RequestTimeout.TRY_ONCE,null,entry);
+            capi.write(releaseContainer.get(market), MzsConstants.RequestTimeout.TRY_ONCE,null,entry);
         } catch (MzsCoreException e) {
             logger.error("Exception occurred while trying to write ReleaseEntry to container");
         }
+    }
+
+    private ArrayList<ContainerReference> getContainersAsList(HashMap<String, ContainerReference> map) {
+        ArrayList<ContainerReference> list = new ArrayList<>();
+        for (ContainerReference market : map.values()) {
+           list.add(market);
+        }
+        return list;
     }
 
     /**

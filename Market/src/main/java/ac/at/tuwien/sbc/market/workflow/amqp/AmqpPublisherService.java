@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.market.workflow.amqp;
 
+import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
@@ -26,7 +27,7 @@ import java.util.List;
 public class AmqpPublisherService implements IMarketPublisherService {
 
     /** The routing key. */
-    private final String routingKey = "marketRPC";
+    private final String routingKey = CommonRabbitConfiguration.MARKET_RPC;
 
     /** The template. */
     @Autowired

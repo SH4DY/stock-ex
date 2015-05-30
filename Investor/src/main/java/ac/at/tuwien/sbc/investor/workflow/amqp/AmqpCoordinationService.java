@@ -1,6 +1,10 @@
 package ac.at.tuwien.sbc.investor.workflow.amqp;
 
-import ac.at.tuwien.sbc.domain.entry.*;
+import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
+import ac.at.tuwien.sbc.domain.entry.DepotEntry;
+import ac.at.tuwien.sbc.domain.entry.OrderEntry;
+import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
+import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.event.CoordinationListener;
 import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
@@ -44,11 +48,11 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getDepot(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getDepot(String depotId, CoordinationListener cListener) {
+    public void getDepot(CoordinationListener cListener, String market, String depotId) {
 
         DepotEntry entry = null;
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_DEPOT_ENTRY_BY_ID, new Object[]{depotId});
-        ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)template.convertSendAndReceive("marketRPC", request);
+        ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
         if (result != null && !result.isEmpty())
             entry = (DepotEntry)result.toArray()[0];
 
@@ -59,14 +63,14 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getShares(java.util.ArrayList, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getShares(ArrayList<String> shareIds, CoordinationListener cListener) {
+    public void getShares(ArrayList<String> shareIds, String market, CoordinationListener cListener) {
 
         RPCMessageRequest request = null;
         ArrayList<ShareEntry> entries = new ArrayList<ShareEntry>();
         for (String shareId : shareIds) {
 
             request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRY_BY_ID, new Object[]{shareId});
-            ArrayList<ShareEntry> currentEntries = (ArrayList<ShareEntry>)template.convertSendAndReceive("marketRPC", request);
+            ArrayList<ShareEntry> currentEntries = (ArrayList<ShareEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
             if (currentEntries != null && !currentEntries.isEmpty())
                 entries.add(currentEntries.get(0));
 
@@ -78,7 +82,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerDepotNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void registerDepotNotification(CoordinationListener cListener) {
+    public void registerDepotNotification(CoordinationListener cListener, String market) {
         depotEntryNotificationListener = cListener;
     }
 
@@ -86,7 +90,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerOrderNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void registerOrderNotification(CoordinationListener cListener) {
+    public void registerOrderNotification(CoordinationListener cListener, String market) {
         orderEntryNotificationListener = cListener;
     }
 
@@ -94,7 +98,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#registerShareNotification(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void registerShareNotification(CoordinationListener cListener) {
+    public void registerShareNotification(CoordinationListener cListener, String market) {
        shareEntryNotificationListener = cListener;
     }
 
@@ -102,35 +106,35 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#setDepot(ac.at.tuwien.sbc.domain.entry.InvestorDepotEntry)
      */
     @Override
-    public void setDepot(DepotEntry ide) {
+    public void setDepot(DepotEntry de, String market) {
 
         //delete investor
-        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_DEPOT_ENTRY_BY_ID, new Object[]{ide.getId()});
-        template.convertAndSend("marketRPC", request);
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_DEPOT_ENTRY_BY_ID, new Object[]{de.getId()});
+        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
 
         //write investor
-        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_DEPOT_ENTRY, null, ide);
-        template.convertAndSend("marketRPC", request);
+        request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_DEPOT_ENTRY, null, de);
+        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#addOrder(ac.at.tuwien.sbc.domain.entry.OrderEntry)
      */
     @Override
-    public void addOrder(OrderEntry oe) {
+    public void addOrder(OrderEntry oe, String market) {
         //write order
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, oe);
-        template.convertAndSend("marketRPC", request);
+        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#getOrders(java.lang.Integer, ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
     @Override
-    public void getOrders(String depotId, CoordinationListener cListener) {
+    public void getOrders(String depotId, String market, CoordinationListener cListener) {
 
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_ORDER_ENTRIES_BY_DEPOT_ID, new Object[]{depotId});
-        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
+        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
         cListener.onResult(result);
     }
 
@@ -138,24 +142,24 @@ public class AmqpCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.investor.workflow.ICoordinationService#deleteOrder(java.util.UUID)
      */
     @Override
-    public void deleteOrder(UUID orderID) {
+    public void deleteOrder(UUID orderID, String market) {
         //delete order
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_ORDER_BY_ORDER_ID, new Object[]{orderID});
-        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
+        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
 
         if (result != null && !result.isEmpty()) {
             result.get(0).setStatus(OrderStatus.DELETED);
             request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, result.get(0));
-            template.convertAndSend("marketRPC", request);
+            template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
         }
 
     }
 
     @Override
-    public void makeRelease(ReleaseEntry re) {
+    public void makeRelease(ReleaseEntry re, String market) {
         //write release entry
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_RELEASE_ENTRY, null, re);
-        template.convertAndSend("marketRPC", request);
+        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /**

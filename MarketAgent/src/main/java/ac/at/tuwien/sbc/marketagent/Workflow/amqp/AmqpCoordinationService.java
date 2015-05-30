@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.marketagent.workflow.amqp;
 
+import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
@@ -33,7 +34,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     @Override
     public ArrayList<ShareEntry> getShares() {
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRIES, null);
-        ArrayList<ShareEntry> entries = (ArrayList<ShareEntry>)template.convertSendAndReceive("marketRPC", request);
+        ArrayList<ShareEntry> entries = (ArrayList<ShareEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
         return entries;
     }
 
@@ -44,11 +45,11 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void setShareEntry(ShareEntry se) {
         //delete share
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_SHARE_ENTRY_BY_ID, new Object[]{se.getShareID()});
-        template.convertAndSend("marketRPC", request);
+        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
 
         //write share
         request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_SHARE_ENTRY, null, se);
-        template.convertAndSend("marketRPC", request);
+        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)
@@ -60,12 +61,12 @@ public class AmqpCoordinationService implements ICoordinationService {
         //get open orders
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.READ_ORDER_BY_PROPERTIES,
                 new Object[]{shareId, type, OrderStatus.OPEN});
-        ArrayList<OrderEntry> entries = (ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request);
+        ArrayList<OrderEntry> entries = (ArrayList<OrderEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
 
         //get partial orders
         request = new RPCMessageRequest(RPCMessageRequest.Method.READ_ORDER_BY_PROPERTIES,
                 new Object[]{shareId, type, OrderStatus.PARTIAL});
-        entries.addAll((ArrayList<OrderEntry>)template.convertSendAndReceive("marketRPC", request));
+        entries.addAll((ArrayList<OrderEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request));
         return entries;
     }
 
@@ -73,7 +74,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     public DepotEntry getDepot(String depotId) {
         DepotEntry entry = null;
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_DEPOT_ENTRY_BY_ID, new Object[]{depotId});
-        ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)template.convertSendAndReceive("marketRPC", request);
+        ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
         if (result != null && !result.isEmpty())
             entry = (DepotEntry)result.toArray()[0];
 

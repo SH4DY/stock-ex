@@ -1,9 +1,6 @@
 package ac.at.tuwien.sbc.domain.util;
 
-import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.Coordinator;
-import org.mozartspaces.capi3.FifoCoordinator;
-import org.mozartspaces.capi3.ImplicitCoordinator;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;
 import org.mozartspaces.core.MzsConstants;
@@ -38,7 +35,7 @@ public abstract class SpaceUtils {
     public static ContainerReference getOrCreateNamedContainer(final URI space, final String containerName,
                                                                final Capi capi, final ArrayList<Coordinator> coordinators) throws MzsCoreException {
 
-        ContainerReference cref;
+        ContainerReference cref = null;
         try {
             // Get the Container
             logger.info("Lookup container: " + containerName);
@@ -48,10 +45,12 @@ public abstract class SpaceUtils {
         } catch (MzsCoreException e) {
             logger.info("Container not found, creating it ...");
             // Create the Container
-            //ArrayList<Coordinator> optionalCoordinators = new ArrayList<Coordinator>();
-            //optionalCoordinators.add(new FifoCoordinator());
-            cref = capi.createContainer(containerName, space, MzsConstants.Container.UNBOUNDED, coordinators, null, null);
-            logger.info("Container created: " + containerName);
+            try {
+                cref = capi.createContainer(containerName, space, MzsConstants.Container.UNBOUNDED, coordinators, null, null);
+                logger.info("Container created: " + containerName);
+            } catch (MzsCoreException e1) {
+                logger.info("Container could not be created in space");
+            }
         }
         return cref;
     }

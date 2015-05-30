@@ -1,22 +1,16 @@
 package ac.at.tuwien.sbc.investor;
 
-import ac.at.tuwien.sbc.domain.configuration.CommonRabbitConfiguration;
-import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
-import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
+
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -24,7 +18,7 @@ import org.springframework.context.annotation.Import;
  */
 
 @SpringBootApplication
-@Import({CommonRabbitConfiguration.class, CommonSpaceConfiguration.class})
+@ComponentScan({"ac.at.tuwien.sbc.domain.configuration", "ac.at.tuwien.sbc.investor"})
 public class InvestorApp {
 
 
@@ -43,6 +37,9 @@ public class InvestorApp {
                 .web(false)
                 .run(args);
 
+        for (int i = 0; i < args.length ; i++) {
+            logger.info("ARG " + String.valueOf(i) + ": " +args[i]);
+        }
         logger.info("HI IM AN INVESTOR");
 
        // ctx.registerShutdownHook();
