@@ -9,10 +9,12 @@ import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import ac.at.tuwien.sbc.market.workflow.IMarketPublisherService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 // TODO: Auto-generated Javadoc
@@ -29,6 +31,10 @@ public class AmqpPublisherService implements IMarketPublisherService {
     /** The routing key. */
     private final String routingKey = CommonRabbitConfiguration.MARKET_RPC;
 
+    @Autowired
+    @Qualifier("exchangeKey")
+    private String exchangeKey;
+
     /** The template. */
     @Autowired
     private RabbitTemplate template;
@@ -43,6 +49,7 @@ public class AmqpPublisherService implements IMarketPublisherService {
     private CoordinationListener<ShareEntry> shareEntryNotificationListener;
 
 
+
     /* (non-Javadoc)
      * @see ac.at.tuwien.sbc.market.workflow.IMarketPublisherService#getShares(ac.at.tuwien.sbc.domain.event.CoordinationListener)
      */
@@ -51,7 +58,7 @@ public class AmqpPublisherService implements IMarketPublisherService {
         RPCMessageRequest request = null;
 
         request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRIES, null);
-        List<ShareEntry> shares = (List<ShareEntry>) template.convertSendAndReceive(routingKey, request);
+        List<ShareEntry> shares = (List<ShareEntry>) template.convertSendAndReceive(exchangeKey, routingKey, request);
 
         if(shares != null) listener.onResult(shares);
         else listener.onResult(new ArrayList<ShareEntry>());
@@ -65,7 +72,7 @@ public class AmqpPublisherService implements IMarketPublisherService {
         RPCMessageRequest request = null;
 
         request = new RPCMessageRequest(RPCMessageRequest.Method.GET_ORDER_ENTRIES, null);
-        List<OrderEntry> orders = (List<OrderEntry>) template.convertSendAndReceive(routingKey, request);
+        List<OrderEntry> orders = (List<OrderEntry>) template.convertSendAndReceive(exchangeKey, routingKey, request);
 
         if(orders != null) listener.onResult(orders);
         else listener.onResult(new ArrayList<OrderEntry>());
@@ -79,7 +86,7 @@ public class AmqpPublisherService implements IMarketPublisherService {
         RPCMessageRequest request = null;
 
         request = new RPCMessageRequest(RPCMessageRequest.Method.GET_TRANSACTION_ENTRIES, null);
-        List<TransactionEntry> transactions = (List<TransactionEntry>) template.convertSendAndReceive(routingKey, request);
+        List<TransactionEntry> transactions = (List<TransactionEntry>) template.convertSendAndReceive(exchangeKey, routingKey, request);
 
         if(transactions != null) listener.onResult(transactions);
         else listener.onResult(new ArrayList<TransactionEntry>());

@@ -3,9 +3,7 @@ package ac.at.tuwien.sbc.investor.workflow.amqp;
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
 
@@ -13,21 +11,33 @@ import java.util.ArrayList;
 /**
  * Created by dietl_ma on 01/04/15.
  */
-@Service
-@Profile("amqp")
+
 public class MessageHandler {
 
     /** The amqp coordination service. */
-    @Autowired
+    //@Autowired
     private AmqpCoordinationService amqpCoordinationService;
 
+    //@Autowired
+    private ApplicationContext context;
+
+    private String market;
+
+
+    public MessageHandler() {}
+
+    public MessageHandler(String market, ApplicationContext context) {
+        this.market = market;
+        this.context = context;
+        this.amqpCoordinationService = context.getBean(AmqpCoordinationService.class);
+    }
     /**
      * On investor entry notification.
      *
      * @param list the list
      */
     public void onDepotEntryNotification(ArrayList<DepotEntry> list) {
-        amqpCoordinationService.onDepotEntryNotification(list);
+        amqpCoordinationService.onDepotEntryNotification(list, market);
     }
 
     /**
@@ -36,7 +46,7 @@ public class MessageHandler {
      * @param list the list
      */
     public void onShareEntryNotification(ArrayList<ShareEntry> list) {
-        amqpCoordinationService.onShareEntryNotification(list);
+        amqpCoordinationService.onShareEntryNotification(list, market);
     }
 
     /**
@@ -45,6 +55,6 @@ public class MessageHandler {
      * @param list the list
      */
     public void onOrderEntryNotification(ArrayList<OrderEntry> list) {
-        amqpCoordinationService.onOrderEntryNotification(list);
+        amqpCoordinationService.onOrderEntryNotification(list, market);
     }
 }

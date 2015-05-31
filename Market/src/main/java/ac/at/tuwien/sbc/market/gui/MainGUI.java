@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.market.gui;
 
+import ac.at.tuwien.sbc.domain.configuration.MarketArgsConfiguration;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
@@ -9,7 +10,9 @@ import ac.at.tuwien.sbc.market.gui.models.ShareTableModel;
 import ac.at.tuwien.sbc.market.workflow.IMarketObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import javax.swing.*;
 
 
@@ -54,6 +57,9 @@ public class MainGUI extends JFrame implements IMarketObserver{
     /** The share table model. */
     private ShareTableModel shareTableModel;
 
+    @Autowired
+    private MarketArgsConfiguration marketArgs;
+
     /**
      * Instantiates a new main gui.
      */
@@ -61,7 +67,7 @@ public class MainGUI extends JFrame implements IMarketObserver{
         setSize(1200,1200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
-        setTitle("Market App");
+
 
         initSharePanel();
         initHistoryPanel();
@@ -69,6 +75,10 @@ public class MainGUI extends JFrame implements IMarketObserver{
         setVisible(true);
     }
 
+    @PostConstruct
+    public void onPostConstruct() {
+        setTitle("Market App - " + marketArgs.getMarkets().get(0));
+    }
     /**
      * Inits the share panel.
      */

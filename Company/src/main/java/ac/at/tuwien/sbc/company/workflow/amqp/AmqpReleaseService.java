@@ -7,6 +7,7 @@ import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,9 @@ public class AmqpReleaseService implements IReleaseService {
     @Autowired
     private RabbitTemplate template;
 
-    /** The rabbit admin. */
     @Autowired
-    private RabbitAdmin rabbitAdmin;
+    @Qualifier("exchangeKey")
+    private String exchangeKey;
 
     /** The ctx. */
     @Autowired
@@ -38,6 +39,6 @@ public class AmqpReleaseService implements IReleaseService {
     public void makeRelease(ReleaseEntry rls) {
         //write release entry
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_RELEASE_ENTRY, null, rls);
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        template.convertAndSend(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
     }
 }

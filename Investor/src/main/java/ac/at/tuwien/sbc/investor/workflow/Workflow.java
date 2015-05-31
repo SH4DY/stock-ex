@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -155,8 +156,6 @@ public class Workflow  {
 
         for (final String market : marketArgs.getMarkets()) {
 
-
-
             coordinationService.getDepot(new CoordinationListener<DepotEntry>() {
                 @Override
                 public void onResult(DepotEntry de) {
@@ -221,8 +220,6 @@ public class Workflow  {
 
             shareIds.addAll(currentDepot.get(market).getShareDepot().keySet());
 
-
-
             coordinationService.getShares(shareIds, market , new CoordinationListener<ArrayList<ShareEntry>>() {
                 @Override
                 public void onResult(ArrayList<ShareEntry> seList) {
@@ -238,16 +235,21 @@ public class Workflow  {
 
     private void initReleaseRequest(DepotEntry de) {
 
-        Double initPrice = marketArgs.getArgsByMarket(marketArgs.getMarkets().get(0)).getBudget() /
-                           marketArgs.getArgsByMarket(marketArgs.getMarkets().get(0)).getNumShares();
-        ReleaseEntry releaseEntry = new ReleaseEntry();
-        releaseEntry.setCompanyID(de.getId());
-        releaseEntry.setNumShares(marketArgs.getArgsByMarket(marketArgs.getMarkets().get(0)).getNumShares());
-        releaseEntry.setPrice(initPrice);
-        releaseEntry.setShareType(ShareType.FOND);
+        for (String market : marketArgs.getMarkets()) {
 
-        //only make releases on the first given market
-        coordinationService.makeRelease(releaseEntry, marketArgs.getMarkets().get(0));
+            if (marketArgs.getArgsByMarket(market).getNumShares() != null) {
+                Double initPrice = marketArgs.getArgsByMarket(market).getBudget() / marketArgs.getArgsByMarket(market).getNumShares();
+                ReleaseEntry releaseEntry = new ReleaseEntry();
+                releaseEntry.setCompanyID(de.getId());
+                releaseEntry.setNumShares(marketArgs.getArgsByMarket(market).getNumShares());
+                releaseEntry.setPrice(initPrice);
+                releaseEntry.setShareType(ShareType.FOND);
+
+                //only make releases on the first given market
+                coordinationService.makeRelease(releaseEntry, market);
+                break;
+            }
+        }
     }
     
     /**

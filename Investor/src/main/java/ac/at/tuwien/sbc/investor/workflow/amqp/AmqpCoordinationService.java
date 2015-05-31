@@ -13,10 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 // TODO: Auto-generated Javadoc
@@ -28,17 +30,23 @@ import java.util.UUID;
 public class AmqpCoordinationService implements ICoordinationService {
 
     /** The investor entry notification listener. */
-    private CoordinationListener<ArrayList<DepotEntry>> depotEntryNotificationListener;
+    private HashMap<String, CoordinationListener<ArrayList<DepotEntry>>> depotEntryNotificationListener = new HashMap<>();
     
     /** The share entry notification listener. */
-    private CoordinationListener<ArrayList<ShareEntry>> shareEntryNotificationListener;
+    private HashMap<String, CoordinationListener<ArrayList<ShareEntry>>> shareEntryNotificationListener = new HashMap<>();
     
     /** The order entry notification listener. */
-    private CoordinationListener<ArrayList<OrderEntry>> orderEntryNotificationListener;
+    private HashMap<String, CoordinationListener<ArrayList<OrderEntry>>> orderEntryNotificationListener = new HashMap<>();
 
     /** The template. */
     @Autowired
-    private RabbitTemplate template;
+    private HashMap<String,RabbitTemplate> templateMap;
+
+    @Autowired
+    @Qualifier("exchangeKeyMap")
+    private HashMap<String, String> exchangeKeyMap;
+
+    //private HashMap<String, >
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(AmqpCoordinationService.class);
@@ -52,7 +60,8 @@ public class AmqpCoordinationService implements ICoordinationService {
 
         DepotEntry entry = null;
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_DEPOT_ENTRY_BY_ID, new Object[]{depotId});
-        ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+        ArrayList<DepotEntry> result = (ArrayList<DepotEntry>)templateMap.get(market)
+                .convertSendAndReceive(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
         if (result != null && !result.isEmpty())
             entry = (DepotEntry)result.toArray()[0];
 
@@ -70,7 +79,8 @@ public class AmqpCoordinationService implements ICoordinationService {
         for (String shareId : shareIds) {
 
             request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRY_BY_ID, new Object[]{shareId});
-            ArrayList<ShareEntry> currentEntries = (ArrayList<ShareEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+            ArrayList<ShareEntry> currentEntries = (ArrayList<ShareEntry>)templateMap.get(market)
+                    .convertSendAndReceive(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
             if (currentEntries != null && !currentEntries.isEmpty())
                 entries.add(currentEntries.get(0));
 
@@ -83,7 +93,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      */
     @Override
     public void registerDepotNotification(CoordinationListener cListener, String market) {
-        depotEntryNotificationListener = cListener;
+        depotEntryNotificationListener.put(market, cListener);
     }
 
     /* (non-Javadoc)
@@ -91,7 +101,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      */
     @Override
     public void registerOrderNotification(CoordinationListener cListener, String market) {
-        orderEntryNotificationListener = cListener;
+        orderEntryNotificationListener.put(market, cListener);
     }
 
     /* (non-Javadoc)
@@ -99,7 +109,7 @@ public class AmqpCoordinationService implements ICoordinationService {
      */
     @Override
     public void registerShareNotification(CoordinationListener cListener, String market) {
-       shareEntryNotificationListener = cListener;
+       shareEntryNotificationListener.put(market, cListener);
     }
 
     /* (non-Javadoc)
@@ -110,11 +120,11 @@ public class AmqpCoordinationService implements ICoordinationService {
 
         //delete investor
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_DEPOT_ENTRY_BY_ID, new Object[]{de.getId()});
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        templateMap.get(market).convertAndSend(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
 
         //write investor
         request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_DEPOT_ENTRY, null, de);
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        templateMap.get(market).convertAndSend(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)
@@ -124,7 +134,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void addOrder(OrderEntry oe, String market) {
         //write order
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, oe);
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        templateMap.get(market).convertAndSend(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)
@@ -134,7 +144,8 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void getOrders(String depotId, String market, CoordinationListener cListener) {
 
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_ORDER_ENTRIES_BY_DEPOT_ID, new Object[]{depotId});
-        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)templateMap.get(market)
+                .convertSendAndReceive(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
         cListener.onResult(result);
     }
 
@@ -145,12 +156,14 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void deleteOrder(UUID orderID, String market) {
         //delete order
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_ORDER_BY_ORDER_ID, new Object[]{orderID});
-        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+        ArrayList<OrderEntry> result = (ArrayList<OrderEntry>)templateMap.get(market)
+                .convertSendAndReceive(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
 
         if (result != null && !result.isEmpty()) {
             result.get(0).setStatus(OrderStatus.DELETED);
             request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, result.get(0));
-            template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+            templateMap.get(market).convertAndSend(exchangeKeyMap.get(market),
+                    CommonRabbitConfiguration.MARKET_RPC, request);
         }
 
     }
@@ -159,36 +172,39 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void makeRelease(ReleaseEntry re, String market) {
         //write release entry
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_RELEASE_ENTRY, null, re);
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        templateMap.get(market).convertAndSend(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /**
      * On investor entry notification.
      *
      * @param list the list
+     * @param market
      */
-    public void onDepotEntryNotification(ArrayList<DepotEntry> list) {
+    public void onDepotEntryNotification(ArrayList<DepotEntry> list, String market) {
         if (depotEntryNotificationListener != null)
-            depotEntryNotificationListener.onResult(list);
+            depotEntryNotificationListener.get(market).onResult(list);
     }
 
     /**
      * On share entry notification.
      *
      * @param list the list
+     * @param market
      */
-    public void onShareEntryNotification(ArrayList<ShareEntry> list) {
+    public void onShareEntryNotification(ArrayList<ShareEntry> list, String market) {
         if (shareEntryNotificationListener != null)
-            shareEntryNotificationListener.onResult(list);
+            shareEntryNotificationListener.get(market).onResult(list);
     }
 
     /**
      * On order entry notification.
      *
      * @param list the list
+     * @param market
      */
-    public void onOrderEntryNotification(ArrayList<OrderEntry> list) {
+    public void onOrderEntryNotification(ArrayList<OrderEntry> list, String market) {
         if (orderEntryNotificationListener != null)
-            orderEntryNotificationListener.onResult(list);
+            orderEntryNotificationListener.get(market).onResult(list);
     }
 }

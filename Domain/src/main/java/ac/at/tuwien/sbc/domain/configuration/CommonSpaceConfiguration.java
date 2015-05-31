@@ -52,13 +52,6 @@ public class CommonSpaceConfiguration {
         return new Capi(core);
     }
 
-
-    @PostConstruct
-    public void onPostConstruct() {
-        for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
-            System.out.println("MARKET: " + market);
-        }
-    }
     /**
      * Investor depot container.
      *

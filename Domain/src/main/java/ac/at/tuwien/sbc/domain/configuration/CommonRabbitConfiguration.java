@@ -4,6 +4,7 @@ package ac.at.tuwien.sbc.domain.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -12,11 +13,18 @@ import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -35,8 +43,8 @@ public class CommonRabbitConfiguration {
     /** The Constant FANOUT_EXCHANGE. */
     public static final String FANOUT_EXCHANGE =  "stockFanoutExchange";
 
-    /** The Constant INVESTOR_ENTRY_TOPIC. */
-    public static final String INVESTOR_ENTRY_TOPIC =  "investorEntryTopic";
+    /** The Constant DEPOT_ENTRY_TOPIC. */
+    public static final String DEPOT_ENTRY_TOPIC =  "depotEntryTopic";
     
     /** The Constant SHARE_ENTRY_TOPIC. */
     public static final String SHARE_ENTRY_TOPIC =  "shareEntryTopic";
@@ -56,66 +64,89 @@ public class CommonRabbitConfiguration {
     /** The uuid. */
     public static UUID uuid;
 
-    /** The connection factory. */
     @Autowired
-    ConnectionFactory connectionFactory;
+    MarketArgsConfiguration marketArgs;
+
+    /** The connection factory. */
+    /*@Autowired
+    ConnectionFactory connectionFactory;*/
 
     /** The rabbit admin. */
-    @Autowired
-    RabbitAdmin rabbitAdmin;
+    /*@Autowired
+    RabbitAdmin rabbitAdmin;*/
 
-    /**
-     * Topic exchange.
-     *
-     * @return the topic exchange
-     */
-    @Bean
-    public TopicExchange topicExchange() {
-        return new TopicExchange(TOPIC_EXCHANGE);
+
+
+    @Bean(name = "exchangeKeyMap")
+    public HashMap<String, String> exchangeKeyMap() throws MalformedURLException {
+        HashMap<String,String> map = new HashMap<>();
+        for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
+            map.put(market, parseMarketUrl(market).getPath());
+        }
+        return map;
     }
 
-    /*@Bean
-    public TopicExchange fanoutExchange() {
-        return new TopicExchange(FANOUT_EXCHANGE);
+    @Bean(name = "exchangeKey")
+    public String singleExchangeKey (HashMap<String, String> exchangeKeyMap) {
+        return exchangeKeyMap.entrySet().iterator().next().getValue();
+    }
+
+
+    @Bean
+    public HashMap<String,ConnectionFactory> connectionFactoryMap() throws MalformedURLException {
+
+        HashMap<String,ConnectionFactory> map = new HashMap<>();
+        for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
+
+            URL url = parseMarketUrl(market);
+            com.rabbitmq.client.ConnectionFactory rabbitConnectionFactory = new com.rabbitmq.client.ConnectionFactory();
+            rabbitConnectionFactory.setHost(url.getHost());
+            rabbitConnectionFactory.setPort(url.getPort());
+
+            map.put(market, new CachingConnectionFactory(rabbitConnectionFactory));
+        }
+
+        return map;
+    }
+
+   /* @Bean
+    public ConnectionFactory singleConnectionFactory(HashMap<String,ConnectionFactory> connectionFactoryMap) {
+        return connectionFactoryMap.entrySet().iterator().next().getValue();
     }*/
 
-    /**
-     * Rabbit transaction manager.
-     *
-     * @param connectionFactory the connection factory
-     * @return the rabbit transaction manager
-     */
+
     @Bean
-    public RabbitTransactionManager rabbitTransactionManager(ConnectionFactory connectionFactory) {
-        return new RabbitTransactionManager(connectionFactory);
+    public HashMap<String, RabbitAdmin> rabbitAdminMap(HashMap<String,ConnectionFactory> connectionFactoryMap) {
+        HashMap<String,RabbitAdmin> map = new HashMap<>();
+        for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
+            map.put(market, new RabbitAdmin(connectionFactoryMap.get(market)));
+        }
+
+        return map;
     }
 
     /**
-     * Rabbit listener container factory.
      *
-     * @param connectionFactory the connection factory
-     * @return the simple rabbit listener container factory
+     * @param connectionFactoryMap
+     * @return
      */
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
-        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        return factory;
+    public HashMap<String,RabbitTemplate> amqpTemplateMap(HashMap<String,ConnectionFactory> connectionFactoryMap) {
+
+        HashMap<String,RabbitTemplate> map = new HashMap<>();
+
+        for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
+            RabbitTemplate template = new RabbitTemplate(connectionFactoryMap.get(market));
+            template.setMessageConverter(jsonMessageConverter());
+            template.setReplyTimeout(10000);
+            map.put(market, template);
+        }
+        return map;
     }
 
-    /**
-     * Amqp template.
-     *
-     * @param connectionFactory the connection factory
-     * @return the rabbit template
-     */
     @Bean
-    public RabbitTemplate amqpTemplate(ConnectionFactory connectionFactory) {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(jsonMessageConverter());
-        template.setReplyTimeout(10000);
-        return template;
-
+    public RabbitTemplate singleAmqpTemplate (HashMap<String,RabbitTemplate> amqpTemplateMap) {
+        return amqpTemplateMap.entrySet().iterator().next().getValue();
     }
 
     /**
@@ -133,176 +164,27 @@ public class CommonRabbitConfiguration {
         return jsonMessageConverter;
     }
 
-    //init investorEntry topic
-    /**
-     * Investor entry notification queue.
-     *
-     * @return the queue
-     */
-    @Bean
-    public Queue investorEntryNotificationQueue() {
-        Queue queue = new Queue(INVESTOR_ENTRY_TOPIC + '_' + uuid(), false, false, true);
-        return queue;
-    }
-
-    /**
-     * Investor entry notification queue binding.
-     *
-     * @param exchange the exchange
-     * @return the binding
-     */
-    @Bean
-    public Binding investorEntryNotificationQueueBinding(TopicExchange exchange) {
-        return new Binding(investorEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), INVESTOR_ENTRY_TOPIC, new HashMap<String, Object>());
-    }
-
-    //init shareEntry topic
-    /**
-     * Share entry notification queue.
-     *
-     * @return the queue
-     */
-    @Bean
-    public Queue shareEntryNotificationQueue() {
-        Queue queue = new Queue(SHARE_ENTRY_TOPIC + '_' + uuid(), false, false, true);
-        return queue;
-    }
-
-    /**
-     * Share entry notification queue binding.
-     *
-     * @param exchange the exchange
-     * @return the binding
-     */
-    @Bean
-    public Binding shareEntryNotificationQueueBinding(TopicExchange exchange) {
-        return new Binding(shareEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), SHARE_ENTRY_TOPIC, new HashMap<String, Object>());
-    }
-    //init orderEntry topic
-    /**
-     * Order entry notification queue.
-     *
-     * @return the queue
-     */
-    @Bean
-    public Queue orderEntryNotificationQueue() {
-        Queue queue = new Queue(ORDER_ENTRY_TOPIC + '_' + uuid(), false, false, true);
-        return queue;
-    }
-
-    /**
-     * Order entry notification queue binding.
-     *
-     * @param exchange the exchange
-     * @return the binding
-     */
-    @Bean
-    public Binding orderEntryNotificationQueueBinding(TopicExchange exchange) {
-        return new Binding(orderEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), ORDER_ENTRY_TOPIC, new HashMap<String, Object>());
-    }
-
-    //init transactionEntry topic
-    /**
-     * Transaction entry notification queue.
-     *
-     * @return the queue
-     */
-    @Bean
-    public Queue transactionEntryNotificationQueue() {
-        Queue queue = new Queue(TRANSACTION_ENTRY_TOPIC + '_' + uuid(), false, false, true);
-        return queue;
-    }
-
-    /**
-     * Transaction entry notification queue binding.
-     *
-     * @param exchange the exchange
-     * @return the binding
-     */
-    @Bean
-    public Binding transactionEntryNotificationQueueBinding(TopicExchange exchange) {
-        return new Binding(transactionEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), TRANSACTION_ENTRY_TOPIC, new HashMap<String, Object>());
-    }
-
-    //init releaseEntry topic
-    /**
-     * Release entry notification queue.
-     *
-     * @return the queue
-     */
-    @Bean
-    public Queue releaseEntryNotificationQueue() {
-        Queue queue = new Queue(RELEASE_ENTRY_TOPIC + '_' + uuid(), false, false, true);
-        return queue;
-    }
-    
-    /**
-     * Release entry notification queue binding.
-     *
-     * @param exchange the exchange
-     * @return the binding
-     */
-    @Bean
-    public Binding releaseEntryNotificationQueueBinding(TopicExchange exchange) {
-        return new Binding(releaseEntryNotificationQueue().getName(), Binding.DestinationType.QUEUE, exchange.getName(), RELEASE_ENTRY_TOPIC, new HashMap<String, Object>());
-    }
-
-    //init marketRPC queue
-    /**
-     * Market rpc queue.
-     *
-     * @return the queue
-     */
-    @Bean
-    public Queue marketRPCQueue() {
-        Queue queue = new Queue(MARKET_RPC);
-        return queue;
-    }
-    
-    /**
-     * Market rpc queue binding.
-     *
-     * @param exchange the exchange
-     * @return the binding
-     */
-    @Bean
-    public Binding marketRPCQueueBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(marketRPCQueue()).to(exchange).with(marketRPCQueue().getName());
-    }
-
-    /**
-     * Rabbit admin.
-     *
-     * @param connectionFactory the connection factory
-     * @return the rabbit admin
-     */
-    @Bean
-    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
-        return new RabbitAdmin(connectionFactory);
-    }
 
     /**
      * Uuid.
      *
      * @return the string
      */
-    @Bean
-    public String uuid() {
+    public static String uuid() {
         uuid = UUID.randomUUID();
         return uuid.toString();
     }
 
+
+
     /**
-     * On pre destroy.
+     *
+     * @param market
+     * @return
+     * @throws MalformedURLException
      */
-    @PreDestroy
-    public void onPreDestroy() {
-        //delete topic queues on shutdown
-        rabbitAdmin.deleteQueue(INVESTOR_ENTRY_TOPIC + '_' + uuid);
-        rabbitAdmin.deleteQueue(SHARE_ENTRY_TOPIC + '_' + uuid);
-        rabbitAdmin.deleteQueue(ORDER_ENTRY_TOPIC + '_' + uuid);
-        rabbitAdmin.deleteQueue(TRANSACTION_ENTRY_TOPIC + '_' + uuid);
-        rabbitAdmin.deleteQueue(RELEASE_ENTRY_TOPIC + '_' + uuid);
+    private URL parseMarketUrl(String market) throws MalformedURLException {
+        return new URL("http://" + market);
     }
 
 

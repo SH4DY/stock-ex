@@ -10,6 +10,7 @@ import ac.at.tuwien.sbc.domain.exception.CoordinationServiceException;
 import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -35,10 +36,14 @@ public class AmqpCoordinationService implements ICoordinationService {
     /** The release entry message listener. */
     private CoordinationListener<ArrayList<ReleaseEntry>> releaseEntryMessageListener;
 
+
     /** The template. */
     @Autowired
     private RabbitTemplate template;
 
+    @Autowired
+    @Qualifier("exchangeKey")
+    private String exchangeKey;
 
     /* (non-Javadoc)
      * @see ac.at.tuwien.sbc.broker.workflow.ICoordinationService#getDepot(java.lang.Integer, java.lang.Object)
@@ -47,7 +52,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     public DepotEntry getDepot(String depotId, Object sharedTransaction) {
 
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_DEPOT_ENTRY_BY_ID, new Object[]{depotId});
-        ArrayList<DepotEntry> entries = (ArrayList<DepotEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+        ArrayList<DepotEntry> entries = (ArrayList<DepotEntry>)template.convertSendAndReceive(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
         DepotEntry entry = null;
 
         if (entries != null && !entries.isEmpty())
@@ -67,11 +72,11 @@ public class AmqpCoordinationService implements ICoordinationService {
 
         //delete investor
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_DEPOT_ENTRY_BY_ID, new Object[]{de.getId()});
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        template.convertAndSend(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
 
         //write investor
         request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_DEPOT_ENTRY, null, de, isRollbackAction);
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        template.convertAndSend(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)
@@ -81,7 +86,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void addOrder(OrderEntry oe, Object sharedTransaction, Boolean isRollbackAction) throws CoordinationServiceException {
         //write order
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_ORDER_ENTRY, null, oe, isRollbackAction);
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        template.convertAndSend(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)
@@ -91,7 +96,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     public OrderEntry getOrderByProperties(String shareId, OrderType type, OrderStatus status, Boolean prioritized, Double price, Object sharedTransaction) {
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_ORDER_BY_PROPERTIES,
                                                           new Object[]{shareId, type, status, prioritized, price});
-        ArrayList<OrderEntry> entries = (ArrayList<OrderEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+        ArrayList<OrderEntry> entries = (ArrayList<OrderEntry>)template.convertSendAndReceive(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
         OrderEntry entry = null;
 
         if (entries != null && !entries.isEmpty())
@@ -106,7 +111,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     @Override
     public ArrayList<ShareEntry> readShares() {
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRIES, null);
-        ArrayList<ShareEntry> entries = (ArrayList<ShareEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+        ArrayList<ShareEntry> entries = (ArrayList<ShareEntry>)template.convertSendAndReceive(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
         return entries;
     }
 
@@ -116,7 +121,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     @Override
     public ReleaseEntry getReleaseEntry(Object sharedTransaction) {
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.TAKE_RELEASE_ENTRY, null, null);
-        ArrayList<ReleaseEntry> entries = (ArrayList<ReleaseEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+        ArrayList<ReleaseEntry> entries = (ArrayList<ReleaseEntry>)template.convertSendAndReceive(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
         ReleaseEntry entry = null;
 
         if (entries != null && !entries.isEmpty())
@@ -132,7 +137,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     public ShareEntry getShareEntry(String shareId, Object sharedTransaction) {
         ShareEntry se = null;
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRY_BY_ID, new Object[]{shareId});
-        ArrayList<ShareEntry> result = (ArrayList<ShareEntry>)template.convertSendAndReceive(CommonRabbitConfiguration.MARKET_RPC, request);
+        ArrayList<ShareEntry> result = (ArrayList<ShareEntry>)template.convertSendAndReceive(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
 
         if (result != null && !result.isEmpty())
             se = result.get(0);
@@ -148,11 +153,11 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void setShareEntry(ShareEntry se, Object sharedTransaction) throws CoordinationServiceException {
         //delete share
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.DELETE_SHARE_ENTRY_BY_ID, new Object[]{se.getShareID()});
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        template.convertAndSend(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
 
         //write share
         request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_SHARE_ENTRY, null, se);
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        template.convertAndSend(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)
@@ -186,7 +191,7 @@ public class AmqpCoordinationService implements ICoordinationService {
     public void addTransaction(TransactionEntry te, Object sharedTransaction) throws CoordinationServiceException {
         //write share
         RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_TRANSACTION_ENTRY, null, te);
-        template.convertAndSend(CommonRabbitConfiguration.MARKET_RPC, request);
+        template.convertAndSend(exchangeKey, CommonRabbitConfiguration.MARKET_RPC, request);
     }
 
     /* (non-Javadoc)

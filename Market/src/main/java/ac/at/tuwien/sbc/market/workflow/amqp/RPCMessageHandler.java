@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,10 @@ public class RPCMessageHandler {
     @Autowired
     private RabbitTemplate template;
 
+    @Autowired
+    @Qualifier("exchangeKey")
+    private String exchangeKey;
+
     /** The topic map. */
     private HashMap<Class, String> topicMap = new HashMap<>();
 
@@ -50,7 +55,7 @@ public class RPCMessageHandler {
      * Instantiates a new RPC message handler.
      */
     public RPCMessageHandler() {
-        topicMap.put(DepotEntry.class, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC);
+        topicMap.put(DepotEntry.class, CommonRabbitConfiguration.DEPOT_ENTRY_TOPIC);
         topicMap.put(ShareEntry.class, CommonRabbitConfiguration.SHARE_ENTRY_TOPIC);
         topicMap.put(OrderEntry.class, CommonRabbitConfiguration.ORDER_ENTRY_TOPIC);
         topicMap.put(TransactionEntry.class, CommonRabbitConfiguration.TRANSACTION_ENTRY_TOPIC);
@@ -81,7 +86,7 @@ public class RPCMessageHandler {
                 doWriteInvestorDepotEntry(request.getEntry());
                 if (!request.getIsRollBackAction()) {
                     notification.add(request.getEntry());
-                    template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.INVESTOR_ENTRY_TOPIC, notification);
+                    template.convertAndSend(exchangeKey, CommonRabbitConfiguration.DEPOT_ENTRY_TOPIC, notification);
                 }
                 break;
             case GET_ORDER_ENTRIES:
@@ -104,7 +109,7 @@ public class RPCMessageHandler {
                 doWriteOrderEntry(request.getEntry());
                 if (!request.getIsRollBackAction()) {
                     notification.add(request.getEntry());
-                    template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.ORDER_ENTRY_TOPIC, notification);
+                    template.convertAndSend(exchangeKey, CommonRabbitConfiguration.ORDER_ENTRY_TOPIC, notification);
                 }
                 break;
             case DELETE_ORDER_ENTRY_BY_ID:
@@ -123,14 +128,14 @@ public class RPCMessageHandler {
                 doWriteShareEntry(request.getEntry());
                 if (!request.getIsRollBackAction()) {
                     notification.add(request.getEntry());
-                    template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.SHARE_ENTRY_TOPIC, notification);
+                    template.convertAndSend(exchangeKey, CommonRabbitConfiguration.SHARE_ENTRY_TOPIC, notification);
                 }
                 break;
             case WRITE_RELEASE_ENTRY:
                 doWriteReleaseEntry(request.getEntry());
                 if (!request.getIsRollBackAction()) {
                     notification.add(request.getEntry());
-                    template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.RELEASE_ENTRY_TOPIC, notification);
+                    template.convertAndSend(exchangeKey, CommonRabbitConfiguration.RELEASE_ENTRY_TOPIC, notification);
                 }
                 break;
             case GET_TRANSACTION_ENTRIES:
@@ -143,7 +148,7 @@ public class RPCMessageHandler {
                 doWriteTransactionEntry(request.getEntry());
                 if (!request.getIsRollBackAction()) {
                     notification.add(request.getEntry());
-                    template.convertAndSend(CommonRabbitConfiguration.TOPIC_EXCHANGE, CommonRabbitConfiguration.TRANSACTION_ENTRY_TOPIC, notification);
+                    template.convertAndSend(exchangeKey, CommonRabbitConfiguration.TRANSACTION_ENTRY_TOPIC, notification);
                 }
                 break;
         }
