@@ -6,16 +6,16 @@ Stock exchange simulation based on a space based and an alternative middleware s
 ## 1. Install RabbitMQ
 https://www.rabbitmq.com/download.html
 
-## 2. Run RabbitMQ Broker
+<!--## 2. Run RabbitMQ Broker
 ```sh 
 $ rabbitmq-server
-```
+```-->
 
-## 3. Build projects
+## 2. Build projects
 ```sh 
 $ mvn clean install
 ```
-## 4. Run space server:
+<!--## 4. Run space server:
 ```sh
 $ java -cp java -cp [project-root]/Server/mozartspaces-dist-2.3-SNAPSHOT-r14098-all-with-dependencies.jar:Domain/target/domain-1.0-SNAPSHOT.jar org.mozartspaces.core.Server
 ```
@@ -56,8 +56,8 @@ e.g.
 ```sh 
 $ java -jar Company/target/company-1.0-SNAPSHOT.jar --spring.profiles.active=space --id=GOO --numShares=100
 ```
-
-## 5.1 Run applications (via run.sh)
+-->
+## 3. Run applications (via run.sh)
 
 * **Space or Amqp environment**: ./run.sh env [space,amqp] [?spacePort]
 
