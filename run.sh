@@ -6,37 +6,37 @@ then
 case  $1  in
 	env)
 		if [ "$2" == "space" ]; then
-		  java -cp java -cp Server/mozartspaces-dist-2.3-SNAPSHOT-r14098-all-with-dependencies.jar:Domain/target/domain-1.0-SNAPSHOT.jar org.mozartspaces.core.Server
+		  java -cp java -cp Server/mozartspaces-dist-2.3-SNAPSHOT-r14098-all-with-dependencies.jar:Domain/target/domain-1.0-SNAPSHOT.jar org.mozartspaces.core.Server $3
 	    fi
 		if [ "$2" == "amqp" ]; then
 			rabbitmq-server
 		fi
 		;;
 	market)	
-		java -jar Market/target/market-1.0-SNAPSHOT.jar --spring.profiles.active=$2
+		java -jar Market/target/market-1.0-SNAPSHOT.jar --spring.profiles.active=$2 --market=$3
 		;;
 	marketagent)	
-		java -jar MarketAgent/target/marketagent-1.0-SNAPSHOT.jar --spring.profiles.active=$2
+		java -jar MarketAgent/target/marketagent-1.0-SNAPSHOT.jar --spring.profiles.active=$2 --market=$3
 		;;
 	investor)
-	    if (($# >= 4 )); then
-		  java -jar Investor/target/investor-1.0-SNAPSHOT.jar --spring.profiles.active=$2 --id=$3 --budget=$4
+	    if (($# >= 5 )); then
+		  java -jar Investor/target/investor-1.0-SNAPSHOT.jar --spring.profiles.active=$2 --id=$3 --type=$4 --market=$5
 	    else
-		  echo Additional arguments for ID and BUDGET needed!	
+		  echo Additional arguments for markets needed!	
 		fi
 		;;
 	broker)
-	    if (($# >= 3 )); then
-		  java -jar Broker/target/broker-1.0-SNAPSHOT.jar --spring.profiles.active=$2 --id=$3 
+	    if (($# >= 4 )); then
+		  java -jar Broker/target/broker-1.0-SNAPSHOT.jar --spring.profiles.active=$2 --id=$3 --market=$4
 	    else
-		  echo Additional argument for ID needed!	
+		  echo Additional argument for MARKET needed!	
 		fi
 		;;
 	company)
-	    if (($# >= 5 )); then
-		  java -jar Company/target/company-1.0-SNAPSHOT.jar --spring.profiles.active=$2 --id=$3 --numShares=$4 --initPrice=$5
+	    if (($# >= 4 )); then
+		  java -jar Company/target/company-1.0-SNAPSHOT.jar --spring.profiles.active=$2 --id=$3 --market=$4
 	    else
-		  echo Additional arguments for ID, NUM_SHARES, INIT_PRICE needed!	
+		  echo Additional arguments for MARKET needed!	
 		fi
 		;;
 	

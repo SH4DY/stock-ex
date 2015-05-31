@@ -33,7 +33,7 @@ public class InitArgs {
 
         public InitArg(String arg) {
 
-            String[] args = arg.split("\\|");
+            String[] args = arg.split("\\#");
             this.market = args[0];
             this.budget = Double.valueOf(args[1]);
             this.numShares = (args.length > 2) ? Integer.valueOf(args[2]) : null;

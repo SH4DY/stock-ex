@@ -47,6 +47,9 @@ public class Workflow {
         for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
 
             ArrayList<ShareEntry> sharesForMarket = coordinationService.getShares(market);
+
+            if (sharesForMarket.isEmpty()) continue;
+
             shares.addAll(sharesForMarket);
 
             for (ShareEntry se : sharesForMarket) {

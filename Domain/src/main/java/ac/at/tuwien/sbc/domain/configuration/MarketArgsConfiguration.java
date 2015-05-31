@@ -26,7 +26,7 @@ public class MarketArgsConfiguration<T> {
 
         for (String marketArg : marketArgs) {
 
-            String[] marketArgA = marketArg.split("\\|");
+            String[] marketArgA = marketArg.split("\\#");
             //args.put(marketArgA[0], ArrayUtils.subarray(marketArgA, 1, marketArgA.length));
             T argObject = null;
 
