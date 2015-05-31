@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.mozartspaces.capi3.Matchmakers.and;
 import static org.mozartspaces.capi3.Matchmakers.or;
@@ -36,19 +37,20 @@ public class SpaceCoordinationService implements ICoordinationService {
     @Autowired
     Capi capi;
 
-    /** The share container. */
+    /** The depot container. */
     @Autowired
-    @Qualifier("shareContainer")
-    ContainerReference shareContainer;
+    @Qualifier("depotContainerMap")
+    HashMap<String, ContainerReference> depotContainer;
 
     /** The order container. */
     @Autowired
-    @Qualifier("orderContainer")
-    ContainerReference orderContainer;
+    @Qualifier("orderContainerMap")
+    HashMap<String, ContainerReference> orderContainer;
 
+    /** The share container. */
     @Autowired
-    @Qualifier("depotContainer")
-    ContainerReference depotContainer;
+    @Qualifier("shareContainerMap")
+    HashMap<String, ContainerReference> shareContainer;
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(SpaceCoordinationService.class);
@@ -57,11 +59,11 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#getShares()
      */
     @Override
-    public ArrayList<ShareEntry> getShares() {
+    public ArrayList<ShareEntry> getShares(String market) {
 
         ArrayList<ShareEntry> entries = new ArrayList<ShareEntry>();
         try {
-            entries = capi.read(shareContainer, FifoCoordinator.newSelector(MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.TRY_ONCE, null);
+            entries = capi.read(shareContainer.get(market), FifoCoordinator.newSelector(MzsConstants.Selecting.COUNT_ALL), MzsConstants.RequestTimeout.TRY_ONCE, null);
         }
         catch (MzsCoreException e) {}
         return entries;
@@ -71,13 +73,13 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#setShareEntry(ac.at.tuwien.sbc.domain.entry.ShareEntry)
      */
     @Override
-    public void setShareEntry(ShareEntry se) {
+    public void setShareEntry(ShareEntry se, String market) {
         try {
-            ArrayList<ShareEntry> entries = capi.take(shareContainer, KeyCoordinator.newSelector(se.getShareID()), MzsConstants.RequestTimeout.TRY_ONCE, null);
+            ArrayList<ShareEntry> entries = capi.take(shareContainer.get(market), KeyCoordinator.newSelector(se.getShareID()), MzsConstants.RequestTimeout.TRY_ONCE, null);
 
             if (entries != null && !entries.isEmpty()) {
                 Entry entryToUpdate = new Entry(se, KeyCoordinator.newCoordinationData(se.getShareID()));
-                capi.write(shareContainer, MzsConstants.RequestTimeout.ZERO, null, entryToUpdate);
+                capi.write(shareContainer.get(market), MzsConstants.RequestTimeout.ZERO, null, entryToUpdate);
             }
         }
         catch (MzsCoreException e) {}
@@ -87,7 +89,7 @@ public class SpaceCoordinationService implements ICoordinationService {
      * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#getOrdersByProperties(java.lang.String, ac.at.tuwien.sbc.domain.enums.OrderType)
      */
     @Override
-    public ArrayList<OrderEntry> getOrdersByProperties(String shareId, OrderType type) {
+    public ArrayList<OrderEntry> getOrdersByProperties(String shareId, OrderType type, String market) {
 
         Matchmaker mShareId = Property.forName("shareID").equalTo(shareId);
         Matchmaker mType = Property.forName("type").equalTo(type);
@@ -101,18 +103,18 @@ public class SpaceCoordinationService implements ICoordinationService {
             ArrayList<Selector> selectors = new ArrayList<Selector>();
             selectors.add(QueryCoordinator.newSelector(q, MzsConstants.Selecting.COUNT_ALL));
 
-            entries = capi.read(orderContainer, selectors, MzsConstants.RequestTimeout.TRY_ONCE, null);
+            entries = capi.read(orderContainer.get(market), selectors, MzsConstants.RequestTimeout.TRY_ONCE, null);
         } catch (MzsCoreException e) {logger.info("Try to get order by properties FAILED:" + e.getMessage());}
 
         return entries;
     }
 
     @Override
-    public DepotEntry getDepot(String depotId) {
+    public DepotEntry getDepot(String depotId, String market) {
         ArrayList<DepotEntry> entries = null;
         DepotEntry entry = null;
         try {
-            entries = capi.read(depotContainer, KeyCoordinator.newSelector(depotId.toString()), MzsConstants.RequestTimeout.ZERO, null);
+            entries = capi.read(depotContainer.get(market), KeyCoordinator.newSelector(depotId.toString()), MzsConstants.RequestTimeout.ZERO, null);
         } catch (MzsCoreException e) {
             logger.info("Depot not found for: " + depotId);
         }

@@ -17,24 +17,27 @@ public interface ICoordinationService {
      * Gets the shares.
      *
      * @return the shares
+     * @param market
      */
-    public ArrayList<ShareEntry> getShares();
+    public ArrayList<ShareEntry> getShares(String market);
 
     /**
      * Sets the share entry.
      *
      * @param se the new share entry
+     * @param market
      */
-    public void setShareEntry(ShareEntry se);
+    public void setShareEntry(ShareEntry se, String market);
 
     /**
      * Gets the orders by properties.
      *
      * @param shareId the share id
      * @param type the type
+     * @param market
      * @return the orders by properties
      */
-    public ArrayList<OrderEntry> getOrdersByProperties(String shareId, OrderType type);
+    public ArrayList<OrderEntry> getOrdersByProperties(String shareId, OrderType type, String market);
 
-    public DepotEntry getDepot(String depotId);
+    public DepotEntry getDepot(String depotId, String market);
 }

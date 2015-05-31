@@ -1,9 +1,11 @@
 package ac.at.tuwien.sbc.marketagent.workflow;
 
+import ac.at.tuwien.sbc.domain.configuration.MarketArgsConfiguration;
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
+import ac.at.tuwien.sbc.marketagent.EntryMarketCorrelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ public class Workflow {
     @Autowired
     private ICoordinationService coordinationService;
 
+    @Autowired
+    MarketArgsConfiguration marketArgs;
+
     /** The counter. */
     private Integer counter = 0;
     /** The Constant logger. */
@@ -35,22 +40,26 @@ public class Workflow {
     @Scheduled(fixedDelay = 2000)
     public void doManipulation() {
 
-        ArrayList<ShareEntry> shares = coordinationService.getShares();
+        HashMap<String, EntryMarketCorrelation<ShareEntry>> shareMap = new HashMap<>();
+        logger.info("MAniPULATE");
+        //get all shares for each market
+        ArrayList<ShareEntry> shares = new ArrayList<>();
+        for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
 
-        //create share HashMap
-        HashMap<String, ShareEntry> shareMap = new HashMap<String, ShareEntry>();
+            ArrayList<ShareEntry> sharesForMarket = coordinationService.getShares(market);
+            shares.addAll(sharesForMarket);
+
+            for (ShareEntry se : sharesForMarket) {
+                shareMap.put(se.getShareID(), new EntryMarketCorrelation<ShareEntry>(se, market));
+            }
+        }
 
         if (shares.isEmpty()) return;
 
         for (ShareEntry se : shares) {
-            shareMap.put(se.getShareID(), se);
-        }
-
-        for (ShareEntry se : shares) {
-
             switch (se.getShareType()) {
                 case SHARE:
-                    manipulateShare(se);
+                    manipulateShare(se, shareMap);
                     break;
                 case FOND:
                     manipulateFonds(se, shareMap);
@@ -63,9 +72,12 @@ public class Workflow {
      * Manipulate share
      * @param se
      */
-    public void manipulateShare(ShareEntry se) {
-        ArrayList<OrderEntry> sellOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.SELL);
-        ArrayList<OrderEntry> buyOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.BUY);
+    public void manipulateShare(ShareEntry se, HashMap<String, EntryMarketCorrelation<ShareEntry>> shareMap) {
+
+        EntryMarketCorrelation shareEntryMarketC =  shareMap.get(se.getShareID());
+
+        ArrayList<OrderEntry> sellOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.SELL, shareEntryMarketC.getMarket());
+        ArrayList<OrderEntry> buyOrders = coordinationService.getOrdersByProperties(se.getShareID(), OrderType.BUY, shareEntryMarketC.getMarket());
 
         if (sellOrders == null || buyOrders == null) return;
 
@@ -87,7 +99,7 @@ public class Workflow {
         logger.info("Share Manipulation:" + se.getShareID() + "/" + currentPrice + "->" + newPrice);
 
         se.setPrice(newPrice);
-        coordinationService.setShareEntry(se);
+        coordinationService.setShareEntry(se, shareEntryMarketC.getMarket());
     }
 
     /**
@@ -95,26 +107,36 @@ public class Workflow {
      * @param se
      * @param shareMap
      */
-    public void manipulateFonds(ShareEntry se, HashMap<String, ShareEntry> shareMap) {
+    public void manipulateFonds(ShareEntry se, HashMap<String, EntryMarketCorrelation<ShareEntry>> shareMap) {
 
-        DepotEntry de = coordinationService.getDepot(se.getShareID());
+        EntryMarketCorrelation shareEntryMarketC =  shareMap.get(se.getShareID());
 
-        if (de == null) return;
-
-        //get shares for depot
+        //get depots from markets end store shares in list
         ArrayList<String> shareIds = new ArrayList<String>();
-        shareIds.addAll(de.getShareDepot().keySet());
+        HashMap<String, Integer> shareDepotMap = new HashMap<>();
+
+        Double sumBudget = 0.0;
+        for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
+            DepotEntry de = coordinationService.getDepot(se.getShareID(), shareEntryMarketC.getMarket());
+
+            if (de != null) {
+                shareIds.addAll(de.getShareDepot().keySet());
+                shareDepotMap.putAll(de.getShareDepot());
+                sumBudget += de.getBudget();
+            }
+        }
 
         //calculate sum of share assets
         Double sumShareAsset = 0.0;
         for (String shareId : shareIds) {
             if (shareMap.containsKey(shareId)) {
-                Integer numShares = de.getShareDepot().get(shareId);
-                sumShareAsset += numShares * shareMap.get(shareId).getPrice();
+                Integer numShares = shareDepotMap.get(shareId);
+                sumShareAsset += numShares * shareMap.get(shareId).getEntry().getPrice();
             }
         }
 
-        se.setPrice((de.getBudget() + sumShareAsset) / se.getNumShares());
-        coordinationService.setShareEntry(se);
+
+        se.setPrice((sumBudget + sumShareAsset) / se.getNumShares());
+        coordinationService.setShareEntry(se, shareEntryMarketC.getMarket());
     }
 }
