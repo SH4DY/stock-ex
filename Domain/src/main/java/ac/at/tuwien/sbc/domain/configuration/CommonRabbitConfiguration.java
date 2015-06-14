@@ -38,9 +38,11 @@ import java.util.UUID;
 public class CommonRabbitConfiguration {
 
     /** The Constant TOPIC_EXCHANGE. */
+    @Deprecated
     public static final String TOPIC_EXCHANGE =  "stockTopicExchange";
     
     /** The Constant FANOUT_EXCHANGE. */
+    @Deprecated
     public static final String FANOUT_EXCHANGE =  "stockFanoutExchange";
 
     /** The Constant DEPOT_ENTRY_TOPIC. */
@@ -66,15 +68,6 @@ public class CommonRabbitConfiguration {
 
     @Autowired
     MarketArgsConfiguration marketArgs;
-
-    /** The connection factory. */
-    /*@Autowired
-    ConnectionFactory connectionFactory;*/
-
-    /** The rabbit admin. */
-    /*@Autowired
-    RabbitAdmin rabbitAdmin;*/
-
 
 
     @Bean(name = "exchangeKeyMap")
@@ -108,11 +101,6 @@ public class CommonRabbitConfiguration {
 
         return map;
     }
-
-   /* @Bean
-    public ConnectionFactory singleConnectionFactory(HashMap<String,ConnectionFactory> connectionFactoryMap) {
-        return connectionFactoryMap.entrySet().iterator().next().getValue();
-    }*/
 
 
     @Bean
@@ -174,7 +162,6 @@ public class CommonRabbitConfiguration {
         uuid = UUID.randomUUID();
         return uuid.toString();
     }
-
 
 
     /**

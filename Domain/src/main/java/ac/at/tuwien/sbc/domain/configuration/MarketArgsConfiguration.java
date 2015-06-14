@@ -27,7 +27,6 @@ public class MarketArgsConfiguration<T> {
         for (String marketArg : marketArgs) {
 
             String[] marketArgA = marketArg.split("\\#");
-            //args.put(marketArgA[0], ArrayUtils.subarray(marketArgA, 1, marketArgA.length));
             T argObject = null;
 
             if (mapper != null)

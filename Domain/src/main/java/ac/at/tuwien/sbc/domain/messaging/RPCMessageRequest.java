@@ -92,7 +92,7 @@ public class RPCMessageRequest {
      * @param method the method
      * @param args the args
      */
-    public RPCMessageRequest(Method method,Object[] args) {
+    public RPCMessageRequest(Method method, Object[] args) {
         this.method = method;
         this.args = args;
         this.entry = null;
@@ -106,7 +106,7 @@ public class RPCMessageRequest {
      * @param args the args
      * @param entry the entry
      */
-    public RPCMessageRequest(Method method,Object[] args, SuperEntry entry) {
+    public RPCMessageRequest(Method method, Object[] args, SuperEntry entry) {
         this.method = method;
         this.entry = entry;
         this.args = args;
@@ -121,7 +121,7 @@ public class RPCMessageRequest {
      * @param entry the entry
      * @param isRollBackAction the is roll back action
      */
-    public RPCMessageRequest(Method method,Object[] args, SuperEntry entry, Boolean isRollBackAction) {
+    public RPCMessageRequest(Method method, Object[] args, SuperEntry entry, Boolean isRollBackAction) {
         this.method = method;
         this.entry = entry;
         this.args = args;

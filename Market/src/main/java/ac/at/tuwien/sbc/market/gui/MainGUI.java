@@ -4,6 +4,7 @@ import ac.at.tuwien.sbc.domain.configuration.MarketArgsConfiguration;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.entry.TransactionEntry;
+import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.market.gui.models.HistoryTableModel;
 import ac.at.tuwien.sbc.market.gui.models.OrderTableModel;
 import ac.at.tuwien.sbc.market.gui.models.ShareTableModel;
@@ -137,11 +138,16 @@ public class MainGUI extends JFrame implements IMarketObserver{
             logger.debug("Main GUI notified of orderEntry");
 
             Integer row = getRowIdInOrderTable(orderEntry);
-            if(row == null){
-                orderTableModel.addRow(orderEntry);
-            }else{
-                orderTableModel.insertRow(orderEntry, row);
+
+            if (orderEntry.getStatus().equals(OrderStatus.OPEN) || orderEntry.getStatus().equals(OrderStatus.PARTIAL)) {
+                if (row == null)
+                    orderTableModel.addRow(orderEntry);
+                else
+                    orderTableModel.insertRow(orderEntry, row);
             }
+            else if (row != null)
+                    orderTableModel.removeRow(row);
+
         }
     }
 

@@ -88,4 +88,9 @@ public class OrderTableModel extends AbstractTableModel{
         content.set(rowIndex, oe);
         fireTableDataChanged();
     }
+
+    public void removeRow(int rowIndex){
+        content.remove(rowIndex);
+        fireTableDataChanged();
+    }
 }

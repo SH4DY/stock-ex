@@ -198,7 +198,7 @@ public class SpacePublisherService implements IMarketPublisherService {
      * the orderAdded event occurs, that object's appropriate
      * method is invoked.
      *
-     * @see OrderAddedEvent
+     * @see OrderAddedListener
      */
     private class OrderAddedListener implements org.mozartspaces.notifications.NotificationListener{
         
@@ -234,7 +234,7 @@ public class SpacePublisherService implements IMarketPublisherService {
      * the transactionAdded event occurs, that object's appropriate
      * method is invoked.
      *
-     * @see TransactionAddedEvent
+     * @see TransactionAddedListener
      */
     private class TransactionAddedListener implements org.mozartspaces.notifications.NotificationListener{
         
@@ -270,7 +270,7 @@ public class SpacePublisherService implements IMarketPublisherService {
      * the shareAdded event occurs, that object's appropriate
      * method is invoked.
      *
-     * @see ShareAddedEvent
+     * @see ShareAddedListener
      */
     private class ShareAddedListener implements org.mozartspaces.notifications.NotificationListener{
         

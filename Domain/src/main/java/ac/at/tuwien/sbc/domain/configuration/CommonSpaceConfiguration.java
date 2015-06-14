@@ -24,6 +24,7 @@ import java.util.HashMap;
 public class CommonSpaceConfiguration {
 
     /** The Constant SPACE_URI. */
+    @Deprecated
     public static final String SPACE_URI =  "xvsm://localhost:9876";
 
     /** The Constant SPACE_URI_PREFIX. */

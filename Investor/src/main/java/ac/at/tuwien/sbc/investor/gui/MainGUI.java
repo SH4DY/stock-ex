@@ -62,12 +62,10 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
 
     private JCheckBox prioritizedCheckBox;
 
-    private JTextArea depotInfosTextArea;
-
     private JComboBox marketComboBox;
 
+    private JTable marketTable;
 
-    private HashMap<String, String> depotInfos = new HashMap<>();
 
     /** The workflow. */
     @Autowired
@@ -96,6 +94,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
     private void postConstruct() {
         initShareTable();
         initOrderTable();
+        initMarketTable();
         initOrderForm();
     }
 
@@ -103,7 +102,7 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
      * Inits the frame.
      */
     private void initFrame() {
-        setSize(1000, 600);
+        setSize(1000, 610);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(rootPanel);
         setVisible(true);
@@ -155,6 +154,18 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
                 }
             }
         });
+    }
+
+    /**
+     * Inits the share table.
+     */
+    private void initMarketTable() {
+
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("Market");
+        model.addColumn("Budget");
+
+        marketTable.setModel(model);
     }
 
     /**
@@ -220,45 +231,10 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
         //update depot info labels
         investorLabel.setText(depotType + ": " + de.getId().toString());
 
-        depotInfos.put(market, "Market: " + market + " Budget: " + de.getBudget().toString() + "\n");
-        String info = "";
-        for (String subInfo : depotInfos.values()) {
-            info += subInfo;
-        }
-        depotInfosTextArea.setText(info);
+        updateMarketTable(de, market);
+        updateShareTable(de);
 
 
-        //update share table
-        DefaultTableModel model = ((DefaultTableModel) shareTable.getModel());
-        for (String shareId : de.getShareDepot().keySet()) {
-
-            Integer numShares = de.getShareDepot().get(shareId);
-            Integer rowIndex = getTableRowIndexByID(shareTable, 0, shareId);
-
-            if (rowIndex == null) {
-                rowIndex = shareTable.getRowCount();
-
-                Object[] newRow = new Object[]{
-                        shareId.toString(),
-                        numShares.toString(),
-                        0,
-                        0
-                };
-                model.insertRow(rowIndex, newRow);
-            }
-            else {
-                if (numShares <= 0) {
-                    model.removeRow(rowIndex);
-                    continue;
-                }
-                else {
-                    Double value = Double.parseDouble((model.getValueAt(rowIndex, 2).toString()))*numShares;
-                    model.setValueAt(shareId.toString(), rowIndex, 0);
-                    model.setValueAt(numShares.toString(), rowIndex, 1);
-                    model.setValueAt(value.toString(), rowIndex, 3);
-                }
-            }
-        }
     }
 
     /* (non-Javadoc)
@@ -304,6 +280,66 @@ public class MainGUI extends JFrame implements IWorkFlowObserver {
             model.setValueAt(se.getPrice(), rowIndex, 2);
             model.setValueAt(Integer.valueOf((String)(model.getValueAt(rowIndex, 1)))*se.getPrice(), rowIndex, 3);
         }
+    }
+
+    /**
+     * Update share table
+     * @param de
+     */
+    private void updateShareTable(DepotEntry de) {
+
+        DefaultTableModel model = ((DefaultTableModel) shareTable.getModel());
+        for (String shareId : de.getShareDepot().keySet()) {
+
+            Integer numShares = de.getShareDepot().get(shareId);
+            Integer rowIndex = getTableRowIndexByID(shareTable, 0, shareId);
+
+            if (rowIndex == null) {
+                rowIndex = shareTable.getRowCount();
+
+                Object[] newRow = new Object[]{
+                        shareId.toString(),
+                        numShares.toString(),
+                        0,
+                        0
+                };
+                model.insertRow(rowIndex, newRow);
+            }
+            else {
+                if (numShares <= 0) {
+                    model.removeRow(rowIndex);
+                    continue;
+                }
+                else {
+                    Double value = Double.parseDouble((model.getValueAt(rowIndex, 2).toString()))*numShares;
+                    model.setValueAt(shareId.toString(), rowIndex, 0);
+                    model.setValueAt(numShares.toString(), rowIndex, 1);
+                    model.setValueAt(value.toString(), rowIndex, 3);
+                }
+            }
+        }
+    }
+
+    /**
+     * Update market table
+     * @param de
+     * @param market
+     */
+    private void updateMarketTable(DepotEntry de, String market) {
+
+        DefaultTableModel model = ((DefaultTableModel) marketTable.getModel());
+        Integer rowIndex = getTableRowIndexByID(marketTable, 0, market);
+
+        if (rowIndex == null)
+            rowIndex = marketTable.getRowCount();
+        else
+            ((DefaultTableModel)marketTable.getModel()).removeRow(rowIndex);
+
+
+        Object[] newRow = new Object[]{
+                market,
+                de.getBudget().toString()};
+        ((DefaultTableModel) marketTable.getModel()).insertRow(rowIndex, newRow);
     }
 }
 
