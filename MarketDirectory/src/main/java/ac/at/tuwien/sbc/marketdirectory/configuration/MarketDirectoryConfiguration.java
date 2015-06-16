@@ -13,7 +13,6 @@ public class MarketDirectoryConfiguration {
 
     @Bean
     IMarketDirectoryService marketDirectoryService() {
-        System.out.println("LKJHLKAJSHLKJAHSKLJAHKLJAHSKLJHASKJHAKLJHSKLJAHS");
         return new MarketDirectoryService();
     }
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if (($# >= 2 ))  
+if (($# >= 1 ))
 then
 
 case  $1  in
@@ -39,6 +39,9 @@ case  $1  in
 		  echo Additional arguments for MARKET needed!	
 		fi
 		;;
+    marketdirectory)
+        java -jar MarketDirectory/target/marketdirectory-1.0-SNAPSHOT.jar
+        ;;
 	
 	*)
 esac
