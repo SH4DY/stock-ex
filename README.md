@@ -6,57 +6,12 @@ Stock exchange simulation based on a space based and an alternative middleware s
 ## 1. Install RabbitMQ
 https://www.rabbitmq.com/download.html
 
-<!--## 2. Run RabbitMQ Broker
-```sh 
-$ rabbitmq-server
-```-->
 
 ## 2. Build projects
 ```sh 
 $ mvn clean install
 ```
-<!--## 4. Run space server:
-```sh
-$ java -cp java -cp [project-root]/Server/mozartspaces-dist-2.3-SNAPSHOT-r14098-all-with-dependencies.jar:Domain/target/domain-1.0-SNAPSHOT.jar org.mozartspaces.core.Server
-```
-## 5. Run applications (via java -jar)
-```sh
-java -jar [project-root]/[application-dir]/target/[application]-1.0-SNAPSHOT.jar --spring.profiles.active=[amqp,space] --[additional_arg]=[value]
-```
-* **Market**: [application-dir] = Market, [application] = market
 
-e.g. 
-```sh
-$ java -jar Market/target/market-1.0-SNAPSHOT.jar --spring.profiles.active=space
-```
-*  **MarketAgent**: [application-dir] = MarketAgent, [application] = marketagent
-
-e.g. 
-```sh
-$ java -jar MarketAgent/target/marketagent-1.0-SNAPSHOT.jar --spring.profiles.active=space
-```
-
-*  **Investor**: [application-dir] = Investor, [application] = investor, arg_id(integer), arg_budget(double)
-
-e.g. 
-```sh 
-$ java -jar Investor/target/investor-1.0-SNAPSHOT.jar --spring.profiles.active=space --id=123 --budget=10000.0
-```
-*  **Broker**: [application-dir] = Broker, [application] = broker, arg_id(integer)
-
-e.g. 
-```sh 
-$ java -jar Broker/target/broker-1.0-SNAPSHOT.jar --spring.profiles.active=space --id=1
-```
-
-*  **Company**: [application-dir] = Company, [application] = broker, arg_id(string), arg_numShares(int), arg_initPrice(double)
-
-e.g. 
-
-```sh 
-$ java -jar Company/target/company-1.0-SNAPSHOT.jar --spring.profiles.active=space --id=GOO --numShares=100
-```
--->
 ## 3. Run applications (via run.sh)
 
 * **Space or Amqp environment**: ./run.sh env [space,amqp] [?spacePort]
@@ -66,6 +21,14 @@ e.g.
 $ ./run.sh env space 9876
 $ ./run.sh env space 9877
 $ ./run.sh env ampq
+```
+
+* **MarketDirectory (Global directory to retreive all active markets)**: ./run.sh marketdirectory
+
+e.g. 
+```sh 
+$ ./run.sh market marketdirectory
+
 ```
 
 * **Market**: ./run.sh market [space,amqp] [host][":"[port],"/"[exchange]]
