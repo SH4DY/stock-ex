@@ -45,10 +45,10 @@ $ ./run.sh market amqp localhost/stockExchange2
 
 e.g. 
 ```sh 
-$ ./run.sh marketagent space localhost:9876,localhost:9877
 $ ./run.sh marketagent space localhost:9876
-$ ./run.sh marketagent amqp  localhost/stockExchange1,localhost/stockExchange2
+$ ./run.sh marketagent space localhost:9877
 $ ./run.sh marketagent amqp  localhost/stockExchange1
+$ ./run.sh marketagent amqp  localhost/stockExchange2
 
 
 ```
