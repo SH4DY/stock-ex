@@ -25,7 +25,6 @@
         <module>Market</module>
         <module>MarketAgent</module>
         <module>MarketDirectory</module>
-        <module>AppRunner</module>
     </modules>
 
     <repositories>
