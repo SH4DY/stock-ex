@@ -5,6 +5,7 @@ import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
+import ac.at.tuwien.sbc.domain.service.IMarketDirectoryService;
 import ac.at.tuwien.sbc.marketagent.EntryMarketCorrelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -27,12 +30,30 @@ public class Workflow {
     private ICoordinationService coordinationService;
 
     @Autowired
-    MarketArgsConfiguration marketArgs;
+    private MarketArgsConfiguration marketArgs;
 
+    @Autowired
+    private IMarketDirectoryService marketDirectoryService;
+
+    private List<String> allMarkets = new ArrayList<>();
     /** The counter. */
     private Integer counter = 0;
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
+
+    @PostConstruct
+    public void onPostConstruct() {
+
+        //init all markets
+        if (marketDirectoryService != null) {
+            for (String market : marketDirectoryService.getMarkets()) {
+
+                coordinationService.addMarket(market);
+                allMarkets.add(market);
+            }
+        }
+
+    }
 
     /**
      * Do manipulation.
@@ -41,7 +62,6 @@ public class Workflow {
     public void doManipulation() {
 
         HashMap<String, EntryMarketCorrelation<ShareEntry>> shareMap = new HashMap<>();
-        logger.info("MAniPULATE");
         //get all shares for each market
         ArrayList<ShareEntry> shares = new ArrayList<>();
         for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
@@ -52,9 +72,8 @@ public class Workflow {
 
             shares.addAll(sharesForMarket);
 
-            for (ShareEntry se : sharesForMarket) {
+            for (ShareEntry se : sharesForMarket)
                 shareMap.put(se.getShareID(), new EntryMarketCorrelation<ShareEntry>(se, market));
-            }
         }
 
         if (shares.isEmpty()) return;
@@ -85,10 +104,12 @@ public class Workflow {
         if (sellOrders == null || buyOrders == null) return;
 
         Double numSellOrders = 0.0;
-        for (OrderEntry oe : sellOrders) numSellOrders += oe.getNumTotal()-oe.getNumCompleted();
+        for (OrderEntry oe : sellOrders)
+            numSellOrders += oe.getNumTotal()-oe.getNumCompleted();
 
         Double numBuyOrders = 0.0;
-        for (OrderEntry oe : buyOrders) numBuyOrders += oe.getNumTotal()-oe.getNumCompleted();
+        for (OrderEntry oe : buyOrders)
+            numBuyOrders += oe.getNumTotal()-oe.getNumCompleted();
 
         Double currentPrice = se.getPrice();
 
@@ -119,12 +140,21 @@ public class Workflow {
         HashMap<String, Integer> shareDepotMap = new HashMap<>();
 
         Double sumBudget = 0.0;
-        for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
-            DepotEntry de = coordinationService.getDepot(se.getShareID(), shareEntryMarketC.getMarket());
+
+        //check if we should use given market or markets from the directory
+        List<String> markets = allMarkets.isEmpty() ? (ArrayList<String>)marketArgs.getMarkets() : allMarkets;
+
+        for (String market : markets) {
+            DepotEntry de = coordinationService.getDepot(se.getShareID(), market);
 
             if (de != null) {
                 shareIds.addAll(de.getShareDepot().keySet());
                 shareDepotMap.putAll(de.getShareDepot());
+
+                //add shares to map
+                for (String shareId : de.getShareDepot().keySet()) {
+                    extendShareMap(shareMap, shareId, market);
+                }
                 sumBudget += de.getBudget();
             }
         }
@@ -138,8 +168,26 @@ public class Workflow {
             }
         }
 
+        Double newPrice = (sumBudget + sumShareAsset) / se.getNumShares();
+        logger.info("Fond Manipulation:" + se.getShareID() + "/" + se.getPrice() + "->" + newPrice);
 
-        se.setPrice((sumBudget + sumShareAsset) / se.getNumShares());
+        se.setPrice(newPrice);
         coordinationService.setShareEntry(se, shareEntryMarketC.getMarket());
+    }
+
+    /**
+     * Extends share map for new share in market
+     * @param shareMap
+     * @param shareId
+     */
+    private void extendShareMap(HashMap<String, EntryMarketCorrelation<ShareEntry>> shareMap, String shareId, String market) {
+
+        if (!shareMap.containsKey(shareId)) {
+            ShareEntry newShare = coordinationService.getShareEntry(shareId, market);
+            if (newShare != null) {
+                shareMap.put(shareId, new EntryMarketCorrelation<ShareEntry>(newShare, market));
+                logger.info("GOT FOREIGN SHARE ENTRY: " + newShare.getShareID());
+            }
+        }
     }
 }

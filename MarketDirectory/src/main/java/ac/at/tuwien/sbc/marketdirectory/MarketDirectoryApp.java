@@ -1,4 +1,4 @@
-package ac.at.tuwien.sbc.marketagent;
+package ac.at.tuwien.sbc.marketdirectory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -14,12 +13,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 
 @SpringBootApplication
-@EnableScheduling
-@ComponentScan({"ac.at.tuwien.sbc.domain.configuration", "ac.at.tuwien.sbc.marketagent"})
-public class MarketAgentApp {
+@ComponentScan({"ac.at.tuwien.sbc.marketdirectory"})
+public class MarketDirectoryApp {
 
     /** The Constant logger. */
-    private static final Logger logger = LoggerFactory.getLogger(MarketAgentApp.class);
+    private static final Logger logger = LoggerFactory.getLogger(MarketDirectoryApp.class);
 
     /**
      * The main method.
@@ -27,13 +25,13 @@ public class MarketAgentApp {
      * @param args the arguments
      */
     public static void main(String[] args) {
-        ConfigurableApplicationContext ctx = new SpringApplicationBuilder(MarketAgentApp.class)
+        ConfigurableApplicationContext ctx = new SpringApplicationBuilder(MarketDirectoryApp.class)
                 .headless(false)
                 .web(false)
                 .run(args);
 
-        logger.info("HI IM A MARKETAGENT");
-        ctx.registerShutdownHook();
+        logger.info("HI IM A MARKET DIRECTORY");
+//        ctx.registerShutdownHook();
 
     }
 }

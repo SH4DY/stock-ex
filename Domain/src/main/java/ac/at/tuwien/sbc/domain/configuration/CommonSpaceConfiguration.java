@@ -30,6 +30,18 @@ public class CommonSpaceConfiguration {
     /** The Constant SPACE_URI_PREFIX. */
     public static final String SPACE_URI_PREFIX =  "xvsm://";
 
+    public static final String DEPOT_CONTAINER =  "depotContainer";
+    public static final String ORDER_CONTAINER =  "orderContainer";
+    public static final String RELEASE_CONTAINER =  "releaseContainer";
+    public static final String SHARE_CONTAINER =  "shareContainer";
+    public static final String TRANSACTION_CONTAINER =  "transactionContainer";
+
+    public static final String DEPOT_CONTAINER_MAP =  "depotContainerMap";
+    public static final String ORDER_CONTAINER_MAP =  "orderContainerMap";
+    public static final String RELEASE_CONTAINER_MAP =  "releaseContainerMap";
+    public static final String SHARE_CONTAINER_MAP =  "shareContainerMap";
+    public static final String TRANSACTION_CONTAINER_MAP =  "transactionContainerMap";
+
     @Autowired
     private MarketArgsConfiguration marketArgs;
 
@@ -61,7 +73,7 @@ public class CommonSpaceConfiguration {
      * @throws URISyntaxException the URI syntax exception
      * @throws MzsCoreException the mzs core exception
      */
-    @Bean(name = "depotContainerMap")
+    @Bean(name = DEPOT_CONTAINER_MAP)
     public HashMap<String, ContainerReference> depotContainer(Capi capi) throws URISyntaxException, MzsCoreException {
 
         HashMap<String, ContainerReference> map = new HashMap<>();
@@ -69,14 +81,14 @@ public class CommonSpaceConfiguration {
             URI uri = new URI(SPACE_URI_PREFIX + market);
             ArrayList<Coordinator> coordinators = new ArrayList<Coordinator>();
             coordinators.add(new KeyCoordinator());
-            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, "depotContainer", capi, coordinators);
+            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, DEPOT_CONTAINER, capi, coordinators);
             if (ref != null)
                 map.put(market, ref);
         }
         return map;
     }
 
-    @Bean(name = "depotContainer")
+    @Bean(name = DEPOT_CONTAINER)
     public ContainerReference getSingleDepotContainer(@Qualifier("depotContainerMap") HashMap<String, ContainerReference> container) {
         return container.entrySet().iterator().next().getValue();
     }
@@ -89,7 +101,7 @@ public class CommonSpaceConfiguration {
      * @throws URISyntaxException the URI syntax exception
      * @throws MzsCoreException the mzs core exception
      */
-    @Bean(name = "orderContainerMap")
+    @Bean(name = ORDER_CONTAINER_MAP)
     public HashMap<String, ContainerReference> orderContainer(Capi capi) throws URISyntaxException, MzsCoreException {
 
         HashMap<String, ContainerReference> map = new HashMap<>();
@@ -100,15 +112,15 @@ public class CommonSpaceConfiguration {
             coordinators.add(new FifoCoordinator());
             coordinators.add(new RandomCoordinator());
             coordinators.add(new QueryCoordinator());
-            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, "orderContainer", capi, coordinators);
+            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, ORDER_CONTAINER, capi, coordinators);
             if (ref != null)
                 map.put(market, ref);
         }
         return map;
     }
 
-    @Bean(name = "orderContainer")
-    public ContainerReference getSingleOrderContainer(@Qualifier("orderContainerMap") HashMap<String, ContainerReference> container) {
+    @Bean(name = ORDER_CONTAINER)
+    public ContainerReference getSingleOrderContainer(@Qualifier(ORDER_CONTAINER_MAP) HashMap<String, ContainerReference> container) {
         return container.entrySet().iterator().next().getValue();
     }
 
@@ -122,22 +134,22 @@ public class CommonSpaceConfiguration {
      * @throws URISyntaxException the URI syntax exception
      * @throws MzsCoreException the mzs core exception
      */
-    @Bean(name = "releaseContainerMap")
+    @Bean(name = RELEASE_CONTAINER_MAP)
     public HashMap<String, ContainerReference> releaseContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         HashMap<String, ContainerReference> map = new HashMap<>();
         for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
             URI uri = new URI(SPACE_URI_PREFIX + market);
             ArrayList<Coordinator> coordinators= new ArrayList<Coordinator>();
             coordinators.add(new FifoCoordinator());
-            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, "releaseContainer", capi, coordinators);
+            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, RELEASE_CONTAINER, capi, coordinators);
             if (ref != null)
                 map.put(market, ref);
         }
         return map;
     }
 
-    @Bean(name = "releaseContainer")
-    public ContainerReference getSingleReleaseContainer( @Qualifier("releaseContainerMap") HashMap<String, ContainerReference> container) {
+    @Bean(name = RELEASE_CONTAINER)
+    public ContainerReference getSingleReleaseContainer(@Qualifier(RELEASE_CONTAINER_MAP) HashMap<String, ContainerReference> container) {
         return container.entrySet().iterator().next().getValue();
     }
     /*public ContainerReference getSingleReleaseContainer(Capi capi) throws URISyntaxException, MzsCoreException {
@@ -153,7 +165,7 @@ public class CommonSpaceConfiguration {
      * @throws URISyntaxException the URI syntax exception
      * @throws MzsCoreException the mzs core exception
      */
-    @Bean(name = "shareContainerMap")
+    @Bean(name = SHARE_CONTAINER_MAP)
     public HashMap<String, ContainerReference> shareContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         HashMap<String, ContainerReference> map = new HashMap<>();
         for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
@@ -161,15 +173,15 @@ public class CommonSpaceConfiguration {
             ArrayList<Coordinator> coordinators= new ArrayList<Coordinator>();
             coordinators.add(new KeyCoordinator());
             coordinators.add(new FifoCoordinator());
-            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, "shareContainer", capi, coordinators);
+            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, SHARE_CONTAINER, capi, coordinators);
             if (ref != null)
                 map.put(market, ref);
         }
         return map;
     }
 
-    @Bean(name = "shareContainer")
-    public ContainerReference getSingleShareContainer(@Qualifier("shareContainerMap") HashMap<String, ContainerReference> container) {
+    @Bean(name = SHARE_CONTAINER)
+    public ContainerReference getSingleShareContainer(@Qualifier(SHARE_CONTAINER_MAP) HashMap<String, ContainerReference> container) {
         return container.entrySet().iterator().next().getValue();
     }
 
@@ -181,24 +193,22 @@ public class CommonSpaceConfiguration {
      * @throws URISyntaxException the URI syntax exception
      * @throws MzsCoreException the mzs core exception
      */
-    @Bean(name = "transactionContainerMap")
+    @Bean(name = TRANSACTION_CONTAINER_MAP)
     public HashMap<String, ContainerReference> transactionContainer(Capi capi) throws URISyntaxException, MzsCoreException {
         HashMap<String, ContainerReference> map = new HashMap<>();
         for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
             URI uri = new URI(SPACE_URI_PREFIX + market);
             ArrayList<Coordinator> coordinators= new ArrayList<Coordinator>();
             coordinators.add(new FifoCoordinator());
-            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, "transactionContainer", capi, coordinators);
+            ContainerReference ref = SpaceUtils.getOrCreateNamedContainer(uri, TRANSACTION_CONTAINER, capi, coordinators);
             if (ref != null)
                 map.put(market, ref);
         }
         return map;
     }
 
-    @Bean(name = "transactionContainer")
-    public ContainerReference getSingleTransactionContainer(@Qualifier("transactionContainerMap") HashMap<String, ContainerReference> container) {
+    @Bean(name = TRANSACTION_CONTAINER)
+    public ContainerReference getSingleTransactionContainer(@Qualifier(TRANSACTION_CONTAINER_MAP) HashMap<String, ContainerReference> container) {
         return container.entrySet().iterator().next().getValue();
     }
-
-
 }

@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.company.workflow.space;
 
+import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import ac.at.tuwien.sbc.domain.entry.ReleaseEntry;
 import org.mozartspaces.core.*;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ public class SpaceReleaseService implements ac.at.tuwien.sbc.company.workflow.IR
 
     /** The releaseContainer. */
     @Autowired
-    @Qualifier("releaseContainer")
+    @Qualifier(CommonSpaceConfiguration.RELEASE_CONTAINER)
     ContainerReference releaseContainer;
 
     /** The Constant logger. */

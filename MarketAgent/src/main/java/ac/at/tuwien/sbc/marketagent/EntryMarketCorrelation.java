@@ -1,7 +1,5 @@
 package ac.at.tuwien.sbc.marketagent;
 
-import ac.at.tuwien.sbc.domain.entry.ShareEntry;
-
 /**
  * Created by dietl_ma on 31/05/15.
  */

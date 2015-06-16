@@ -30,6 +30,14 @@ public interface ICoordinationService {
     public void setShareEntry(ShareEntry se, String market);
 
     /**
+     * Gets share entry
+     * @param shareId
+     * @param market
+     * @return
+     */
+    public ShareEntry getShareEntry(String shareId, String market);
+
+    /**
      * Gets the orders by properties.
      *
      * @param shareId the share id
@@ -39,5 +47,17 @@ public interface ICoordinationService {
      */
     public ArrayList<OrderEntry> getOrdersByProperties(String shareId, OrderType type, String market);
 
+    /**
+     * Gets the depot enty
+     * @param depotId
+     * @param market
+     * @return
+     */
     public DepotEntry getDepot(String depotId, String market);
+
+    /**
+     * Adds the market to coordination infrastructure
+     * @param market
+     */
+    public void addMarket(String market);
 }

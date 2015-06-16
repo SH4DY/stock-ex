@@ -348,14 +348,26 @@ public class Workflow {
         //add fee to fond budget
         if (shareEntry.getShareType().equals(ShareType.FOND)) {
             //get fond manager depot and add fee to budget
+            Double sumFees = (seller != null) ? 2*currentFondFee : currentFondFee;
             DepotEntry fondDepot = coordinationService.getDepot(shareEntry.getShareID(), sharedTransaction);
+
             if (fondDepot != null) {
-                Double sumFees = (seller != null) ? 2*currentFondFee : currentFondFee;
-                fondDepot.setBudget(fondDepot.getBudget() + (shareEntry.getPrice() * numSharesToTransact) * sumFees);
-                coordinationService.setDepot(fondDepot, sharedTransaction, false);
+                Double newBudget = fondDepot.getBudget() + (shareEntry.getPrice() * numSharesToTransact) * sumFees;
+                fondDepot.setBudget(newBudget);
+
+                //seller of fond must be the fondmanager itself
+                if (seller == null)
+                    fondDepot.setBudget(newBudget + (shareEntry.getPrice() * numSharesToTransact));
+
             }
+
+            else
+                fondDepot.setBudget(fondDepot.getBudget() + (shareEntry.getPrice() * numSharesToTransact) * sumFees);
+
+            coordinationService.setDepot(fondDepot, sharedTransaction, false);
         }
 
+        //set share depot
         Integer currentNumShare = buyer.getShareDepot().containsKey(shareEntry.getShareID()) ? buyer.getShareDepot().get(shareEntry.getShareID()) : 0;
         buyer.getShareDepot().put(shareEntry.getShareID(), currentNumShare + numSharesToTransact);
 

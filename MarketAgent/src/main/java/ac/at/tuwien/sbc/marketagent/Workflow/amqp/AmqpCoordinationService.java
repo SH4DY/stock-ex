@@ -8,12 +8,15 @@ import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
 import ac.at.tuwien.sbc.domain.messaging.RPCMessageRequest;
 import ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -33,6 +36,12 @@ public class AmqpCoordinationService implements ICoordinationService {
     @Autowired
     @Qualifier("exchangeKeyMap")
     private HashMap<String, String> exchangeKeyMap;
+
+    @Autowired
+    HashMap<String,ConnectionFactory> connectionFactoryMap;
+
+    @Autowired
+    MessageConverter messageConverter;
 
     /* (non-Javadoc)
      * @see ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService#getShares()
@@ -59,6 +68,19 @@ public class AmqpCoordinationService implements ICoordinationService {
         request = new RPCMessageRequest(RPCMessageRequest.Method.WRITE_SHARE_ENTRY, null, se);
         templateMap.get(market).convertAndSend(exchangeKeyMap.get(market),
                 CommonRabbitConfiguration.MARKET_RPC, request);
+    }
+
+    @Override
+    public ShareEntry getShareEntry(String shareId, String market) {
+        ShareEntry se = null;
+        RPCMessageRequest request = new RPCMessageRequest(RPCMessageRequest.Method.GET_SHARE_ENTRY_BY_ID, new Object[]{shareId});
+        ArrayList<ShareEntry> result = (ArrayList<ShareEntry>)templateMap.get(market)
+                .convertSendAndReceive(exchangeKeyMap.get(market), CommonRabbitConfiguration.MARKET_RPC, request);
+
+        if (result != null && !result.isEmpty())
+            se = result.get(0);
+
+        return se;
     }
 
     /* (non-Javadoc)
@@ -91,5 +113,20 @@ public class AmqpCoordinationService implements ICoordinationService {
             entry = (DepotEntry)result.toArray()[0];
 
         return entry;
+    }
+
+    @Override
+    public void addMarket(String market) {
+        try {
+            if (!exchangeKeyMap.containsKey(market))
+                exchangeKeyMap.put(market, CommonRabbitConfiguration.parseMarketUrl(market).getPath());
+            if (!connectionFactoryMap.containsKey(market))
+                connectionFactoryMap.put(market, CommonRabbitConfiguration.createConnectionFactory(market));
+            if (!templateMap.containsKey(market))
+                templateMap.put(market, CommonRabbitConfiguration.createRabbitTemplate(market, connectionFactoryMap, messageConverter));
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 }

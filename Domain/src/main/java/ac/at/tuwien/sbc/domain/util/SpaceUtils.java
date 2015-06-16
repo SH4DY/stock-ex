@@ -90,4 +90,21 @@ public abstract class SpaceUtils {
         }
         return cref;
     }
+
+    public static ContainerReference getNamedContainer(final URI space, final String containerName,
+                                                               final Capi capi) throws MzsCoreException {
+
+        ContainerReference cref = null;
+        try {
+            // Get the Container
+            logger.info("Lookup container: " + containerName);
+            cref = capi.lookupContainer(containerName, space, MzsConstants.RequestTimeout.DEFAULT, null);
+            logger.info("Container found: " + containerName);
+            // If it is unknown, create it
+        } catch (MzsCoreException e) {
+            logger.info("Container not found");
+            throw new MzsCoreException(e);
+        }
+        return cref;
+    }
 }

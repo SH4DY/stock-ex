@@ -59,5 +59,6 @@ public class Workflow {
         releaseEntry.setShareType(ShareType.SHARE);
 
         rlsService.makeRelease(releaseEntry);
+        logger.error("Written");
     }
 }

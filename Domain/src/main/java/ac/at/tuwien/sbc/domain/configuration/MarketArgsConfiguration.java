@@ -1,5 +1,6 @@
 package ac.at.tuwien.sbc.domain.configuration;
 
+import ac.at.tuwien.sbc.domain.service.IMarketDirectoryService;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,9 @@ public class MarketArgsConfiguration<T> {
     @Autowired(required = false)
     private IMarketArgsMapper<T> mapper;
 
+    @Autowired
+    private IMarketDirectoryService marketDirectoryService;
+
     @Value("${market}")
     public void setArgs(String[] marketArgs) {
         this.args = new HashMap<String, Object>();
@@ -33,6 +37,10 @@ public class MarketArgsConfiguration<T> {
                 argObject = mapper.getObjectForArgs(ArrayUtils.subarray(marketArgA, 1, marketArgA.length));
 
             args.put(marketArgA[0], argObject);
+
+            //add market to directory
+            if (marketDirectoryService != null)
+                marketDirectoryService.addMarket(marketArgA[0]);
         }
     }
 

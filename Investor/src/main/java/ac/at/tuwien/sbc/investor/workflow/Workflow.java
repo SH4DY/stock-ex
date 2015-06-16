@@ -51,6 +51,7 @@ public class Workflow  {
     /** The current investor. */
     private HashMap<String, DepotEntry> currentDepot;
 
+    private Boolean releaseDone = false;
 
     /** The Constant logger. */
     private static final Logger logger = LoggerFactory.getLogger(Workflow.class);
@@ -235,6 +236,9 @@ public class Workflow  {
 
     private void initReleaseRequest(DepotEntry de) {
 
+        if (releaseDone)
+            return;
+
         for (String market : marketArgs.getMarkets()) {
 
             if (marketArgs.getArgsByMarket(market).getNumShares() != null) {
@@ -247,6 +251,7 @@ public class Workflow  {
 
                 //only make releases on the first given market
                 coordinationService.makeRelease(releaseEntry, market);
+                releaseDone = true;
                 break;
             }
         }

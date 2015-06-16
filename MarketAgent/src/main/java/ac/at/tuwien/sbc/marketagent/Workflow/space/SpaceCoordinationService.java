@@ -1,10 +1,13 @@
 package ac.at.tuwien.sbc.marketagent.workflow.space;
 
+import ac.at.tuwien.sbc.domain.configuration.CommonSpaceConfiguration;
 import ac.at.tuwien.sbc.domain.entry.DepotEntry;
 import ac.at.tuwien.sbc.domain.entry.OrderEntry;
 import ac.at.tuwien.sbc.domain.entry.ShareEntry;
 import ac.at.tuwien.sbc.domain.enums.OrderStatus;
 import ac.at.tuwien.sbc.domain.enums.OrderType;
+import ac.at.tuwien.sbc.domain.event.CoordinationListener;
+import ac.at.tuwien.sbc.domain.util.SpaceUtils;
 import ac.at.tuwien.sbc.marketagent.workflow.ICoordinationService;
 import org.mozartspaces.capi3.*;
 import org.mozartspaces.core.*;
@@ -15,6 +18,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -39,17 +44,17 @@ public class SpaceCoordinationService implements ICoordinationService {
 
     /** The depot container. */
     @Autowired
-    @Qualifier("depotContainerMap")
+    @Qualifier(CommonSpaceConfiguration.DEPOT_CONTAINER_MAP)
     HashMap<String, ContainerReference> depotContainer;
 
     /** The order container. */
     @Autowired
-    @Qualifier("orderContainerMap")
+    @Qualifier(CommonSpaceConfiguration.ORDER_CONTAINER_MAP)
     HashMap<String, ContainerReference> orderContainer;
 
     /** The share container. */
     @Autowired
-    @Qualifier("shareContainerMap")
+    @Qualifier(CommonSpaceConfiguration.SHARE_CONTAINER_MAP)
     HashMap<String, ContainerReference> shareContainer;
 
     /** The Constant logger. */
@@ -83,6 +88,24 @@ public class SpaceCoordinationService implements ICoordinationService {
             }
         }
         catch (MzsCoreException e) {}
+    }
+
+
+    @Override
+    public ShareEntry getShareEntry(String shareId, String market) {
+
+        ShareEntry se = null;
+        ArrayList<ShareEntry> entries = null;
+        try {
+            entries = capi.read(shareContainer.get(market), KeyCoordinator.newSelector(shareId), MzsConstants.RequestTimeout.ZERO, null);
+        }
+        catch (MzsCoreException e) {
+            logger.info("Share not found for: " + shareId);
+        }
+        if (entries != null && !entries.isEmpty())
+            se = entries.get(0);
+
+        return se;
     }
 
     /* (non-Javadoc)
@@ -123,6 +146,29 @@ public class SpaceCoordinationService implements ICoordinationService {
             entry = entries.get(0);
 
         return  entry;
+
+    }
+
+
+
+    @Override
+    public void addMarket(String market) {
+
+        try {
+            URI uri = new URI(CommonSpaceConfiguration.SPACE_URI_PREFIX + market);
+
+            if (!depotContainer.containsKey(market))
+                depotContainer.put(market, SpaceUtils.getNamedContainer(uri, CommonSpaceConfiguration.DEPOT_CONTAINER, capi));
+            if (!orderContainer.containsKey(market))
+                orderContainer.put(market, SpaceUtils.getNamedContainer(uri, CommonSpaceConfiguration.ORDER_CONTAINER, capi));
+            if (!shareContainer.containsKey(market))
+                shareContainer.put(market, SpaceUtils.getNamedContainer(uri, CommonSpaceConfiguration.SHARE_CONTAINER, capi));
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (MzsCoreException e) {
+            e.printStackTrace();
+        }
 
     }
 }

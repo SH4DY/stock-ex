@@ -90,15 +90,8 @@ public class CommonRabbitConfiguration {
 
         HashMap<String,ConnectionFactory> map = new HashMap<>();
         for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
-
-            URL url = parseMarketUrl(market);
-            com.rabbitmq.client.ConnectionFactory rabbitConnectionFactory = new com.rabbitmq.client.ConnectionFactory();
-            rabbitConnectionFactory.setHost(url.getHost());
-            rabbitConnectionFactory.setPort(url.getPort());
-
-            map.put(market, new CachingConnectionFactory(rabbitConnectionFactory));
+            map.put(market, createConnectionFactory(market));
         }
-
         return map;
     }
 
@@ -124,10 +117,7 @@ public class CommonRabbitConfiguration {
         HashMap<String,RabbitTemplate> map = new HashMap<>();
 
         for (String market : (ArrayList<String>)marketArgs.getMarkets()) {
-            RabbitTemplate template = new RabbitTemplate(connectionFactoryMap.get(market));
-            template.setMessageConverter(jsonMessageConverter());
-            template.setReplyTimeout(10000);
-            map.put(market, template);
+            map.put(market, createRabbitTemplate(market, connectionFactoryMap, jsonMessageConverter()));
         }
         return map;
     }
@@ -170,9 +160,29 @@ public class CommonRabbitConfiguration {
      * @return
      * @throws MalformedURLException
      */
-    private URL parseMarketUrl(String market) throws MalformedURLException {
+    public static URL parseMarketUrl(String market) throws MalformedURLException {
         return new URL("http://" + market);
     }
 
+    /**
+     * Creates a connectionFactory
+     * @param market
+     * @return
+     * @throws MalformedURLException
+     */
+    public static CachingConnectionFactory createConnectionFactory(String market) throws MalformedURLException {
+        URL url = parseMarketUrl(market);
+        com.rabbitmq.client.ConnectionFactory rabbitConnectionFactory = new com.rabbitmq.client.ConnectionFactory();
+        rabbitConnectionFactory.setHost(url.getHost());
+        rabbitConnectionFactory.setPort(url.getPort());
 
+        return new CachingConnectionFactory(rabbitConnectionFactory);
+    }
+
+    public static RabbitTemplate createRabbitTemplate(String market, HashMap<String,ConnectionFactory> connectionFactoryMap, MessageConverter messageConverter) {
+        RabbitTemplate template = new RabbitTemplate(connectionFactoryMap.get(market));
+        template.setMessageConverter(messageConverter);
+        template.setReplyTimeout(10000);
+        return template;
+    }
 }
