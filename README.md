@@ -27,7 +27,7 @@ $ ./run.sh env ampq
 
 e.g. 
 ```sh 
-$ ./run.sh market marketdirectory
+$ ./run.sh marketdirectory
 
 ```
 
