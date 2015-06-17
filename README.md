@@ -56,10 +56,10 @@ $ ./run.sh marketagent amqp  localhost/stockExchange2
 
 e.g. 
 ```sh 
-$ ./run.shinvestor space fondmanager1 FOND_MANAGER localhost:9876#10000#2000,localhost:9877#2000
-$ ./run.shinvestor space investor1 INVESTOR localhost:9876#10000,localhost:9877#2000
-$ ./run.shinvestor space fondmanager1 FOND_MANAGER localhost/stockExchange1#10000#2000,localhost/stockExchange2#2000
-$ ./run.shinvestor space investor1 INVESTOR localhost/stockExchange1#10000,localhost/stockExchange2#2000
+$ ./run.sh investor space fondmanager1 FOND_MANAGER localhost:9876#10000#2000,localhost:9877#2000
+$ ./run.sh investor space investor1 INVESTOR localhost:9876#10000,localhost:9877#2000
+$ ./run.sh investor amqp fondmanager1 FOND_MANAGER localhost/stockExchange1#10000#2000,localhost/stockExchange2#2000
+$ ./run.sh investor amqp investor1 INVESTOR localhost/stockExchange1#10000,localhost/stockExchange2#2000
 
 ```
 * **Broker**: ./run.sh broker ["space","amqp"] [id(int)] [host][":"[port],"/"[exchange]]
