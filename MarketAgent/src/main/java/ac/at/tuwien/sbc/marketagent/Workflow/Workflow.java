@@ -52,7 +52,6 @@ public class Workflow {
                 allMarkets.add(market);
             }
         }
-
     }
 
     /**
